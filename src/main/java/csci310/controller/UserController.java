@@ -22,6 +22,13 @@ public class UserController {
     @RequestMapping(value="/signup", method = RequestMethod.GET)
     public String createSignupForm(Model model) {
         model.addAttribute("welcome", "welcome");
-        return "hello";
+        return "signup.html";
     }
+
+
+    @RequestMapping(value = "/signup", method = RequestMethod.POST)
+    public String createUser(@ModelAttribute("user") User user, Model model) {
+        return "signin";
+    }
+
 }
