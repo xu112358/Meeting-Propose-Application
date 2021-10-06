@@ -24,10 +24,4 @@ public class UserRepositoryTest {
         List<User> users= userRepository.findByUsername("kaituo123");
         System.out.println("users="+users);
     }
-
-    @Test
-    public void getUserByFirstName(){
-        User user = userRepository.getUserByFirstName("kaituo123");
-        System.out.println(user);
-    }
 }
