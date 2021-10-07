@@ -1,6 +1,7 @@
 package csci310.repository;
 
 import csci310.entity.Event;
+import csci310.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ class EventRepositoryTest {
         event.setEventName("race");
         event.setGenre("sports");
         eventRepository.save(event);
+        System.out.println(event);
     }
 
     @Test
@@ -30,6 +32,7 @@ class EventRepositoryTest {
         List<Event> events = eventRepository.findByEventName("race");
         for(int i = 0; i < events.size(); i ++ ){
             assertEquals("race", events.get(i).getEventName());
+            System.out.println(events.get(i));
         }
     }
 }

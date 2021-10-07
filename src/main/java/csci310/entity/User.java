@@ -19,13 +19,6 @@ public class User {
     private String firstName;
     @Column(name = "hash_password")
     private String hashPassword;
-
-    @OneToOne(mappedBy = "receiver", fetch = FetchType.EAGER)
-    private Invite inviteReceived;
-
-    @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER)
-    private List<Invite> inviteSent;
-
     public User() {
     }
 
@@ -35,8 +28,6 @@ public class User {
         this.lastName = lastName;
         this.firstName = firstName;
         this.hashPassword = hashPassword;
-        this.inviteReceived = inviteReceived;
-        this.inviteSent = inviteSent;
     }
 
     public Long getId() {
@@ -79,19 +70,14 @@ public class User {
         this.hashPassword = hashPassword;
     }
 
-    public Invite getInviteReceived() {
-        return inviteReceived;
-    }
-
-    public void setInviteReceived(Invite inviteReceived) {
-        this.inviteReceived = inviteReceived;
-    }
-
-    public List<Invite> getInviteSent() {
-        return inviteSent;
-    }
-
-    public void setInviteSent(List<Invite> inviteSent) {
-        this.inviteSent = inviteSent;
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", hashPassword='" + hashPassword + '\'' +
+                '}';
     }
 }

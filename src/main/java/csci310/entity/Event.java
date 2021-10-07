@@ -1,9 +1,5 @@
 package csci310.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -13,7 +9,7 @@ import java.util.List;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
     @Column(name = "event_name", unique=true)
     private String eventName;
     @Column(name = "genre")
@@ -21,38 +17,22 @@ public class Event {
     @Column(name = "event_date")
     private Date eventDate;
 
-    @OneToMany(mappedBy = "event", fetch = FetchType.EAGER)
-    private List<Invite> invites;
-
-    /*@JoinTable(
-            name = "user_event_map",
-            joinColumns = @JoinColumn(
-                    name = "user_id",
-                    referencedColumnName = "id"
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "event_id",
-                    referencedColumnName = "id"
-            )
-    )
-    private List<User> user;*/
 
     public Event() {
     }
 
-    public Event(int id, String eventName, String genre, Date eventDate, List<Invite> invites) {
+    public Event(Long id, String eventName, String genre, Date eventDate, List<Invite> invites) {
         this.id = id;
         this.eventName = eventName;
         this.genre = genre;
         this.eventDate = eventDate;
-        this.invites = invites;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -80,13 +60,13 @@ public class Event {
         this.eventDate = eventDate;
     }
 
-    public List<Invite> getInvites() {
-        return invites;
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", eventName='" + eventName + '\'' +
+                ", genre='" + genre + '\'' +
+                ", eventDate=" + eventDate +
+                '}';
     }
-
-    public void setInvites(List<Invite> invites) {
-        this.invites = invites;
-    }
-
-
 }

@@ -50,9 +50,9 @@ class InviteRepositoryTest {
             invite.setAvailability(0);
             invite.setPreference(0);
             invite.setStatus("undecided");
-            invite.setSender(user1);
-            invite.setEvent(event);
-            invite.setReceiver(users.get(i));
+            invite.setEventId(event.getId());
+            invite.setSenderId(user1.getId());
+            invite.setReceiverId(users.get(i).getId());
             System.out.println(invite);
             inviteRepository.save(invite);
         }

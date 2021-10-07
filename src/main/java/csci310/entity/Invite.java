@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -12,54 +13,66 @@ import java.util.List;
 public class Invite {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
+    @Column(name = "sender_id")
+    private Long senderId;
+    @Column(name = "receiver_id")
+    private Long receiverId;
+    @Column(name = "event_id")
+    private Long eventId;
     @Column(name = "preference")
-    public int preference;
+    private int preference;
     @Column(name = "availability")
-    public int availability;
+    private int availability;
     @Column(name = "status")
-    public String status;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(
-            name = "receiver_id",
-            referencedColumnName = "id"
-    )
-    User receiver;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(
-            name = "sender_id",
-            referencedColumnName = "id"
-    )
-    private User sender;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(
-            name = "event_id",
-            referencedColumnName = "id"
-    )
-    private Event event;
+    private String status;
+    @Column(name = "create_time")
+    private Date createTime;
 
     public Invite() {
     }
 
-    public Invite(int id, int preference, int availability, String status, User receiver, User sender, Event event) {
+    public Invite(Long id, Long senderId, Long receiverId, Long eventId, int preference, int availability, String status, Date createTime) {
         this.id = id;
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.eventId = eventId;
         this.preference = preference;
         this.availability = availability;
         this.status = status;
-        this.receiver = receiver;
-        this.sender = sender;
-        this.event = event;
+        this.createTime = createTime;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Long senderId) {
+        this.senderId = senderId;
+    }
+
+    public Long getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(Long receiverId) {
+        this.receiverId = receiverId;
+    }
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
     }
 
     public int getPreference() {
@@ -86,28 +99,25 @@ public class Invite {
         this.status = status;
     }
 
-    public User getReceiver() {
-        return receiver;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
-    public User getSender() {
-        return sender;
+    @Override
+    public String toString() {
+        return "Invite{" +
+                "id=" + id +
+                ", senderId=" + senderId +
+                ", receiverId=" + receiverId +
+                ", eventId=" + eventId +
+                ", preference=" + preference +
+                ", availability=" + availability +
+                ", status='" + status + '\'' +
+                ", createTime=" + createTime +
+                '}';
     }
-
-    public void setSender(User sender) {
-        this.sender = sender;
-    }
-
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
-    }
-
 }
