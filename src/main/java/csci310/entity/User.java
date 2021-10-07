@@ -22,7 +22,7 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String username, String lastName, String firstName, String hashPassword, Invite inviteReceived, List<Invite> inviteSent) {
+    public User(Long id, String username, String lastName, String firstName, String hashPassword) {
         this.id = id;
         this.username = username;
         this.lastName = lastName;
