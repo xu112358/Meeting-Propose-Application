@@ -16,27 +16,38 @@
             <div class="card border-0 shadow rounded-3 my-5">
             <div class="card-body p-4 p-sm-5">
                 <h1 class="card-title text-center mb-5 fw-light fs-5">Sign In</h1>
-                <form>
+                <form id="login" method="post" action="#" th:action="@{/signin}">
                 <div class="form-floating mb-3">
-                    <label for="floatingInput">Username</label>
-                    <input type="text" class="form-control" id="username" placeholder="Username">
+                    <label >Username</label>
+                    <input type="text" class="form-control" id="username" name="username" th:value="${username}" placeholder="Username">
                     
                 </div>
                 <div class="form-floating mb-3">
-                    <label for="floatingPassword">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Password">
+                    <label >Password</label>
+                    <input type="password" class="form-control" id="password" name="password"  th:value="${password}" placeholder="Password">
                     
                 </div>
     
                 <div class="form-check mb-3">
                     
-                    <label class="form-check-label" for="rememberPasswordCheck">
+                    <label class="form-check-label" >
                     Forget Password?
                     </label>
                 </div>
+
+
+
                 <div class="row">
+                    <div class="col-12 text-center">
+
+                        <div id="warning" class="alert alert-danger" role="alert"  th:text="${error_message}">
+
+                        </div>
+                    </div>
+
+
                 <div class="col-6 text-center">
-                    <button class="btn btn-primary btn-login btn-lg text-uppercase " type="button" id="signin">Sign in</button>
+                    <button class="btn btn-primary btn-login btn-lg text-uppercase " type="submit" id="signin">Sign in</button>
                 </div>
                 <div class="col-6 text-center">
                     <button class="btn btn-danger btn-login btn-lg text-uppercase " type="button" id="signup">Sign Up</button>

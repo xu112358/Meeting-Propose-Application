@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import csci310.entity.User;
 import csci310.repository.UserRepository;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,16 +15,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import javax.transaction.Transactional;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -53,6 +60,10 @@ class UserControllerTest {
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/")
         ).andExpect(status().isOk());
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/signin")
+        ).andExpect(status().isOk());
     }
 
     @Test
@@ -66,24 +77,69 @@ class UserControllerTest {
     @Test
     @Transactional
     public void createUser() throws Exception {
-        User user = new User();
-        user.setUsername("unique_username");
-        user.setFirstName("Minyi");
-        user.setLastName("Chen");
-        user.setHashPassword("minyi276");
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(user);
-        mockMvc.perform(MockMvcRequestBuilders.post("/signup")
-                        .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.model().attribute("message", "Sign Up Successfully!"));
-        user.setUsername("kaituo123");
-        json = ow.writeValueAsString(user);
-        mockMvc.perform(MockMvcRequestBuilders.post("/signup")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.model().attribute("message", "Username is taken. Try another one."));
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","test");
+        params.add("password","123");
+        params.add("re_password","123");
+        params.add("fname","tommy");
+        params.add("lname","trojan");
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signup").params(params)).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+
+        ModelMap map=mvcResult.getModelAndView().getModelMap();
+        System.out.println(map);
+        Assert.assertEquals("Sign Up Successfully!",map.get("message"));
+
+        Assert.assertEquals(200,status);
+
+
+        params.set("username","root");
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signup").params(params)).andReturn();
+        status = mvcResult.getResponse().getStatus();
+
+        map=mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Username is taken. Try another one.",map.get("error_message"));
+
+        Assert.assertEquals(200,status);
+
+    }
+
+    @Test
+    @Transactional
+    public void signinTest() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","test");
+        params.add("password","123");
+
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+
+        ModelMap map=mvcResult.getModelAndView().getModelMap();
+        System.out.println(map);
+        Assert.assertEquals("Username does not exist!",map.get("error_message"));
+        Assert.assertEquals("123",map.get("password"));
+        Assert.assertEquals("test",map.get("username"));
+        Assert.assertEquals(200,status);
+
+
+        params.set("username","root");
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        status = mvcResult.getResponse().getStatus();
+        map=mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Login successfully",map.get("message"));
+        Assert.assertEquals(200,status);
+
+
+        params.set("password","1111");
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        status = mvcResult.getResponse().getStatus();
+        map=mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Username and password do not match!",map.get("error_message"));
+        Assert.assertEquals("1111",map.get("password"));
+        Assert.assertEquals("root",map.get("username"));
+        Assert.assertEquals(200,status);
+
     }
 }

@@ -7,7 +7,7 @@
     <title>Document</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="../static/css/signup.css" th:href="@{/css/signup.css}">
+    <link rel="stylesheet" href="../static/css/signin.css" th:href="@{/css/signin.css}">
 </head>
 <body>
     <div class="container">
@@ -16,45 +16,62 @@
             <div class="card border-0 shadow rounded-3 my-5">
             <div class="card-body p-4 p-sm-5">
                 <h1 class="card-title text-center mb-5 fw-light fs-5">Sign Up</h1>
-                <form>
+                <form  action="#" th:action="@{/signup}" id="create_account" method="post">
                 <div class="form-floating mb-3">
-                    <label for="floatingInput">Username</label>
-                    <input type="text" class="form-control" id="username" placeholder="Username">
+                    <label >Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Username">
                     
                 </div>
                 <div class="form-floating mb-3">
-                    <label for="floatingPassword">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Password">
+                    <label >Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
                     
                 </div>
                 <div class="form-floating mb-3">
-                    <label for="floatingPassword">Re-Password</label>
-                    <input type="password" class="form-control" id="re_password" placeholder="Password">
-                    
-                </div>
-
-                <div class="form-floating mb-3">
-                    <label for="floatingPassword">First Name</label>
-                    <input type="text" class="form-control" id="fname" placeholder="First Name">
+                    <label >Re-Password</label>
+                    <input type="password" class="form-control" id="re_password" name="re_password" placeholder="Password">
                     
                 </div>
 
                 <div class="form-floating mb-3">
-                    <label for="floatingPassword">Last Name</label>
-                    <input type="text" class="form-control" id="lname" placeholder="Last Name">
+                    <label >First Name</label>
+                    <input type="text" class="form-control" id="fname" name="fname" placeholder="First Name">
+                    
+                </div>
+
+                <div class="form-floating mb-3">
+                    <label >Last Name</label>
+                    <input type="text" class="form-control" id="lname" name="lname" placeholder="Last Name">
                     
                 </div>
     
                
                 <div class="row">
-               
-                <div class="col-12 text-center">
-                    <button class="btn btn-danger btn-login btn-lg text-uppercase " type="button">Create Account</button>
-                </div>
+                    <div class="col-12 text-center">
+
+                        <div id="warning" class="alert alert-danger" role="alert"  th:text="${error_message}">
+
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-center">
+
+                        <div id="success" class="alert alert-success" role="alert" th:text="${message}">
+
+                        </div>
+                    </div>
+
+                    <div class="col-6 text-center">
+                        <button class="btn btn-primary btn-login btn-lg text-uppercase " type="button" id="goback_signin">Go To Sign In</button>
+                    </div>
+                    <div class="col-6 text-center">
+<!--                        <input id="signup" class="btn btn-danger btn-login btn-lg text-uppercase" type="submit"  value="Create Account">-->
+                        <button id="signup" class="btn btn-danger btn-login btn-lg text-uppercase " type="submit"  form="create_account">Create Account</button>
+                    </div>
                 </div>
                 <hr class="my-4">
-                
-               
+
+
                 </form>
             </div>
             </div>
@@ -63,6 +80,7 @@
 
         
     </div>
+    <script src="../static/js/signup.js" th:src="@{/js/signup.js}"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>

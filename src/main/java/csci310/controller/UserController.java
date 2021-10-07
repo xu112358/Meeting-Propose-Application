@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -19,30 +17,64 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @RequestMapping("/")
+    @GetMapping({"/","/signin"})
     public String index(){
         return "signin";
+    }
+    @PostMapping({"/","/signin"})
+    public String signin(@RequestParam("username") String username,@RequestParam(name="password") String password,Model model){
+        User user=userRepository.findByUsername(username);
+        if ( user== null) {
+
+            model.addAttribute("error_message", "Username does not exist!");
+            model.addAttribute("username", username);
+            model.addAttribute("password", password);
+            return "signin";
+        }
+        else {
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+            if(encoder.matches(password,user.getHashPassword())){
+                model.addAttribute("message","Login successfully");
+                System.out.println("Login successfully");
+                return "signin";
+            }
+            else{
+                model.addAttribute("error_message", "Username and password do not match!");
+                model.addAttribute("username", username);
+                model.addAttribute("password", password);
+                return "signin";
+            }
+        }
+
     }
 
     @RequestMapping(value="/signup", method = RequestMethod.GET)
     public String createSignupForm(Model model) {
-        //model.addAttribute("user", new User());
+
         return "signup";
     }
 
 
-    @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public String createUser(@RequestBody User user, Model model) {
+    @PostMapping(value="/signup")
+    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password,@RequestParam(name="fname") String fname,@RequestParam(name="lname") String lname, Model model) {
+
+        User user=new User();
+        user.setUsername(username);
+        user.setFirstName(fname);
+        user.setLastName(lname);
+        user.setHashPassword(password);
+
         if (userRepository.findByUsername(user.getUsername()) == null) {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());
             user.setHashPassword(encodedPassword);
             userRepository.save(user);
             model.addAttribute("message", "Sign Up Successfully!");
-            return "signin";
+            return "signup";
         }
         else {
-            model.addAttribute("message", "Username is taken. Try another one.");
+            model.addAttribute("error_message", "Username is taken. Try another one.");
             return "signup";
         }
     }
