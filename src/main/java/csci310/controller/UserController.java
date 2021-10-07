@@ -30,9 +30,6 @@ public class UserController {
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public String createUser(@RequestBody User user, Model model) {
-        System.out.println(user);
-        System.out.println((user.getUsername()));
-        System.out.println(userRepository.findByUsername(user.getUsername()));
         if (userRepository.findByUsername(user.getUsername()) == null) {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());

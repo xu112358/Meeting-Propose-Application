@@ -76,6 +76,7 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/user/signup")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.model().attribute("message", "Username is taken. Try another one."));
     }
 }
