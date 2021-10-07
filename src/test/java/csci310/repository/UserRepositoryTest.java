@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -14,14 +15,16 @@ public class UserRepositoryTest {
     @Autowired
     private UserRepository userRepository;
     @Test
+    @Transactional
     public void saveUser(){
         User user1= new User();
         user1.setFirstName("Kaituo");
-        user1.setUsername("kaituo123");
+        user1.setUsername("kaituo");
         user1.setLastName("Xu");
         user1.setHashPassword("jdwuua276");
+        userRepository.save(user1);
 
-        List<User> users= userRepository.findByUsername("kaituo123");
-        System.out.println("users="+users);
+        User user= userRepository.findByUsername("kaituo123");
+        System.out.println(user);
     }
 }
