@@ -51,7 +51,7 @@ class UserControllerTest {
     @Test
     public void createSignupFormTest() throws Exception {
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/user/signup")
+                MockMvcRequestBuilders.get("/signup")
         ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.model().attribute("welcome", "welcome"));
     }
@@ -66,14 +66,14 @@ class UserControllerTest {
         user.setHashPassword("minyi276");
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(user);
-        mockMvc.perform(MockMvcRequestBuilders.post("/user/signup")
+        mockMvc.perform(MockMvcRequestBuilders.post("/signup")
                         .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.model().attribute("message", "Sign Up Successfully!"));
         user.setUsername("kaituo123");
         json = ow.writeValueAsString(user);
-        mockMvc.perform(MockMvcRequestBuilders.post("/user/signup")
+        mockMvc.perform(MockMvcRequestBuilders.post("/signup")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk())
