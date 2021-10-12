@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import csci310.entity.User;
+import csci310.filter.LoginInterceptor;
 import csci310.repository.UserRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -28,6 +30,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -48,12 +52,17 @@ class UserControllerTest {
 
     private MockMvc mockMvc;
 
+    @Autowired
+    private LoginInterceptor loginInterceptor;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
         //mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
+
+
 
     @Test
     public void index() throws Exception {
@@ -114,6 +123,13 @@ class UserControllerTest {
 
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+
+//        HttpServletRequest request= mvcResult.getRequest();
+//        request.getSession().setAttribute("loginUser","ABC");
+//        HttpServletResponse response= mvcResult.getResponse();
+//        boolean output= loginInterceptor.preHandle(request,response,null);
+//        System.out.println("loginInterceptor= "+output);
+
         int status = mvcResult.getResponse().getStatus();
 
         ModelMap map=mvcResult.getModelAndView().getModelMap();
@@ -125,11 +141,12 @@ class UserControllerTest {
 
 
         params.set("username","root");
-        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
-        status = mvcResult.getResponse().getStatus();
-        map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals("Login successfully",map.get("message"));
-        Assert.assertEquals(200,status);
+        mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andExpect(redirectedUrl("/home")).andExpect(status().isFound());
+//        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+//        status = mvcResult.getResponse().getStatus();
+//        map=mvcResult.getModelAndView().getModelMap();
+//        Assert.assertEquals("Login successfully",map.get("message"));
+//        Assert.assertEquals(200,status);
 
 
         params.set("password","1111");
@@ -142,4 +159,23 @@ class UserControllerTest {
         Assert.assertEquals(200,status);
 
     }
+    @Test
+    public void logout() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","root");
+        params.add("password","123");
+
+
+        MvcResult mvcResult= mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
+        mockMvc.perform(MockMvcRequestBuilders.get("/logout").session(session)).andExpect(redirectedUrl("/signin")).andExpect(status().isFound());
+    }
+    @Test
+    public void access_home_without_login() throws Exception{
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/home")).andReturn();
+        String value= (String) mvcResult.getRequest().getAttribute("error_message");
+
+        Assert.assertEquals("You need to log in first!",value);
+    }
+
 }
