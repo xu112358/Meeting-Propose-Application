@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class UserController {
         return "signin";
     }
     @PostMapping({"/","/signin"})
-    public String signin(@RequestParam("username") String username,@RequestParam(name="password") String password,Model model){
+    public String signin(@RequestParam("username") String username, @RequestParam(name="password") String password, Model model, HttpSession session){
         User user=userRepository.findByUsername(username);
         if ( user== null) {
 
@@ -37,15 +38,25 @@ public class UserController {
             if(encoder.matches(password,user.getHashPassword())){
                 model.addAttribute("message","Login successfully");
                 System.out.println("Login successfully");
-                return "signin";
+
+                session.setAttribute("loginUser",username);
+                return "redirect:/home";
             }
             else{
                 model.addAttribute("error_message", "Username and password do not match!");
                 model.addAttribute("username", username);
                 model.addAttribute("password", password);
+
                 return "signin";
             }
         }
+
+    }
+
+    @GetMapping(value="/logout")
+    public String logout(Model model,HttpSession session){
+        session.removeAttribute("loginUser");
+        return "redirect:/signin";
 
     }
 
