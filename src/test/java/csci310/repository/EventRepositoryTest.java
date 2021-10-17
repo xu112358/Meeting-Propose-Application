@@ -19,7 +19,7 @@ class EventRepositoryTest {
 
     @Test
     @Transactional
-    void saveEvent(){
+    void testSaveEvent(){
         Event event = new Event();
         event.setEventName("race");
         event.setGenre("sports");
@@ -28,7 +28,7 @@ class EventRepositoryTest {
     }
 
     @Test
-    void findByEventName() {
+    void testFindByEventName() {
         List<Event> events = eventRepository.findByEventName("race");
         for(int i = 0; i < events.size(); i ++ ){
             assertEquals("race", events.get(i).getEventName());
