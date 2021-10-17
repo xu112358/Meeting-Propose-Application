@@ -3,8 +3,10 @@ package csci310.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import csci310.entity.Event;
 import csci310.entity.User;
 import csci310.filter.LoginInterceptor;
+import csci310.repository.EventRepository;
 import csci310.repository.UserRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +36,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +56,9 @@ class UserControllerTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private EventRepository eventRepository;
 
     private MockMvc mockMvc;
 
@@ -176,6 +186,71 @@ class UserControllerTest {
         String value= (String) mvcResult.getRequest().getAttribute("error_message");
 
         Assert.assertEquals("You need to log in first!",value);
+    }
+
+    @Test
+    @Transactional
+    public void testSendInvite() throws Exception{
+        User sender = new User();
+        sender.setUsername("minyiche");
+        sender.setFirstName("Minyi");
+        sender.setLastName("Chen");
+        sender.setHashPassword("password");
+        userRepository.save(sender);
+
+        List<User> receivers = new ArrayList<>();
+
+        User receiver1 = new User();
+        receiver1.setUsername("minyiche2");
+        receiver1.setFirstName("Minyi");
+        receiver1.setLastName("Chen");
+        receiver1.setHashPassword("password");
+        userRepository.save(receiver1);
+
+        User receiver2 = new User();
+        receiver2.setUsername("minyiche3");
+        receiver2.setFirstName("Minyi");
+        receiver2.setLastName("Chen");
+        receiver2.setHashPassword("password");
+        userRepository.save(receiver2);
+
+
+        receivers.add(receiver1);
+        receivers.add(receiver2);
+
+        List<Event> events = new ArrayList<>();
+        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+
+        Event event1 = new Event();
+        event1.setEventName("event1");
+        event1.setGenre("event");
+        event1.setEventDate(eventDate);
+        event1.setLocation("LA");
+        eventRepository.save(event1);
+
+        Event event2 = new Event();
+        event2.setEventName("event2");
+        event2.setGenre("event");
+        event2.setEventDate(eventDate);
+        event2.setLocation("LA");
+        eventRepository.save(event2);
+
+        events.add(event1);
+        events.add(event2);
+
+        Map<String, Object> requestBodyMap = new LinkedHashMap<>();
+        requestBodyMap.put("sender", sender);
+        requestBodyMap.put("events", events);
+        requestBodyMap.put("receivers", receivers);
+
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(requestBodyMap);
+        System.out.println(json);
+        mockMvc.perform(MockMvcRequestBuilders.post("/send-invitation")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andExpect(status().isOk());
     }
 
 }

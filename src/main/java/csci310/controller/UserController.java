@@ -1,5 +1,7 @@
 package csci310.controller;
 
+import csci310.entity.Event;
+import csci310.entity.Invite;
 import csci310.entity.User;
 import csci310.repository.EventRepository;
 import csci310.repository.UserRepository;
@@ -94,10 +96,15 @@ public class UserController {
         }
     }
 
+    @PostMapping(value="/send-invitation")
+    public String sendInvite(@RequestBody User sender, @RequestBody List<Event> events, @RequestBody List<User> receivers, Model model) {
+        return "home";
+    }
 
 
 
 
 
 
-}
+
+    }
