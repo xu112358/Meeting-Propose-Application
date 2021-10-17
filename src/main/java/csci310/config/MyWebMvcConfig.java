@@ -16,7 +16,8 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
                 // 拦截路劲
                 .addPathPatterns("/**")
                 // 排除路径
-                .excludePathPatterns("/signin","/","/signup");
+                .excludePathPatterns("/signin","/","/signup","/**/*.css",
+                        "/**/*.js");
     }
 
     @Override
