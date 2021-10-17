@@ -192,6 +192,7 @@ class UserControllerTest {
     @Transactional
     public void testSendInvite() throws Exception{
         User sender = new User();
+        sender.setId(10001L);
         sender.setUsername("minyiche");
         sender.setFirstName("Minyi");
         sender.setLastName("Chen");
@@ -201,6 +202,7 @@ class UserControllerTest {
         List<User> receivers = new ArrayList<>();
 
         User receiver1 = new User();
+        receiver1.setId(10002L);
         receiver1.setUsername("minyiche2");
         receiver1.setFirstName("Minyi");
         receiver1.setLastName("Chen");
@@ -208,6 +210,7 @@ class UserControllerTest {
         userRepository.save(receiver1);
 
         User receiver2 = new User();
+        receiver2.setId(10003L);
         receiver2.setUsername("minyiche3");
         receiver2.setFirstName("Minyi");
         receiver2.setLastName("Chen");
@@ -222,6 +225,7 @@ class UserControllerTest {
         java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
 
         Event event1 = new Event();
+        event1.setId(10001L);
         event1.setEventName("event1");
         event1.setGenre("event");
         event1.setEventDate(eventDate);
@@ -229,6 +233,7 @@ class UserControllerTest {
         eventRepository.save(event1);
 
         Event event2 = new Event();
+        event2.setId(10002L);
         event2.setEventName("event2");
         event2.setGenre("event");
         event2.setEventDate(eventDate);
