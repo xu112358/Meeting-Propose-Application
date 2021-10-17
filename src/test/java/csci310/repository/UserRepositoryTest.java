@@ -16,7 +16,7 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
     @Test
     @Transactional
-    public void saveUser(){
+    public void testSaveUser(){
         User user1= new User();
         user1.setFirstName("Kaituo");
         user1.setUsername("kaituo");

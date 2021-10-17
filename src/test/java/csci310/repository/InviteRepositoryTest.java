@@ -19,7 +19,7 @@ class InviteRepositoryTest {
     private InviteRepository inviteRepository;
     @Test
     @Transactional
-    void sendInvite() {
+    void testSendInvite() {
         User user1= new User();
         user1.setFirstName("Kaituo");
         user1.setUsername("kaituo123");

@@ -23,7 +23,7 @@ class UserEventMapRepositoryTest {
 
     @Test
     @Transactional
-    void findEventByUserId() {
+    void testFindEventByUserId() {
 //        Event event = new Event();
 //        event.setEventName("race");
 //        event.setGenre("sports");

@@ -65,7 +65,7 @@ class UserControllerTest {
 
 
     @Test
-    public void index() throws Exception {
+    public void testIndex() throws Exception {
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/")
         ).andExpect(status().isOk());
@@ -76,7 +76,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void createSignupFormTest() throws Exception {
+    public void testCreateSignupFormTest() throws Exception {
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/signup")
         ).andExpect(status().isOk());
@@ -85,7 +85,7 @@ class UserControllerTest {
 
     @Test
     @Transactional
-    public void createUser() throws Exception {
+    public void testCreateUser() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","test");
         params.add("password","123");
@@ -116,7 +116,7 @@ class UserControllerTest {
 
     @Test
     @Transactional
-    public void signinTest() throws Exception {
+    public void testSignin() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","test");
         params.add("password","123");
@@ -160,7 +160,7 @@ class UserControllerTest {
 
     }
     @Test
-    public void logout() throws Exception {
+    public void testLogout() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","root");
         params.add("password","123");
