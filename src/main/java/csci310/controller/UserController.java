@@ -1,15 +1,16 @@
 package csci310.controller;
 
 import csci310.entity.User;
+import csci310.repository.EventRepository;
 import csci310.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Controller
@@ -17,12 +18,15 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    EventRepository eventRepository;
 
     @GetMapping({"/","/signin"})
     public String index(){
         return "signin";
     }
     @PostMapping({"/","/signin"})
+
     public String signin(@RequestParam("username") String username, @RequestParam(name="password") String password, Model model, HttpSession session){
         User user=userRepository.findByUsername(username);
         if ( user== null) {

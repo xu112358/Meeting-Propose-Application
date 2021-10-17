@@ -6,118 +6,38 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "invite")
+@Table(name = "Invite")
+@Data
+@NoArgsConstructor
 public class Invite {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "sender_id")
-    private Long senderId;
-    @Column(name = "receiver_id")
-    private Long receiverId;
-    @Column(name = "event_id")
-    private Long eventId;
+
     @Column(name = "preference")
-    private int preference;
+    private int preference; //"1-5"
     @Column(name = "availability")
-    private int availability;
+    private int availability;//"0","1","maybe?"
     @Column(name = "status")
-    private String status;
-    @Column(name = "create_time")
-    private Date createTime;
+    private String status; // "confirm", "not confirm"
+    @Column(name = "create_date", columnDefinition = "DATE")
+    @Temporal(TemporalType.DATE)
+    private Date createDate;
+    @ManyToOne
+    @JoinColumn(name = "sender_id")
+    private User sender;
 
-    public Invite() {
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_event",joinColumns = @JoinColumn(name = "invite_id"),inverseJoinColumns = @JoinColumn(name="event_id"))
+    private List<Event> invite_events_list;
 
-    public Invite(Long id, Long senderId, Long receiverId, Long eventId, int preference, int availability, String status, Date createTime) {
-        this.id = id;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
-        this.eventId = eventId;
-        this.preference = preference;
-        this.availability = availability;
-        this.status = status;
-        this.createTime = createTime;
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_receivers",joinColumns = @JoinColumn(name = "invite_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
+    private List<User> receivers;
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
-    }
-
-    public Long getReceiverId() {
-        return receiverId;
-    }
-
-    public void setReceiverId(Long receiverId) {
-        this.receiverId = receiverId;
-    }
-
-    public Long getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(Long eventId) {
-        this.eventId = eventId;
-    }
-
-    public int getPreference() {
-        return preference;
-    }
-
-    public void setPreference(int preference) {
-        this.preference = preference;
-    }
-
-    public int getAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(int availability) {
-        this.availability = availability;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    @Override
-    public String toString() {
-        return "Invite{" +
-                "id=" + id +
-                ", senderId=" + senderId +
-                ", receiverId=" + receiverId +
-                ", eventId=" + eventId +
-                ", preference=" + preference +
-                ", availability=" + availability +
-                ", status='" + status + '\'' +
-                ", createTime=" + createTime +
-                '}';
-    }
 }

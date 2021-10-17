@@ -1,64 +1,39 @@
 package csci310.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "Event")
+@Data
+@NoArgsConstructor
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "event_name", unique=true)
+    @Column(name = "event_name")
     private String eventName;
     @Column(name = "genre")
     private String genre;
-    @Column(name = "event_date")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "event_date", columnDefinition = "DATE")
     private Date eventDate;
+    private String location;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
+    private List<User> users_who_hold_event;
+
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")
+    private List<Invite> invites_which_hold_event;
 
 
-    public Event() {
-    }
-
-    public Event(Long id, String eventName, String genre, Date eventDate, List<Invite> invites) {
-        this.id = id;
-        this.eventName = eventName;
-        this.genre = genre;
-        this.eventDate = eventDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
-
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
-
-    public Date getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(Date eventDate) {
-        this.eventDate = eventDate;
-    }
 
     @Override
     public String toString() {
