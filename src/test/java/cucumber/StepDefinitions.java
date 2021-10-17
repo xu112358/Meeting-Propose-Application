@@ -5,10 +5,12 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -21,26 +23,85 @@ public class StepDefinitions {
 
 	@Given("I am on the index page")
 	public void i_am_on_the_index_page() {
-		driver.get(ROOT_URL);
+		driver.get("http://localhost:8080/");
 	}
 
-	@When("I click the link {string}")
-	public void i_click_the_link(String linkText) {
-		driver.findElement(By.linkText(linkText)).click();
+	@When("I click the sign up button")
+	public void I_click_the_sign_up_button() {
+		driver.findElement(By.xpath("//*[@id=\"signup\"]")).click();
 	}
 
-	@Then("I should see header {string}")
-	public void i_should_see_header(String header) {
-		assertTrue(driver.findElement(By.cssSelector("h2")).getText().contains(header));
+	@Then("I should be on the sign up page")
+	public void I_should_be_on_the_sign_up_page() {
+		assertTrue(driver.getCurrentUrl().equalsIgnoreCase("http://localhost:8080/signup"));
 	}
-	
-	@Then("I should see text {string}")
-	public void i_should_see_text(String text) {
-		assertTrue(driver.getPageSource().contains(text));
+
+	@Given("I am on the Sign Up page")
+	public void i_am_on_the_Sign_Up_page() {
+		driver.get("http://localhost:8080/signup");
 	}
+
+	@When("I enter {string} in Username field")
+	public void i_enter_in_Username_field(String string) {
+		driver.findElement(By.cssSelector("#username")).sendKeys(string);
+	}
+	@When("I enter {string} in Password field")
+	public void i_enter_in_Password_field(String string) {
+		driver.findElement(By.cssSelector("#password")).sendKeys(string);
+	}
+	@When("I enter {string} in Re-Password field")
+	public void i_enter_in_Re_Password_field(String string) {
+		driver.findElement(By.cssSelector("#re_password")).sendKeys(string);
+	}
+	@When("I enter {string} in First Name field")
+	public void i_enter_in_First_Name_field(String string) {
+		driver.findElement(By.cssSelector("#fname")).sendKeys(string);
+	}
+	@When("I enter {string} in Last Name field")
+	public void i_enter_in_Last_Name_field(String string) {
+		driver.findElement(By.cssSelector("#lname")).sendKeys(string);
+	}
+	@When("I press create account button")
+	public void i_press_create_account_button() {
+		driver.findElement(By.cssSelector("#signup")).click();
+	}
+	@Then("I should sign up unsuccesfully")
+	public void i_should_sign_up_unsuccesfully() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("Username is taken. Try another one.", text);
+	}
+	@Then("I should sign up succesfully")
+	public void i_should_sign_up_succesfully() {
+		String text = driver.findElement(By.cssSelector("#success")).getText();
+		assertEquals("Sign Up Successfully!", text);
+	}
+	@Given("I am on the sign in page")
+	public void i_am_on_the_sign_in_page() {
+		driver.get("http://localhost:8080/signin");
+	}
+	@When("I click sign in button")
+	public void i_click_sign_in_button() {
+		driver.findElement(By.cssSelector("#signin")).click();
+	}
+	@Then("I should log in successfully")
+	public void i_should_log_in_successfully() {
+		String text = driver.findElement(By.cssSelector("#success")).getText();
+		assertEquals("Login successfully", text);
+	}
+	@Then("username and password do not match log in unsuccessful")
+	public void username_and_password_do_not_match_log_in_unsuccessful() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("Username and password do not match!", text);
+	}
+
 
 	@After()
-	public void after() {
+	public void cleanup() {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		driver.quit();
 	}
 }
