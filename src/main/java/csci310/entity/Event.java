@@ -1,11 +1,14 @@
 package csci310.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +16,7 @@ import java.util.List;
 @Table(name = "Event")
 @Data
 @NoArgsConstructor
-public class Event {
+public class Event implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -23,15 +26,17 @@ public class Event {
     private String genre;
     @Temporal(TemporalType.DATE)
     @Column(name = "event_date", columnDefinition = "DATE")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
     private Date eventDate;
+    @Column(name = "location")
     private String location;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
-    private List<User> users_who_hold_event;
+    private List<User> users_who_hold_event = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")
-    private List<Invite> invites_which_hold_event;
+    private List<Invite> invites_which_hold_event = new ArrayList<>();;
 
 
 

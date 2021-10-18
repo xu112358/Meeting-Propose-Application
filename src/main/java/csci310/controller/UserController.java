@@ -1,9 +1,12 @@
 package csci310.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
+import csci310.model.InviteModel;
 import csci310.repository.EventRepository;
+import csci310.repository.InviteRepository;
 import csci310.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,7 +16,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class UserController {
@@ -22,6 +28,9 @@ public class UserController {
     UserRepository userRepository;
     @Autowired
     EventRepository eventRepository;
+    @Autowired
+    InviteRepository inviteRepository;
+
 
     @GetMapping({"/","/signin"})
     public String index(){
@@ -97,7 +106,40 @@ public class UserController {
     }
 
     @PostMapping(value="/send-invitation")
-    public String sendInvite(@RequestBody User sender, @RequestBody List<Event> events, @RequestBody List<User> receivers, Model model) {
+    public String sendInvite(@RequestBody InviteModel inviteModel, Model model) {
+        String senderUsername = inviteModel.getSender();
+        List<String> receiversUsername = inviteModel.getReceivers();
+        String inviteName = inviteModel.getInvite_name();
+        User sender = userRepository.findByUsername(senderUsername);
+        List<Event> events = inviteModel.getEvents();
+        List<User> receivers = new ArrayList<>();
+        for(String receiverUsername : receiversUsername){
+            receivers.add(userRepository.findByUsername(receiverUsername));
+        }
+        List<Event> tmp = new ArrayList<>();
+        List<Invite> invites = new ArrayList<>();
+        for(Event event : events){
+            System.out.println(event);
+            event.getUsers_who_hold_event().add(sender);
+            eventRepository.save(event);
+            event = eventRepository.findTopByOrderByIdDesc();
+            tmp.add(event);
+            //add event to receiver
+        }
+        events = tmp;
+        for(int i = 0; i < receivers.size(); i ++){
+            Invite invite = new Invite();
+            invite.setStatus("not comfirmed");
+            invite.setSender(sender);
+            invite.getReceivers().add(receivers.get(i));
+            invite.setInviteName(inviteName);
+            invite.setCreateDate(new Date());
+            for(int j = 0; j < events.size(); j ++){
+                invite.getInvite_events_list().add(events.get(j));
+            }
+            inviteRepository.save(invite);
+        }
+        model.addAttribute("message", "Invite Sent");
         return "home";
     }
 

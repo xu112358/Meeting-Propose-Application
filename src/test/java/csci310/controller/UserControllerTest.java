@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import csci310.entity.Event;
 import csci310.entity.User;
 import csci310.filter.LoginInterceptor;
+import csci310.model.InviteModel;
 import csci310.repository.EventRepository;
+import csci310.repository.InviteRepository;
 import csci310.repository.UserRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +36,7 @@ import org.springframework.util.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import java.util.ArrayList;
@@ -41,6 +44,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,16 +65,23 @@ class UserControllerTest {
     @Mock
     private EventRepository eventRepository;
 
+    @Mock
+    InviteRepository inviteRepository;
+
+    @Mock
+    HttpSession session;
+
     private MockMvc mockMvc;
 
     @Autowired
     private LoginInterceptor loginInterceptor;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         //mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
 
@@ -191,35 +203,11 @@ class UserControllerTest {
     @Test
     @Transactional
     public void testSendInvite() throws Exception{
-        User sender = new User();
-        sender.setId(10001L);
-        sender.setUsername("minyiche");
-        sender.setFirstName("Minyi");
-        sender.setLastName("Chen");
-        sender.setHashPassword("password");
-        userRepository.save(sender);
-
-        List<User> receivers = new ArrayList<>();
-
-        User receiver1 = new User();
-        receiver1.setId(10002L);
-        receiver1.setUsername("minyiche2");
-        receiver1.setFirstName("Minyi");
-        receiver1.setLastName("Chen");
-        receiver1.setHashPassword("password");
-        userRepository.save(receiver1);
-
-        User receiver2 = new User();
-        receiver2.setId(10003L);
-        receiver2.setUsername("minyiche3");
-        receiver2.setFirstName("Minyi");
-        receiver2.setLastName("Chen");
-        receiver2.setHashPassword("password");
-        userRepository.save(receiver2);
+        List<String> receivers = new ArrayList<>();
 
 
-        receivers.add(receiver1);
-        receivers.add(receiver2);
+        receivers.add("minyiche2");
+        receivers.add("minyiche3");
 
         List<Event> events = new ArrayList<>();
         java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
@@ -243,19 +231,21 @@ class UserControllerTest {
         events.add(event1);
         events.add(event2);
 
-        Map<String, Object> requestBodyMap = new LinkedHashMap<>();
-        requestBodyMap.put("sender", sender);
-        requestBodyMap.put("events", events);
-        requestBodyMap.put("receivers", receivers);
+        InviteModel inviteModel = new InviteModel();
+        inviteModel.setSender("minyiche1");
+        inviteModel.setInvite_name("invite");
+        inviteModel.setReceivers(receivers);
+        inviteModel.setEvents(events);
+
 
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(requestBodyMap);
-        System.out.println(json);
+        String json = ow.writeValueAsString(inviteModel);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invitation")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isOk());
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.model().attribute("message", "Invite Sent"));
     }
 
 }
