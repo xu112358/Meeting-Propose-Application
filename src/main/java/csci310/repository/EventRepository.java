@@ -13,6 +13,8 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     List<Event> findByEventName(String eventName);
+
     List<Event> findAllByEventDateBetween(Date startDate, Date endDate);
 
+    Event findTopByOrderByIdDesc();
 }

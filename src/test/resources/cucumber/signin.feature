@@ -1,6 +1,6 @@
 Feature: Sign In
 
-  #Scenario: Sign in
+  #Scenario: Sign in successfully
   #  Given I am on the sign in page
   #  When I enter "username" in Username field
   #  When I enter "password" in Password field

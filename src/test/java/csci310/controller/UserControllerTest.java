@@ -3,8 +3,12 @@ package csci310.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import csci310.entity.Event;
 import csci310.entity.User;
 import csci310.filter.LoginInterceptor;
+import csci310.model.InviteModel;
+import csci310.repository.EventRepository;
+import csci310.repository.InviteRepository;
 import csci310.repository.UserRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,8 +36,16 @@ import org.springframework.util.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,16 +62,26 @@ class UserControllerTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private EventRepository eventRepository;
+
+    @Mock
+    InviteRepository inviteRepository;
+
+    @Mock
+    HttpSession session;
+
     private MockMvc mockMvc;
 
     @Autowired
     private LoginInterceptor loginInterceptor;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         //mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
 
@@ -176,6 +198,54 @@ class UserControllerTest {
         String value= (String) mvcResult.getRequest().getAttribute("error_message");
 
         Assert.assertEquals("You need to log in first!",value);
+    }
+
+    @Test
+    @Transactional
+    public void testSendInvite() throws Exception{
+        List<String> receivers = new ArrayList<>();
+
+
+        receivers.add("minyiche2");
+        receivers.add("minyiche3");
+
+        List<Event> events = new ArrayList<>();
+        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+
+        Event event1 = new Event();
+        event1.setId(10001L);
+        event1.setEventName("event1");
+        event1.setGenre("event");
+        event1.setEventDate(eventDate);
+        event1.setLocation("LA");
+        eventRepository.save(event1);
+
+        Event event2 = new Event();
+        event2.setId(10002L);
+        event2.setEventName("event2");
+        event2.setGenre("event");
+        event2.setEventDate(eventDate);
+        event2.setLocation("LA");
+        eventRepository.save(event2);
+
+        events.add(event1);
+        events.add(event2);
+
+        InviteModel inviteModel = new InviteModel();
+        inviteModel.setSender("minyiche1");
+        inviteModel.setInvite_name("invite");
+        inviteModel.setReceivers(receivers);
+        inviteModel.setEvents(events);
+
+
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(inviteModel);
+        mockMvc.perform(MockMvcRequestBuilders.post("/send-invitation")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.model().attribute("message", "Invite Sent"));
     }
 
 }

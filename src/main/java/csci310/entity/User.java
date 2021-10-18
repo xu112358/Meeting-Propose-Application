@@ -4,6 +4,7 @@ import lombok.*;
 
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,13 +26,13 @@ public class User {
     private String hashPassword;
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "users_who_hold_event")
-    private List<Event> user_events_list;
+    private List<Event> user_events_list = new ArrayList<>();;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<Invite> send_invites_list;
+    private List<Invite> send_invites_list = new ArrayList<>();;
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "receivers")
-    private List<Invite> receive_invites_list;
+    private List<Invite> receive_invites_list = new ArrayList<>();;
 
 
 
