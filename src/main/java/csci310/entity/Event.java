@@ -30,10 +30,7 @@ public class Event implements Serializable {
     private Date eventDate;
     @Column(name = "location")
     private String location;
-    @Column(name = "preference")
-    private int preference; //"1-5"
-    @Column(name = "availability")
-    private int availability;//"0","1","maybe?"
+
 
 
     @ManyToMany(cascade = CascadeType.ALL)

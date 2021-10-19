@@ -29,6 +29,10 @@ public class Invite {
     private Date createDate;
     @Column(name = "invite_name")
     private String inviteName;
+    @Column(name = "preference")
+    private int preference; //"1-5"
+    @Column(name = "availability")
+    private int availability;//"0","1","maybe?"
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
