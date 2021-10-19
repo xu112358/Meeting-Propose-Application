@@ -30,10 +30,14 @@ public class Event implements Serializable {
     private Date eventDate;
     @Column(name = "location")
     private String location;
+    @Column(name = "preference")
+    private int preference; //"1-5"
+    @Column(name = "availability")
+    private int availability;//"0","1","maybe?"
 
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
+    @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
     private List<User> users_who_hold_event = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")

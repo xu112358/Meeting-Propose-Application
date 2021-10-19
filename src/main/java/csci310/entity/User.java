@@ -28,7 +28,7 @@ public class User {
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "users_who_hold_event")
     private List<Event> user_events_list = new ArrayList<>();;
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Invite> send_invites_list = new ArrayList<>();;
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "receivers")
