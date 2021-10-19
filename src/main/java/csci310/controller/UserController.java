@@ -16,10 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class UserController {
@@ -77,7 +74,6 @@ public class UserController {
 
     @RequestMapping(value="/signup", method = RequestMethod.GET)
     public String createSignupForm(Model model) {
-
         return "signup";
     }
 
@@ -105,8 +101,9 @@ public class UserController {
         }
     }
 
-    @PostMapping(value="/send-invitation")
-    public String sendInvite(@RequestBody InviteModel inviteModel, Model model) {
+    @PostMapping(value="/send-invite")
+    @ResponseBody
+    public Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
         String senderUsername = inviteModel.getSender();
         List<String> receiversUsername = inviteModel.getReceivers();
         String inviteName = inviteModel.getInvite_name();
@@ -139,8 +136,15 @@ public class UserController {
             }
             inviteRepository.save(invite);
         }
-        model.addAttribute("message", "Invite Sent");
-        return "home";
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put("message", "Invite Sent");
+        return responseMap;
+    }
+
+    @GetMapping(value="/find-user-invite")
+    @ResponseBody
+    public List<Invite> findUserInvite(@RequestParam("username") String username) {
+        return null;
     }
 
 
@@ -148,5 +152,4 @@ public class UserController {
 
 
 
-
-    }
+}
