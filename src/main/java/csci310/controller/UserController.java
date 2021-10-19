@@ -144,7 +144,8 @@ public class UserController {
     @GetMapping(value="/find-user-invite")
     @ResponseBody
     public List<Invite> findUserInvite(@RequestParam("username") String username) {
-        return null;
+        System.out.println(userRepository.findByUsername(username).getSend_invites_list());
+        return userRepository.findByUsername(username).getSend_invites_list();
     }
 
 

@@ -39,10 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -77,11 +74,27 @@ class UserControllerTest {
     private LoginInterceptor loginInterceptor;
 
     @BeforeEach
+    @Transactional
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         //mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        User sender = new User();
+        sender.setUsername("minyiche1");
+        sender.setLastName("Chen");
+        sender.setFirstName("Minyi");
+        sender.setHashPassword("password");
+        userRepository.save(sender);
+
+        User receiver = new User();
+        receiver.setUsername("minyiche2");
+        receiver.setLastName("Chen");
+        receiver.setFirstName("Minyi");
+        receiver.setHashPassword("password");
+        userRepository.save(receiver);
+        receiver.setUsername("minyiche3");
+        userRepository.save(receiver);
     }
 
 
@@ -237,29 +250,36 @@ class UserControllerTest {
 
 
 
+
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
+
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put("message", "Invite Sent");
+        String jsonResponse = ow.writeValueAsString(responseMap);
+
         System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\": \"Invite Sent\"}"));
+                .andExpect(MockMvcResultMatchers.content().json(jsonResponse));
     }
 
 
     @Test
     @Transactional
     public void testFindUserInvite() throws Exception{
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","minyiche1");
 
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite").params(params)).andReturn();
+        mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
+                        .param("username", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0]").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName").value("invite"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1]").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName").value("invite"));
 
-        int status = mvcResult.getResponse().getStatus();
-
-        //ModelMap map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals(200,status);
 
     }
 
