@@ -213,7 +213,6 @@ class UserControllerTest {
         java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
 
         Event event1 = new Event();
-        event1.setId(10001L);
         event1.setEventName("event1");
         event1.setGenre("event");
         event1.setEventDate(eventDate);
@@ -221,7 +220,6 @@ class UserControllerTest {
         eventRepository.save(event1);
 
         Event event2 = new Event();
-        event2.setId(10002L);
         event2.setEventName("event2");
         event2.setGenre("event");
         event2.setEventDate(eventDate);
@@ -241,11 +239,30 @@ class UserControllerTest {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invitation")
+        System.out.println(json);
+        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.model().attribute("message", "Invite Sent"));
+                .andExpect(MockMvcResultMatchers.content().json("{\"message\": \"Invite Sent\"}"));
     }
+
+
+    @Test
+    @Transactional
+    public void testFindUserInvite() throws Exception{
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","minyiche1");
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite").params(params)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+
+        //ModelMap map=mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals(200,status);
+
+    }
+
+
 
 }

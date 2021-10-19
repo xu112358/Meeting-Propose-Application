@@ -24,12 +24,13 @@ public class Event implements Serializable {
     private String eventName;
     @Column(name = "genre")
     private String genre;
-    @Temporal(TemporalType.DATE)
     @Column(name = "event_date", columnDefinition = "DATE")
+    @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
     private Date eventDate;
     @Column(name = "location")
     private String location;
+
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
