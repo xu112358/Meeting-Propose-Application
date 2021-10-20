@@ -242,7 +242,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\": \"Invite Sent\"}"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Sent")));
     }
 
 
