@@ -13,7 +13,7 @@ Run the Maven lifecycle phase *test*.  This will run all unit tests and output t
 
 **To run your web application during development:**
 
-Run the Maven goal *jetty:run*.  Your web application will launch and be hosted on http://localhost:8080.  The Jetty container scans for code updates every 5 seconds and will automatically update the web app with new changes. 
+Run the Maven goal *spring-boot:run*.  Your web application will launch and be hosted on http://localhost:8080.  The Jetty container scans for code updates every 5 seconds and will automatically update the web app with new changes. 
 
 **To run acceptance tests:**
 

@@ -1,64 +1,50 @@
 package csci310.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "Event")
-public class Event {
+@Data
+@NoArgsConstructor
+public class Event implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "event_name", unique=true)
+    @Column(name = "event_name")
     private String eventName;
     @Column(name = "genre")
     private String genre;
-    @Column(name = "event_date")
+    @Column(name = "event_date", columnDefinition = "DATE")
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
     private Date eventDate;
+    @Column(name = "location")
+    private String location;
+    @Column(name = "preference")
+    private int preference; //"1-5"
+    @Column(name = "availability")
+    private int availability;//"0","1","maybe?"
 
 
-    public Event() {
-    }
 
-    public Event(Long id, String eventName, String genre, Date eventDate, List<Invite> invites) {
-        this.id = id;
-        this.eventName = eventName;
-        this.genre = genre;
-        this.eventDate = eventDate;
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    private List<User> users_who_hold_event = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")
+    private List<Invite> invites_which_hold_event = new ArrayList<>();;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public String getEventName() {
-        return eventName;
-    }
-
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
-
-    public Date getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(Date eventDate) {
-        this.eventDate = eventDate;
-    }
 
     @Override
     public String toString() {

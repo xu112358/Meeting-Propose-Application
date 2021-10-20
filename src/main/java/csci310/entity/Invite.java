@@ -1,47 +1,46 @@
 package csci310.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "invite")
+@Table(name = "Invite")
+@NoArgsConstructor
 public class Invite {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "sender_id")
-    private Long senderId;
-    @Column(name = "receiver_id")
-    private Long receiverId;
-    @Column(name = "event_id")
-    private Long eventId;
-    @Column(name = "preference")
-    private int preference;
-    @Column(name = "availability")
-    private int availability;
+
     @Column(name = "status")
-    private String status;
-    @Column(name = "create_time")
-    private Date createTime;
+    private String status; // "confirm", "not confirm"
+    @Column(name = "create_date", columnDefinition = "DATE")
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
+    private Date createDate;
+    @Column(name = "invite_name")
+    private String inviteName;
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "sender_id", referencedColumnName = "id")
+    private User sender;
 
-    public Invite() {
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_event",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="event_id", referencedColumnName = "id"))
+    private List<Event> invite_events_list = new ArrayList<>();
 
-    public Invite(Long id, Long senderId, Long receiverId, Long eventId, int preference, int availability, String status, Date createTime) {
-        this.id = id;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
-        this.eventId = eventId;
-        this.preference = preference;
-        this.availability = availability;
-        this.status = status;
-        this.createTime = createTime;
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_receivers",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    private List<User> receivers = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -49,46 +48,6 @@ public class Invite {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
-    }
-
-    public Long getReceiverId() {
-        return receiverId;
-    }
-
-    public void setReceiverId(Long receiverId) {
-        this.receiverId = receiverId;
-    }
-
-    public Long getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(Long eventId) {
-        this.eventId = eventId;
-    }
-
-    public int getPreference() {
-        return preference;
-    }
-
-    public void setPreference(int preference) {
-        this.preference = preference;
-    }
-
-    public int getAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(int availability) {
-        this.availability = availability;
     }
 
     public String getStatus() {
@@ -99,25 +58,43 @@ public class Invite {
         this.status = status;
     }
 
-    public Date getCreateTime() {
-        return createTime;
+    public Date getCreateDate() {
+        return createDate;
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
-    @Override
-    public String toString() {
-        return "Invite{" +
-                "id=" + id +
-                ", senderId=" + senderId +
-                ", receiverId=" + receiverId +
-                ", eventId=" + eventId +
-                ", preference=" + preference +
-                ", availability=" + availability +
-                ", status='" + status + '\'' +
-                ", createTime=" + createTime +
-                '}';
+    public String getInviteName() {
+        return inviteName;
+    }
+
+    public void setInviteName(String inviteName) {
+        this.inviteName = inviteName;
+    }
+    @JsonIgnore
+    public User getSender() {
+        return sender;
+    }
+    @JsonIgnore
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
+    @JsonIgnore
+    public List<Event> getInvite_events_list() {
+        return invite_events_list;
+    }
+    @JsonIgnore
+    public void setInvite_events_list(List<Event> invite_events_list) {
+        this.invite_events_list = invite_events_list;
+    }
+    @JsonIgnore
+    public List<User> getReceivers() {
+        return receivers;
+    }
+    @JsonIgnore
+    public void setReceivers(List<User> receivers) {
+        this.receivers = receivers;
     }
 }
