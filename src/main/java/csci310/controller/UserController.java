@@ -102,8 +102,7 @@ public class UserController {
     }
 
     @PostMapping(value="/send-invite")
-    @ResponseBody
-    public Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
+    public @ResponseBody Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
         String senderUsername = inviteModel.getSender();
         List<String> receiversUsername = inviteModel.getReceivers();
         String inviteName = inviteModel.getInvite_name();
@@ -140,8 +139,7 @@ public class UserController {
     }
 
     @GetMapping(value="/find-user-invite")
-    @ResponseBody
-    public List<Invite> findUserInvite(@RequestParam("username") String username) {
+    public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
         return userRepository.findByUsername(username).getSend_invites_list();
     }
 

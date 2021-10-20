@@ -27,6 +27,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.ModelMap;
@@ -41,6 +42,8 @@ import javax.transaction.Transactional;
 
 import java.util.*;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -194,24 +197,6 @@ class UserControllerTest {
         Assert.assertEquals(200,status);
 
     }
-    @Test
-    public void testLogout() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","root");
-        params.add("password","123");
-
-
-        MvcResult mvcResult= mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
-        MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
-        mockMvc.perform(MockMvcRequestBuilders.get("/logout").session(session)).andExpect(redirectedUrl("/signin")).andExpect(status().isFound());
-    }
-    @Test
-    public void access_home_without_login() throws Exception{
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/home")).andReturn();
-        String value= (String) mvcResult.getRequest().getAttribute("error_message");
-
-        Assert.assertEquals("You need to log in first!",value);
-    }
 
     @Test
     @Transactional
@@ -248,22 +233,16 @@ class UserControllerTest {
         inviteModel.setReceivers(receivers);
         inviteModel.setEvents(events);
 
-
-
-
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("message", "Invite Sent");
-        String jsonResponse = ow.writeValueAsString(responseMap);
 
         System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json(jsonResponse));
+                .andExpect(MockMvcResultMatchers.content().json("{\"message\": \"Invite Sent\"}"));
     }
 
 
@@ -273,16 +252,32 @@ class UserControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
                         .param("username", "minyiche1")
+                        .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0]").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName").value("invite"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1]").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName").value("invite"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("invite")));
 
 
     }
 
+    @Test
+    public void testLogout() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","root");
+        params.add("password","123");
 
+
+        MvcResult mvcResult= mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
+        mockMvc.perform(MockMvcRequestBuilders.get("/logout").session(session)).andExpect(redirectedUrl("/signin")).andExpect(status().isFound());
+    }
+
+    @Test
+    public void access_home_without_login() throws Exception{
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/home")).andReturn();
+        String value= (String) mvcResult.getRequest().getAttribute("error_message");
+
+        Assert.assertEquals("You need to log in first!",value);
+    }
 
 }
