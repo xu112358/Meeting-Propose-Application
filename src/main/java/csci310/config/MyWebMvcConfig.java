@@ -9,22 +9,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Configuration
 public class MyWebMvcConfig implements WebMvcConfigurer {
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        // TODO Auto-generated method stub
-//        registry.addInterceptor(new LoginInterceptor())
-//                // 拦截路劲
-//                .addPathPatterns("/**")
-//                // 排除路径
-//                .excludePathPatterns("/signin","/","/signup","/**/*.css",
-//                        "/**/*.js");
-//    }
-//
-//    @Override
-//    public void addViewControllers(ViewControllerRegistry registry) {
-//        registry.addViewController("/home").setViewName("home");
-//    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // TODO Auto-generated method stub
+        registry.addInterceptor(new LoginInterceptor())
+                // 拦截路劲
+                .addPathPatterns("/**")
+                // 排除路径
+                .excludePathPatterns("/signin","/","/signup","/**/*.css",
+                        "/**/*.js");
+    }
 
-
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/home").setViewName("home");
+    }
 
 }
