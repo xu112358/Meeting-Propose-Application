@@ -75,6 +75,11 @@ public class StepDefinitions {
 		String text = driver.findElement(By.cssSelector("#success")).getText();
 		assertEquals("Sign Up Successfully!", text);
 	}
+	@Then("Signup Password Mismatch")
+	public void password_mismatch() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("Two passwords are not matching!", text);
+	}
 	@Given("I am on the sign in page")
 	public void i_am_on_the_sign_in_page() {
 		driver.get("http://localhost:8080/signin");
@@ -83,15 +88,35 @@ public class StepDefinitions {
 	public void i_click_sign_in_button() {
 		driver.findElement(By.cssSelector("#signin")).click();
 	}
+	@When("I click Log Out button")
+	public void click_logout_button() {
+		//driver.findElement(By.linkText("../logout")).click();
+		driver.findElement(By.xpath("//*[@id=\"navbarNav\"]/ul/li[4]/a")).click();
+	}
 	@Then("I should log in successfully")
 	public void i_should_log_in_successfully() {
-		String text = driver.findElement(By.cssSelector("#success")).getText();
-		assertEquals("Login successfully", text);
+		String text = driver.findElement(By.cssSelector("#add-button")).getText();
+		assertEquals("Add Event", text);
 	}
 	@Then("username and password do not match log in unsuccessful")
 	public void username_and_password_do_not_match_log_in_unsuccessful() {
 		String text = driver.findElement(By.cssSelector("#warning")).getText();
 		assertEquals("Username and password do not match!", text);
+	}
+	@Then("username or password is empty")
+	public void username_or_password_is_empty() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("Username or Password is empty!", text);
+	}
+	@Then("Fill up all inputs")
+	public void fill_all_inputs() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("You need to fill up all the inputs!", text);
+	}
+	@Then("I am on the logout page")
+	public void on_logout_page() {
+		String text = driver.findElement(By.cssSelector("#warning")).getText();
+		assertEquals("You need to log in first!", text);
 	}
 
 
