@@ -35,15 +35,6 @@ class EventRepositoryTest {
 //        eventRepository.save(event);
 //        System.out.println(event);
     }
-
-    @Test
-    void testFindByEventName() {
-        List<Event> events = eventRepository.findByEventName("race");
-        for(int i = 0; i < events.size(); i ++ ){
-            assertEquals("race", events.get(i).getEventName());
-            System.out.println(events.get(i));
-        }
-    }
     @Test
     void testEventDateBetween() {
 
@@ -69,7 +60,5 @@ class EventRepositoryTest {
         userRepository.save(user0);
         User user1=userRepository.findByUsername("root");
         System.out.println(user1.getUser_events_list());
-
-
     }
 }
