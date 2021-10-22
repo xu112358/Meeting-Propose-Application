@@ -265,8 +265,6 @@ class UserControllerTest {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","root");
         params.add("password","123");
-
-
         MvcResult mvcResult= mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
         MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
         mockMvc.perform(MockMvcRequestBuilders.get("/logout").session(session)).andExpect(redirectedUrl("/signin")).andExpect(status().isFound());
@@ -284,7 +282,10 @@ class UserControllerTest {
     public void testEventSearch() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
                         .param("username", "minyiche1")
-                        .param("eventName", "test")
-                ).andExpect(status().isOk());
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
     }
 }

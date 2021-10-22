@@ -144,10 +144,7 @@ public class UserController {
     }
 
     @GetMapping(value="/search-event")
-    public String eventSearch(@RequestParam("eventname") String eventName, @RequestParam("username") String username, Model model) {
-
-        return "signin";
+    public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
+        return userRepository.findByUsername(username).getUser_events_list();
     }
-
-
 }
