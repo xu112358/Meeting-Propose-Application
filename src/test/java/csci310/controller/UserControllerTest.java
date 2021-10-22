@@ -280,4 +280,11 @@ class UserControllerTest {
         Assert.assertEquals("You need to log in first!",value);
     }
 
+    @Test
+    public void testEventSearch() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
+                        .param("username", "minyiche1")
+                        .param("eventName", "test")
+                ).andExpect(status().isOk());
+    }
 }
