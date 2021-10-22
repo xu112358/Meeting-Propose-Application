@@ -143,5 +143,8 @@ public class UserController {
         return userRepository.findByUsername(username).getSend_invites_list();
     }
 
-
+    @GetMapping(value="/search-event")
+    public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
+        return userRepository.findByUsername(username).getUser_events_list();
+    }
 }
