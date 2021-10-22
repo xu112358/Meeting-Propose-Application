@@ -15,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "Invite")
-@NoArgsConstructor
 public class Invite {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

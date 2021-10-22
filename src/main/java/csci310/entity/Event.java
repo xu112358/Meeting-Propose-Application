@@ -1,6 +1,7 @@
 package csci310.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "Event")
-@Data
-@NoArgsConstructor
 public class Event implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -44,15 +43,64 @@ public class Event implements Serializable {
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")
     private List<Invite> invites_which_hold_event = new ArrayList<>();;
 
+    public Event() {
+
+    }
 
 
-    @Override
-    public String toString() {
-        return "Event{" +
-                "id=" + id +
-                ", eventName='" + eventName + '\'' +
-                ", genre='" + genre + '\'' +
-                ", eventDate=" + eventDate +
-                '}';
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public Date getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    @JsonIgnore
+    public List<User> getUsers_who_hold_event() {
+        return users_who_hold_event;
+    }
+    @JsonIgnore
+    public void setUsers_who_hold_event(List<User> users_who_hold_event) {
+        this.users_who_hold_event = users_who_hold_event;
+    }
+    @JsonIgnore
+    public List<Invite> getInvites_which_hold_event() {
+        return invites_which_hold_event;
+    }
+    @JsonIgnore
+    public void setInvites_which_hold_event(List<Invite> invites_which_hold_event) {
+        this.invites_which_hold_event = invites_which_hold_event;
     }
 }
