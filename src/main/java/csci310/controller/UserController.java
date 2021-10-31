@@ -143,4 +143,9 @@ public class UserController {
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
         return userRepository.findByUsername(username).getUser_events_list();
     }
+
+    @PostMapping(value="/finalize-invite")
+    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("username") String username, @RequestParam("invite_id") String inviteId) {
+        return new HashMap<>();
+    }
 }

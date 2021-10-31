@@ -131,7 +131,6 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
 
         ModelMap map=mvcResult.getModelAndView().getModelMap();
-        System.out.println(map);
         Assert.assertEquals("Sign Up Successfully!",map.get("message"));
 
         Assert.assertEquals(200,status);
@@ -167,7 +166,6 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
 
         ModelMap map=mvcResult.getModelAndView().getModelMap();
-        System.out.println(map);
         Assert.assertEquals("Username does not exist!",map.get("error_message"));
         Assert.assertEquals("123",map.get("password"));
         Assert.assertEquals("test",map.get("username"));
@@ -261,6 +259,19 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
+    }
+
+    @Test
+    public void testFinalizeInvite() throws Exception {
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","minyiche1");
+        params.add("invite_id","6");
+        mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk());
     }
 
     @Test
