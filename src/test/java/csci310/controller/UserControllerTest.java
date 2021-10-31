@@ -85,15 +85,11 @@ class UserControllerTest {
         //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         User sender = new User();
         sender.setUsername("minyiche1");
-        sender.setLastName("Chen");
-        sender.setFirstName("Minyi");
         sender.setHashPassword("password");
         userRepository.save(sender);
 
         User receiver = new User();
         receiver.setUsername("minyiche2");
-        receiver.setLastName("Chen");
-        receiver.setFirstName("Minyi");
         receiver.setHashPassword("password");
         userRepository.save(receiver);
         receiver.setUsername("minyiche3");
@@ -203,7 +199,6 @@ class UserControllerTest {
     public void testSendInvite() throws Exception{
         List<String> receivers = new ArrayList<>();
 
-
         receivers.add("minyiche2");
         receivers.add("minyiche3");
 
@@ -236,7 +231,6 @@ class UserControllerTest {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
 
-        System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +238,6 @@ class UserControllerTest {
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Sent")));
     }
-
 
     @Test
     @Transactional
@@ -254,10 +247,20 @@ class UserControllerTest {
                         .param("username", "minyiche1")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("invite")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
 
 
+    }
+
+    @Test
+    public void testEventSearch() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
+                        .param("username", "minyiche2")
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
     }
 
     @Test
@@ -276,16 +279,5 @@ class UserControllerTest {
         String value= (String) mvcResult.getRequest().getAttribute("error_message");
 
         Assert.assertEquals("You need to log in first!",value);
-    }
-
-    @Test
-    public void testEventSearch() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
-                        .param("username", "minyiche1")
-                        .sessionAttr("loginUser", "minyiche1")
-                )
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
     }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface InviteRepository extends JpaRepository<Invite, Long> {
-    List<Invite> findByStatus(String status);
 
     Invite findTopByOrderByIdDesc();
 

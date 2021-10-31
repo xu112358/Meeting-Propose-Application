@@ -79,12 +79,10 @@ public class UserController {
 
 
     @PostMapping(value="/signup")
-    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password,@RequestParam(name="fname") String fname,@RequestParam(name="lname") String lname, Model model) {
+    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) {
 
         User user=new User();
         user.setUsername(username);
-        user.setFirstName(fname);
-        user.setLastName(lname);
         user.setHashPassword(password);
 
         if (userRepository.findByUsername(user.getUsername()) == null) {
@@ -112,26 +110,24 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
-        List<Event> tmp = new ArrayList<>();
-        List<Invite> invites = new ArrayList<>();
-        for(Event event : events){
-            eventRepository.save(event);
-            event = eventRepository.findTopByOrderByIdDesc();
-            tmp.add(event);
-            //add event to receiver
-        }
-        events = tmp;
+        Invite invite = new Invite();
+        invite.setInviteName(inviteName);
+        invite.setCreateDate(new Date());
+        invite.setSender(sender);
+        invite.setReceivers((receivers));
+        inviteRepository.save(invite);
+        //can cause problem with multithreaded server
+        invite = inviteRepository.findTopByOrderByIdDesc();
         for(int i = 0; i < receivers.size(); i ++){
-            Invite invite = new Invite();
-            invite.setStatus("not comfirmed");
-            invite.setSender(sender);
-            invite.getReceivers().add(receivers.get(i));
-            invite.setInviteName(inviteName);
-            invite.setCreateDate(new Date());
             for(int j = 0; j < events.size(); j ++){
-                invite.getInvite_events_list().add(events.get(j));
+                Event event = new Event(events.get(j));
+                event.setStatus("not comfirmed");
+                event.setInvites_which_hold_event(new ArrayList<Invite>(
+                        Arrays.asList(invite)));
+                event.setUsers_who_hold_event(new ArrayList<User>(
+                        Arrays.asList(receivers.get(i))));
+                eventRepository.save(event);
             }
-            inviteRepository.save(invite);
         }
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("message", "Invite Sent");
