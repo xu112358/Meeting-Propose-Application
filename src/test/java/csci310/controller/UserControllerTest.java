@@ -124,8 +124,8 @@ class UserControllerTest {
         params.add("username","test");
         params.add("password","123");
         params.add("re_password","123");
-        params.add("fname","tommy");
-        params.add("lname","trojan");
+//        params.add("fname","tommy");
+//        params.add("lname","trojan");
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signup").params(params)).andReturn();
         int status = mvcResult.getResponse().getStatus();
