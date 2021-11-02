@@ -252,16 +252,23 @@ class UserControllerTest {
 
     @Test
     public void testEventSearch() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
-                        .param("username", "minyiche2")
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","minyiche3");
+        params.add("invite_id","6");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/search-event-by-invite-and-username")
+                        .params(params)
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", is(9)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", is(10))); //this can be changed with regard to data in database
     }
 
     @Test
+    @Transactional
     public void testFinalizeInvite() throws Exception {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
