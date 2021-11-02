@@ -143,4 +143,11 @@ public class UserController {
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
         return userRepository.findByUsername(username).getUser_events_list();
     }
+
+    @PostMapping(value="/logout")
+    public String addBlockedUser(Model model,HttpSession session){
+        return "redirect:/signin";
+
+    }
+
 }

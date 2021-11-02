@@ -280,4 +280,14 @@ class UserControllerTest {
 
         Assert.assertEquals("You need to log in first!",value);
     }
+    @Test
+    void testAddBlockedUser()  throws Exception{
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","test");
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user").params(params)).andReturn();
+
+        ModelMap map=mvcResult.getModelAndView().getModelMap();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(200,status);
+    }
 }
