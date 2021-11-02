@@ -298,4 +298,28 @@ class UserControllerTest {
 
         Assert.assertEquals("You need to log in first!",value);
     }
+
+
+    @Test
+    public void testUsernameStartingWith() throws Exception {
+        String json="{\"name\":\"r\"}";
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andReturn();
+        String response_json=mvcResult.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, List<String>> map = mapper.readValue(response_json, Map.class);
+        List<String> names=map.get("names");
+        Boolean found=true;
+        for(String name:names){
+            if(name.substring(0).equalsIgnoreCase("r")){
+                found=false;
+                break;
+            }
+        }
+
+        Assert.assertTrue(found);
+    }
 }
