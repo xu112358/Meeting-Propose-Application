@@ -1,6 +1,5 @@
 package csci310.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
@@ -11,7 +10,6 @@ import csci310.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -139,8 +137,29 @@ public class UserController {
         return userRepository.findByUsername(username).getSend_invites_list();
     }
 
-    @GetMapping(value="/search-event")
-    public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
-        return userRepository.findByUsername(username).getUser_events_list();
+    @GetMapping(value="/search-event-by-invite-and-username")
+    public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
+        List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
+        List<Event> inviteEvents = inviteRepository.findById(inviteId).get().getInvite_events_list();
+        List<Event> useInviteEvent = new ArrayList<>();
+        for(Event userEvent : userEvents){
+             Event event = inviteEvents.stream().filter(inviteEvent -> userEvent.getId().equals(inviteEvent.getId())).findAny().orElse(null);
+             if(event != null){
+                 useInviteEvent.add(event);
+             }
+        }
+        return useInviteEvent;
     }
+
+    @PostMapping(value="/finalize-invite")
+    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
+        User sender = userRepository.findByUsername(username);
+        Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
+        Invite invite = inviteOptional.get();
+        List<Event> events = inviteOptional.get().getInvite_events_list();
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put("message", "Invite Finalized");
+        return responseMap;
+    }
+
 }
