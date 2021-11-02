@@ -1,6 +1,9 @@
 package csci310.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
@@ -142,5 +145,27 @@ public class UserController {
     @GetMapping(value="/search-event")
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username) {
         return userRepository.findByUsername(username).getUser_events_list();
+    }
+
+    @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
+    @ResponseBody
+    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
+
+
+        String name=(String) map.get("name");
+
+        List<User> users=userRepository.findByUsernameStartingWith(name);
+
+        List<String> usernames=new ArrayList<>();
+
+        for(User obj:users){
+            usernames.add(obj.getUsername());
+        }
+
+        Map<String, List<String>> result = new HashMap<>();
+
+        result.put("names",usernames);
+        return result;
+
     }
 }

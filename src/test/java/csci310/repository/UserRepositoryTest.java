@@ -4,6 +4,7 @@ import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
 import io.cucumber.java.bs.A;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -115,5 +116,19 @@ public class UserRepositoryTest {
         invite.setReceivers(users);
         invite.getSender();
 
+    }
+
+    @Test
+    public void testfindByUsernameStartingWith(){
+        List<User> users=userRepository.findByUsernameStartingWith("r");
+        Boolean found=false;
+        for(User obj:users){
+            if(obj.getUsername().equalsIgnoreCase("root")){
+                found=true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(found);
     }
 }
