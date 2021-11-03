@@ -296,14 +296,14 @@ class UserControllerTest {
     }
 
     @Test
-    void testAddBlockedUser()  throws Exception{
+    void testAddBlockedUser()  throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
                         .param("username", "minyiche2")
                         .param("block", "minyiche1")
                 )
                 .andExpect(status().isOk());
 
-
+    }
 
     @Test
     public void testUsernameStartingWith() throws Exception {
