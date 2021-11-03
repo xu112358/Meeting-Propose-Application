@@ -10,8 +10,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Step definitions for Cucumber tests.
@@ -119,6 +118,34 @@ public class StepDefinitions {
 		assertEquals("You need to log in first!", text);
 	}
 
+	@Given("I am on the Search Events page")
+	public void i_am_on_the_Search_Events_page() {
+		// Write code here that turns the phrase above into concrete actions
+		driver.get("http://localhost:8080/SearchEvents");
+	}
+
+	@When("I click the targeted keyword field")
+	public void i_click_the_targeted_keyword_field() {
+		// Write code here that turns the phrase above into concrete actions
+		String text = driver.findElement(By.cssSelector("#check_mark")).getText();
+//		assertEquals("Add Event", text);
+	}
+	@When("I enter start date in the start date field")
+	public void i_enter_start_date_in_the_start_date_field() {
+		// Write code here that turns the phrase above into concrete actions
+		String text = driver.findElement(By.cssSelector("#input-group date form_date")).getText();
+	}
+	@When("I enter end date in the end date field")
+	public void i_enter_end_date_in_the_end_date_field() {
+		// Write code here that turns the phrase above into concrete actions
+		String text = driver.findElement(By.cssSelector("#input-group date form_date")).getText();
+	}
+	@Then("I will be listed all the events that satisfied my above requirement")
+	public void i_will_be_listed_all_the_events_that_satisfied_my_above_requirement() {
+		// Write code here that turns the phrase above into concrete actions
+		String text = driver.findElement(By.className("event")).getText();
+		assertNotNull(text);
+	}
 
 	@After()
 	public void cleanup() {
