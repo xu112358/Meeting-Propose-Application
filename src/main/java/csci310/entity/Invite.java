@@ -69,11 +69,11 @@ public class Invite {
     public void setSender(User sender) {
         this.sender = sender;
     }
-    @JsonIgnore
+
     public List<Event> getInvite_events_list() {
         return invite_events_list;
     }
-    @JsonIgnore
+
     public void setInvite_events_list(List<Event> invite_events_list) {
         this.invite_events_list = invite_events_list;
     }
