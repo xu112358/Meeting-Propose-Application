@@ -27,15 +27,16 @@ function processResponse(obj){
         let genre=cur_obj.classifications[0].segment.name;
 
         
-        
+        let city=document.querySelector("#city-name").value;
 
         
 
         let cur_movie_el=`<div class="col-lg-3 col-md-4 col-sm-6 col-6 text-center mb-3">
-        <div class="parent" data-genre="${genre}">
+        <div class="parent" data-genre="${genre}" data-city="${city}">
             <img src="${image}"\>
             <div class="hide">
-               Genre: ${genre}
+               Genre: ${genre}<br>
+               Location: ${city}
             </div>
         </div>
         <div class="event-name" data-name="${title}">${title}</div>
@@ -110,6 +111,7 @@ $('body').on('click', '.add-event', function() {
     
     
     let genre=event.eq(0).data("genre");
+    let location=event.eq(0).data("city");
     let name=event.eq(1).data("name");
     let date=event.eq(2).data("date");
     
@@ -119,6 +121,7 @@ $('body').on('click', '.add-event', function() {
     <div class="list-info"><strong>${name}</strong></div> 
     <div class="list-info">${genre}</div> 
     <div class="list-info">${date}</div> 
+    <div class="list-info">${location}</div> 
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -182,10 +185,23 @@ $('body').on('click', 'li', function() {
 
 document.querySelector("#username_add").onclick=function(){
     let username=document.querySelector("#searchusername").value;
+    let sender=document.querySelector("#brand-name span").innerText;
+
+
+
     let msg=document.querySelector("#username_errmsg");
+
+
+    if(username==sender){
+        msg.innerHTML="You cannot add yourself to the sender users list!";
+        msg.classList.remove("noshow");
+        return;
+    }
     if(!msg.classList.contains("noshow")){
         msg.classList.add("noshow");
     }
+
+
     if(username.length==0){
 
         msg.innerHTML="Input Username is Empty!";
@@ -199,6 +215,22 @@ document.querySelector("#username_add").onclick=function(){
             msg.classList.remove("noshow");
         }
         else{
+            let match=false;
+
+            for(let i=0;i<terms.length;i++){
+
+
+                if(username==terms[i].innerText){
+                    match=true;
+                    break;
+                }
+            }
+
+            if(!match){
+                msg.innerHTML="Username does not exist!";
+                msg.classList.remove("noshow");
+                return;
+            }
 
             let usernames=document.querySelectorAll("#senders_list .list-info");
             let found=false;
@@ -215,7 +247,7 @@ document.querySelector("#username_add").onclick=function(){
                 msg.classList.remove("noshow");
             }
             else{
-                let temp=document.querySelector("#senders_list").innerHTML;
+                let temp=document.querySelector("#add-users-list").innerHTML;
 
                 let el=`<div class="alert alert-warning alert-dismissible fade show list-button" role="alert" data-username="${username}">
                 <div class="list-info"><strong>${username}</strong></div> 
@@ -224,7 +256,7 @@ document.querySelector("#username_add").onclick=function(){
                 </button>
                 </div>`;
 
-                document.querySelector("#senders_list").innerHTML=temp+el;
+                document.querySelector("#add-users-list").innerHTML=temp+el;
             }
 
 
@@ -233,5 +265,79 @@ document.querySelector("#username_add").onclick=function(){
         }
 
     }
+
+};
+
+
+document.querySelector("#propose-events").onclick=function(){
+    let sender=document.querySelector("#brand-name span").innerText;
+    let groupDate_name=document.querySelector("#groupDate_name").value;
+    let recievers_el=document.querySelectorAll("#add-users-list .list-info");
+    let events_el=document.querySelectorAll("#add-events-list .list-info");
+
+    document.querySelector("#proposeEvent_success").classList.add("noshow");
+    document.querySelector("#proposeEvent_errmsg").classList.add("noshow");
+
+    if(groupDate_name.length==0||recievers_el.length==0||events_el.length==0){
+        document.querySelector("#proposeEvent_errmsg").classList.remove("noshow");
+    }
+    else{
+
+        let recievers=[];
+
+        for(let i=0;i<recievers_el.length;i++){
+            recievers.push(recievers_el[i].innerText);
+        }
+
+        let events=[];
+        let event_temp={};
+        for(let i=0;i<events_el.length;i++){
+            if(i%4==0){
+                event_temp={};
+                event_temp.eventName=events_el[i].innerText;
+            }
+            else if(i%4==1){
+                event_temp.genre=events_el[i].innerText;
+            }
+            else if(i%4==2){
+                event_temp.eventDate=events_el[i].innerText;
+            }
+            else if(i%4==3){
+                event_temp.location=events_el[i].innerText;
+                events.push(event_temp);
+            }
+
+        }
+
+
+
+        let data={sender:sender,events:events,receivers:recievers,invite_name:groupDate_name};
+        console.log(data);
+
+        $.ajax({
+            type: "POST",
+            url: "../send-invite",
+
+            contentType : 'application/json; charset=utf-8',
+            dataType : 'json',
+            processData: false,
+            data: JSON.stringify(data),
+
+
+        })
+            .done(function(results) {
+                console.log(results);
+                if(results.message=="Invite Sent"){
+                    document.querySelector("#proposeEvent_success").classList.remove("noshow");
+                }
+            })
+            .fail(function(results) {
+                // this function runs if the request fails for some reason
+                console.log("API request failed");
+            });
+    }
+
+
+
 
 };
