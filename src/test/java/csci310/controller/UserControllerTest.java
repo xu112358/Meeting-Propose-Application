@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -131,7 +132,6 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
 
         ModelMap map=mvcResult.getModelAndView().getModelMap();
-        System.out.println(map);
         Assert.assertEquals("Sign Up Successfully!",map.get("message"));
 
         Assert.assertEquals(200,status);
@@ -167,7 +167,6 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
 
         ModelMap map=mvcResult.getModelAndView().getModelMap();
-        System.out.println(map);
         Assert.assertEquals("Username does not exist!",map.get("error_message"));
         Assert.assertEquals("123",map.get("password"));
         Assert.assertEquals("test",map.get("username"));
@@ -230,7 +229,7 @@ class UserControllerTest {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-
+        System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -243,24 +242,39 @@ class UserControllerTest {
     @Transactional
     public void testFindUserInvite() throws Exception{
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
-                        .param("username", "minyiche1")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
+                        .param("username", "minyiche2")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-
-
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test
     public void testEventSearch() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get("/search-event")
-                        .param("username", "minyiche2")
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username","minyiche3");
+        params.add("invite_id","6");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/search-event-by-invite-and-username")
+                        .params(params)
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", is(9)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", is(10))); //this can be changed with regard to data in database
+    }
+
+    @Test
+    @Transactional
+    public void testFinalizeInvite() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
+                        .param("invite_id","6")
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -280,6 +294,7 @@ class UserControllerTest {
 
         Assert.assertEquals("You need to log in first!",value);
     }
+
     @Test
     void testAddBlockedUser()  throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
@@ -287,5 +302,30 @@ class UserControllerTest {
                         .param("block", "minyiche1")
                 )
                 .andExpect(status().isOk());
+
+
+
+    @Test
+    public void testUsernameStartingWith() throws Exception {
+        String json="{\"name\":\"r\"}";
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andReturn();
+        String response_json=mvcResult.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, List<String>> map = mapper.readValue(response_json, Map.class);
+        List<String> names=map.get("names");
+        Boolean found=true;
+        for(String name:names){
+            if(name.substring(0).equalsIgnoreCase("r")){
+                found=false;
+                break;
+            }
+        }
+
+        Assert.assertTrue(found);
+
     }
 }
