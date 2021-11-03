@@ -106,6 +106,8 @@
 
                         <div class="col-12  mt-3 mb-3 text-center ">
                             <button id="searchbutton" class="btn btn-primary btn-lg" type="submit">Events Search</button>
+
+
                         </div>
 
                        
@@ -138,7 +140,7 @@
                             Send Users:
                         </div> -->
                         <div class="list-title"><strong>Send Users:</strong></div>
-
+                        <div id="add-users-list"></div>
                     </div> 
 
                     
@@ -154,6 +156,12 @@
 
                     <div class="text-center mb-5 mt-3">
                         <button type="button" class="btn btn-danger btn-lg" id="propose-events">Propose Events</button>
+                        <div class="alert alert-danger col-12 mt-3 mb-3 text-center noshow" id="proposeEvent_errmsg" role="alert">
+                            Sender Users List or Events List or GroupDate Name is Empty!
+                        </div>
+                        <div class="alert alert-success col-12 mt-3 mb-3 text-center noshow" id="proposeEvent_success" role="alert">
+                            Successfully Propose the GroupDate!
+                        </div>
                     </div>
                 
             </div>
