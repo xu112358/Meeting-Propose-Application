@@ -52,10 +52,10 @@ public class Event implements Serializable {
     }
 
     public Event(Event event) {
-        this.eventName = event.getEventName();
-        this.genre = event.getGenre();
-        this.eventDate = event.getEventDate();
-        this.location = event.getLocation();
+        this.eventName = event.eventName;
+        this.genre = event.genre;
+        this.eventDate = event.eventDate;
+        this.location = event.location;
     }
 
     public Long getId() {
