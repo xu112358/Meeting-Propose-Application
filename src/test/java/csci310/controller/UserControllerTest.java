@@ -296,12 +296,29 @@ class UserControllerTest {
     }
 
     @Test
+    @Transactional
     void testAddBlockedUser()  throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        params.add("block", "minyiche1");
         mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
-                        .param("username", "minyiche2")
-                        .param("block", "minyiche1")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("minyiche1 is already on your blocked list")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+
+        params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche3");
+        params.add("block", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("added to blocklist")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
 
     }
 
