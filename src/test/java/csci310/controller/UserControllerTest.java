@@ -228,7 +228,7 @@ class UserControllerTest {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-
+        System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -242,11 +242,10 @@ class UserControllerTest {
     public void testFindUserInvite() throws Exception{
 
         mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
-                        .param("username", "minyiche1")
+                        .param("username", "minyiche2")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-
 
     }
 
@@ -270,12 +269,8 @@ class UserControllerTest {
     @Test
     @Transactional
     public void testFinalizeInvite() throws Exception {
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","minyiche1");
-        params.add("invite_id","6");
         mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
-                        .params(params)
+                        .param("invite_id","6")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk());

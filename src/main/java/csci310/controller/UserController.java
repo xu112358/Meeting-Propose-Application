@@ -140,7 +140,7 @@ public class UserController {
 
     @GetMapping(value="/find-user-invite")
     public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
-        return userRepository.findByUsername(username).getSend_invites_list();
+        return userRepository.findByUsername(username).getReceive_invites_list();
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -158,11 +158,27 @@ public class UserController {
     }
 
     @PostMapping(value="/finalize-invite")
-    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
-        User sender = userRepository.findByUsername(username);
+    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
         Invite invite = inviteOptional.get();
         List<Event> events = inviteOptional.get().getInvite_events_list();
+        Map<String, List<Event>> eventMap = new HashMap<>();
+        for(Event event :events) {
+            String eventKey = event.getEventName() + event.getEventDate().toString();
+            List<Event> tmp = eventMap.get(eventKey);
+            if(tmp == null){
+                tmp = new ArrayList<>();
+                eventMap.put(eventKey, tmp);
+            }
+            tmp.add(event);
+            eventMap.put(eventKey, tmp);
+        }
+        Map<String, Integer> eventEvaluation = new HashMap<>();
+        // Iterating eventMap through for loop
+        for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
+            //evaluate event feasibility
+        }
+
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("message", "Invite Finalized");
         return responseMap;
