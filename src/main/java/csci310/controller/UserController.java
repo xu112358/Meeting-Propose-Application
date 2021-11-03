@@ -144,10 +144,15 @@ public class UserController {
         return userRepository.findByUsername(username).getUser_events_list();
     }
 
-    @PostMapping(value="/logout")
-    public String addBlockedUser(Model model,HttpSession session){
-        return "redirect:/signin";
-
+    @PostMapping(value="/add-blocked-user")
+    public Map<String, String> addBlockedUser(Model model, @RequestParam("username") String username, @RequestParam("block") String block){
+        User user = userRepository.findByUsername(username);
+        User toBlock =  userRepository.findByUsername(block);
+        user.getBlock_list().add(toBlock);
+        userRepository.save(user);
+        Map <String, String> response = new HashMap<>();
+        response.put("message", "added to blocklist");
+        return response;
     }
 
 }

@@ -282,12 +282,10 @@ class UserControllerTest {
     }
     @Test
     void testAddBlockedUser()  throws Exception{
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","test");
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user").params(params)).andReturn();
-
-        ModelMap map=mvcResult.getModelAndView().getModelMap();
-        int status = mvcResult.getResponse().getStatus();
-        Assert.assertEquals(200,status);
+        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+                        .param("username", "minyiche2")
+                        .param("block", "minyiche1")
+                )
+                .andExpect(status().isOk());
     }
 }
