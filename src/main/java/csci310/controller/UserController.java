@@ -201,13 +201,23 @@ public class UserController {
     }
 
     @PostMapping(value="/add-blocked-user")
-    public Map<String, String> addBlockedUser(Model model, @RequestParam("username") String username, @RequestParam("block") String block) {
+    public @ResponseBody Map<String, String> addBlockedUser(Model model, @RequestParam("username") String username, @RequestParam("block") String block) {
         User user = userRepository.findByUsername(username);
         User toBlock = userRepository.findByUsername(block);
+        Map<String, String> response = new HashMap<>();
+
+        List<User> blockedUsers = userRepository.findByUsername(username).getBlock_list();
+        User isBlocked = blockedUsers.stream().filter(tmp -> tmp.getId().equals(toBlock.getId())).findAny().orElse(null);
+        if(isBlocked != null){
+            response.put("message", block + " is already on your blocked list");
+            response.put("returnCode", "400");
+            return response;
+        }
+
         user.getBlock_list().add(toBlock);
         userRepository.save(user);
-        Map<String, String> response = new HashMap<>();
         response.put("message", "added to blocklist");
+        response.put("returnCode", "200");
         return response;
     }
 

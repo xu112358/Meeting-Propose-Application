@@ -43,7 +43,7 @@ public class User {
     private List<User> blocked_by_list = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "user_block",joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="blocked_user_id", referencedColumnName = "id"))
+    @JoinTable(name = "user_block",joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name="blocked_user_id"))
     private List<User> block_list = new ArrayList<>();
 
 
