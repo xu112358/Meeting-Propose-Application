@@ -295,6 +295,15 @@ class UserControllerTest {
         Assert.assertEquals("You need to log in first!",value);
     }
 
+    @Test
+    void testAddBlockedUser()  throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+                        .param("username", "minyiche2")
+                        .param("block", "minyiche1")
+                )
+                .andExpect(status().isOk());
+
+    }
 
     @Test
     public void testUsernameStartingWith() throws Exception {
@@ -317,5 +326,6 @@ class UserControllerTest {
         }
 
         Assert.assertTrue(found);
+
     }
 }
