@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class UserController {
@@ -138,7 +139,7 @@ public class UserController {
         for(int i = 0; i < receivers.size(); i ++){
             for(int j = 0; j < events.size(); j ++){
                 Event event = new Event(events.get(j));
-                event.setStatus("not comfirmed");
+                event.setStatus("not confirmed");
                 event.setInvites_which_hold_event(new ArrayList<Invite>(
                         Arrays.asList(invite)));
                 event.setUsers_who_hold_event(new ArrayList<User>(
@@ -154,7 +155,22 @@ public class UserController {
 
     @GetMapping(value="/find-user-invite")
     public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
-        return userRepository.findByUsername(username).getReceive_invites_list();
+        List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
+        //filter out confirmed event
+        List<Event> tmp = new ArrayList<>();
+        for(Event event : userEvents){
+             if(event.getStatus().equals("not confirmed")){
+                 tmp.add(event);
+             }
+        }
+        userEvents = tmp;
+        List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
+        //filter out confirmed invite --- not implemented
+        for(Invite invite : invites){
+            List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
+            invite.setInvite_events_list(inviteEvents);
+        }
+        return invites;
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -198,6 +214,27 @@ public class UserController {
         return responseMap;
     }
 
+    @PostMapping(value="/add-blocked-user")
+    public @ResponseBody Map<String, String> addBlockedUser(Model model, @RequestParam("username") String username, @RequestParam("block") String block) {
+        User user = userRepository.findByUsername(username);
+        User toBlock = userRepository.findByUsername(block);
+        Map<String, String> response = new HashMap<>();
+
+        List<User> blockedUsers = userRepository.findByUsername(username).getBlock_list();
+        User isBlocked = blockedUsers.stream().filter(tmp -> tmp.getId().equals(toBlock.getId())).findAny().orElse(null);
+        if(isBlocked != null){
+            response.put("message", block + " is already on your blocked list");
+            response.put("returnCode", "400");
+            return response;
+        }
+
+        user.getBlock_list().add(toBlock);
+        userRepository.save(user);
+        response.put("message", "added to blocklist");
+        response.put("returnCode", "200");
+        return response;
+    }
+
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
@@ -218,6 +255,11 @@ public class UserController {
         result.put("names",usernames);
         return result;
 
+    }
+
+    @PostMapping(value="/reply-invite")
+    public @ResponseBody Map<String, String> replyInvite (@RequestBody Map<String, Object> map) throws JsonProcessingException {
+        return new HashMap<>();
     }
 
 }

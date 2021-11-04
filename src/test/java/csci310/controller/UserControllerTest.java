@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -261,12 +262,12 @@ class UserControllerTest {
     @Transactional
     public void testFindUserInvite() throws Exception{
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
                         .param("username", "minyiche2")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test
@@ -314,6 +315,32 @@ class UserControllerTest {
         Assert.assertEquals("You need to log in first!",value);
     }
 
+    @Test
+    @Transactional
+    void testAddBlockedUser()  throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        params.add("block", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("minyiche1 is already on your blocked list")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+
+        params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche3");
+        params.add("block", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("added to blocklist")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
+
+    }
 
     @Test
     public void testUsernameStartingWith() throws Exception {
@@ -336,5 +363,51 @@ class UserControllerTest {
         }
 
         Assert.assertTrue(found);
+
     }
+
+    @Test
+    @Transactional
+    public void testReplyInvite() throws Exception {
+        Map<String, Object> requestBody = new HashMap<>();
+        //prepare reply event
+        List<Event> events = new ArrayList<>();
+        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+
+        Event event1 = new Event();
+        event1.setId(7L);
+        event1.setEventName("event1");
+        event1.setGenre("event");
+        event1.setEventDate(eventDate);
+        event1.setLocation("LA");
+
+        Event event2 = new Event();
+        event1.setId(8L);
+        event2.setEventName("event2");
+        event2.setGenre("event");
+        event2.setEventDate(eventDate);
+        event2.setLocation("LA");
+
+        events.add(event1);
+        events.add(event2);
+
+        requestBody.put("events", events);
+
+        requestBody.put("username", "minyiche2");
+        requestBody.put("events", events);
+
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(requestBody);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+                        .param("username", "minyiche2")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "minyiche1")
+        ).
+                andExpect(status().isOk());
+
+    }
+
 }
