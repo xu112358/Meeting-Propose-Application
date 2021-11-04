@@ -217,8 +217,16 @@ class UserControllerTest {
         event2.setLocation("LA");
         eventRepository.save(event2);
 
+        Event event3 = new Event();
+        event3.setEventName("event3");
+        event3.setGenre("event");
+        event3.setEventDate(eventDate);
+        event3.setLocation("LA");
+        eventRepository.save(event3);
+
         events.add(event1);
         events.add(event2);
+        events.add(event3);
 
         InviteModel inviteModel = new InviteModel();
         inviteModel.setSender("minyiche1");
@@ -228,14 +236,15 @@ class UserControllerTest {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-        System.out.println(json);
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("you are blocked by minyiche2")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+//        System.out.println(json);
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                        .content(json)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .sessionAttr("loginUser", "minyiche1")
+//                ).andExpect(status().isOk())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("you are blocked by minyiche2")))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+
 
         receivers = new ArrayList<>();
         receivers.add("minyiche3");
@@ -267,7 +276,14 @@ class UserControllerTest {
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-        //resultActions.andDo(MockMvcResultHandlers.print());
+            //resultActions.andDo(MockMvcResultHandlers.print());
+
+        resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
+                        .param("username", "minyiche2")
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
+        resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test
