@@ -105,6 +105,7 @@ public class UserController {
 
     @PostMapping(value="/send-invite")
     public @ResponseBody Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
+        Map<String, String> responseMap = new HashMap<>();
         String senderUsername = inviteModel.getSender();
         List<String> receiversUsername = inviteModel.getReceivers();
         String inviteName = inviteModel.getInvite_name();
@@ -114,6 +115,18 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
+
+        for(User receiver : receivers){
+            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+            for(User userOnBlockList : receiverBlockList){
+                if(sender.getId() == userOnBlockList.getId()){
+                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+        }
+
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
         invite.setCreateDate(new Date());
@@ -133,8 +146,9 @@ public class UserController {
                 eventRepository.save(event);
             }
         }
-        Map<String, String> responseMap = new HashMap<>();
+
         responseMap.put("message", "Invite Sent");
+        responseMap.put("returnCode", "200");
         return responseMap;
     }
 
