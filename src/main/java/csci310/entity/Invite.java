@@ -25,7 +25,6 @@ public class Invite {
     private Date createDate;
     @Column(name = "invite_name")
     private String inviteName;
-
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
