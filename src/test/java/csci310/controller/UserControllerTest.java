@@ -199,7 +199,6 @@ class UserControllerTest {
         List<String> receivers = new ArrayList<>();
 
         receivers.add("minyiche2");
-        receivers.add("minyiche3");
 
         List<Event> events = new ArrayList<>();
         java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
@@ -235,7 +234,28 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Sent")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("you are blocked by minyiche2")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+
+        receivers = new ArrayList<>();
+        receivers.add("minyiche3");
+
+        inviteModel = new InviteModel();
+        inviteModel.setSender("minyiche1");
+        inviteModel.setInvite_name("invite");
+        inviteModel.setReceivers(receivers);
+        inviteModel.setEvents(events);
+
+        ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        json = ow.writeValueAsString(inviteModel);
+        System.out.println(json);
+        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Sent")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
 
     @Test
