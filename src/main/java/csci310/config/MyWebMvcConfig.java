@@ -17,12 +17,13 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 // 排除路径
                 .excludePathPatterns("/signin","/","/signup","/**/*.css",
-                        "/**/*.js");
+                        "/**/*.js","/usernameStartingWith");
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/home").setViewName("home");
+        registry.addViewController("/proposeEvent").setViewName("proposeEvent");
     }
 
 }

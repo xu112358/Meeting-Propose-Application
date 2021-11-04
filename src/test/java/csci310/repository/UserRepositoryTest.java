@@ -4,6 +4,7 @@ import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
 import io.cucumber.java.bs.A;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,31 +27,56 @@ public class UserRepositoryTest {
     @Transactional
     public void testSaveUser(){
         User user1= new User();
-        user1.setFirstName("Kaituo");
         user1.setUsername("kaituo");
-        user1.setLastName("Xu");
         user1.setHashPassword("jdwuua276");
         userRepository.save(user1);
 
         User user= userRepository.findByUsername("kaituo123");
     }
 
+//    @Test
+//    //@Transactional
+//    public void generateUserTestingData(){
+//        User sender = new User();
+//        sender.setUsername("minyiche1");
+//        sender.setHashPassword("password");
+//        userRepository.save(sender);
+//
+//        User receiver1 = new User();
+//        receiver1.setUsername("minyiche2");
+//        receiver1.setHashPassword("password");
+//        userRepository.save(receiver1);
+//        User receiver2 = new User();
+//        receiver2.setUsername("minyiche3");
+//        receiver2.setHashPassword("password");
+//        userRepository.save(receiver2);
+//        //login data
+//        User loginUser = new User();
+//        loginUser.setUsername("root");
+//        loginUser.setHashPassword("$2a$10$t5.Z7ln/4fw8H9S1AEsbPucZXcTe2h7qn1NWf1fnEc1QFEbqroIxi");
+//        userRepository.save(loginUser);
+//
+//        //login data
+//        User acceptanceTestUser = new User();
+//        acceptanceTestUser.setUsername("username");
+//        acceptanceTestUser.setHashPassword("$2a$10$WSteqgM/SBeSJPLLLr7f4Ozth6UlhtkpzbAZrNbijQICdaeq2EmgG");
+//        userRepository.save(acceptanceTestUser);
+//    }
+
+
+
     @Test
     @Transactional
     public void testUser(){
         List<User> users = new ArrayList<>();
         User user= new User();
-        user.setFirstName("firstname");
         user.setUsername("userTest");
-        user.setLastName("lastname");
         user.setHashPassword("password");
         users.add(user);
         userRepository.save(user);
         User userReturn = userRepository.findByUsername(user.getUsername());
         user.setId(userReturn.getId());
 
-        assertEquals("lastname", user.getLastName());
-        assertEquals("firstname", user.getFirstName());
         java.sql.Date date =  java.sql.Date.valueOf("2021-10-16");
         List<Event> events = new ArrayList<>();
         Event event = new Event();
@@ -69,18 +95,26 @@ public class UserRepositoryTest {
         Invite invite = new Invite();
         invite.setInviteName("inviteName");
         invite.setCreateDate(date);
-        invite.setStatus("not comfirmed");
+        invite.getReceivers();
         invites.add(invite);
         inviteRepository.save(invite);
         Invite inviteReturn = inviteRepository.findTopByOrderByIdDesc();
         assertEquals("inviteName", invite.getInviteName());
-        assertEquals("not comfirmed", invite.getStatus());
         invite.setId(10000L);
 
         user.setUser_events_list(events);
         user.setReceive_invites_list(invites);
         user.setSend_invites_list(invites);
         user.getReceive_invites_list();
+        user.setStartDate(date);
+        user.setEndDate(date);
+        user.getStartDate();
+        user.getEndDate();
+        user.setBlock_list(null);
+        user.getBlock_list();
+        user.setBlocked_by_list(null);
+        user.getBlocked_by_list();
+        user.getSend_invites_list();
 
         event.setUsers_who_hold_event(users);
         event.setInvites_which_hold_event(invites);
@@ -92,5 +126,19 @@ public class UserRepositoryTest {
         invite.setReceivers(users);
         invite.getSender();
 
+    }
+
+    @Test
+    public void testfindByUsernameStartingWith(){
+        List<User> users=userRepository.findByUsernameStartingWith("r");
+        Boolean found=false;
+        for(User obj:users){
+            if(obj.getUsername().equalsIgnoreCase("root")){
+                found=true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(found);
     }
 }

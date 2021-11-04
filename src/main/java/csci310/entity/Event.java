@@ -29,10 +29,12 @@ public class Event implements Serializable {
     private Date eventDate;
     @Column(name = "location")
     private String location;
+    @Column(name = "status")
+    private String status; // "confirmed", "not confirmed"
     @Column(name = "preference")
     private int preference; //"1-5"
     @Column(name = "availability")
-    private int availability;//"0","1","maybe?"
+    private String availability;//"0","1","maybe?"
 
 
 
@@ -40,13 +42,21 @@ public class Event implements Serializable {
     @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
     private List<User> users_who_hold_event = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "invite_events_list")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="invite_id", referencedColumnName = "id"))
     private List<Invite> invites_which_hold_event = new ArrayList<>();;
+
 
     public Event() {
 
     }
 
+    public Event(Event event) {
+        this.eventName = event.eventName;
+        this.genre = event.genre;
+        this.eventDate = event.eventDate;
+        this.location = event.location;
+    }
 
     public Long getId() {
         return id;
@@ -82,6 +92,30 @@ public class Event implements Serializable {
 
     public String getLocation() {
         return location;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getPreference() {
+        return preference;
+    }
+
+    public void setPreference(int preference) {
+        this.preference = preference;
+    }
+
+    public String getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(String availability) {
+        this.availability = availability;
     }
 
     public void setLocation(String location) {

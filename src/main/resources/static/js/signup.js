@@ -18,14 +18,15 @@ else{
 
 
 document.querySelector("#create_account").onsubmit=function(event){
+    console.log("create account");
     document.querySelector("#success").style.display = "none";
     let username=document.querySelector("#username").value;
     let password=document.querySelector("#password").value;
     let re_password=document.querySelector("#re_password").value;
-    let fname=document.querySelector("#fname").value;
-    let lname=document.querySelector("#lname").value;
+    // let fname=document.querySelector("#fname").value;
+    // let lname=document.querySelector("#lname").value;
 
-    if(username.length==0||password.length==0||re_password==0||fname==0||lname==0){
+    if(username.length==0||password.length==0||re_password.length==0){
         event.preventDefault();
         document.querySelector("#warning").innerText="You need to fill up all the inputs!";
         document.querySelector("#warning").style.display = "block";

@@ -19,9 +19,6 @@ public class Invite {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    @Column(name = "status")
-    private String status; // "confirm", "not confirm"
     @Column(name = "create_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
@@ -33,8 +30,7 @@ public class Invite {
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_event",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="event_id", referencedColumnName = "id"))
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "invites_which_hold_event")
     private List<Event> invite_events_list = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -47,14 +43,6 @@ public class Invite {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Date getCreateDate() {
@@ -80,11 +68,11 @@ public class Invite {
     public void setSender(User sender) {
         this.sender = sender;
     }
-    @JsonIgnore
+
     public List<Event> getInvite_events_list() {
         return invite_events_list;
     }
-    @JsonIgnore
+
     public void setInvite_events_list(List<Event> invite_events_list) {
         this.invite_events_list = invite_events_list;
     }
