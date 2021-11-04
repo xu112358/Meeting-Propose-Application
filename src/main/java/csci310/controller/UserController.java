@@ -274,7 +274,7 @@ public class UserController {
     }
 
     @PostMapping(value="/reply-invite")
-    public @ResponseBody Map<String, String> replyInvite (@RequestBody Map<String, Object> map) throws JsonProcessingException {
+    public @ResponseBody Map<String, String> replyInvite (@RequestParam("username") String username, @RequestBody List<Event> events) throws JsonProcessingException {
         return new HashMap<>();
     }
 
