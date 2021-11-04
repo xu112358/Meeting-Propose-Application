@@ -345,4 +345,49 @@ class UserControllerTest {
         Assert.assertTrue(found);
 
     }
+
+    @Test
+    @Transactional
+    public void testReplyInvite() throws Exception {
+        Map<String, Object> requestBody = new HashMap<>();
+        //prepare reply event
+        List<Event> events = new ArrayList<>();
+        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+
+        Event event1 = new Event();
+        event1.setId(7L);
+        event1.setEventName("event1");
+        event1.setGenre("event");
+        event1.setEventDate(eventDate);
+        event1.setLocation("LA");
+
+        Event event2 = new Event();
+        event1.setId(8L);
+        event2.setEventName("event2");
+        event2.setGenre("event");
+        event2.setEventDate(eventDate);
+        event2.setLocation("LA");
+
+        events.add(event1);
+        events.add(event2);
+
+        requestBody.put("events", events);
+
+        requestBody.put("username", "minyiche2");
+        requestBody.put("events", events);
+
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(requestBody);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+                        .param("username", "minyiche2")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "minyiche1")
+        ).
+                andExpect(status().isOk());
+
+    }
+
 }
