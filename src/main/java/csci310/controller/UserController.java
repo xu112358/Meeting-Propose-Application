@@ -106,6 +106,7 @@ public class UserController {
 
     @PostMapping(value="/send-invite")
     public @ResponseBody Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
+        Map<String, String> responseMap = new HashMap<>();
         String senderUsername = inviteModel.getSender();
         List<String> receiversUsername = inviteModel.getReceivers();
         String inviteName = inviteModel.getInvite_name();
@@ -115,6 +116,7 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
+
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
         invite.setCreateDate(new Date());
@@ -134,7 +136,6 @@ public class UserController {
                 eventRepository.save(event);
             }
         }
-        Map<String, String> responseMap = new HashMap<>();
         responseMap.put("message", "Invite Sent");
         return responseMap;
     }
@@ -241,6 +242,11 @@ public class UserController {
         result.put("names",usernames);
         return result;
 
+    }
+
+    @PostMapping(value="/reply-invite")
+    public @ResponseBody Map<String, String> replyInvite (@RequestBody Map<String, Object> map) throws JsonProcessingException {
+        return new HashMap<>();
     }
 
 }
