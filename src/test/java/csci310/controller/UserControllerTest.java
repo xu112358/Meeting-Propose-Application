@@ -310,7 +310,8 @@ class UserControllerTest {
                         .param("invite_id","6")
                         .sessionAttr("loginUser", "minyiche1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Finalized")));
     }
 
     @Test
@@ -396,6 +397,8 @@ class UserControllerTest {
         event1.setGenre("event");
         event1.setEventDate(eventDate);
         event1.setLocation("LA");
+        event1.setAvailability("yes");
+        event1.setPreference(1);
 
         Event event2 = new Event();
         event1.setId(8L);
@@ -403,6 +406,8 @@ class UserControllerTest {
         event2.setGenre("event");
         event2.setEventDate(eventDate);
         event2.setLocation("LA");
+        event2.setAvailability("maybe");
+        event1.setPreference(1);
 
         events.add(event1);
         events.add(event2);
@@ -413,11 +418,12 @@ class UserControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
                         .param("username", "minyiche2")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .sessionAttr("loginUser", "minyiche1")
-                ).
-                andExpect(status().isOk());
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "minyiche1")
+        ).
+                andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Reply Sent")));
 
     }
 }
