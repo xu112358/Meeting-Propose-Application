@@ -116,6 +116,17 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
+        //Check if sender is on the block list of receiver
+        for(User receiver : receivers){
+            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+            for(User userOnBlockList : receiverBlockList){
+                if(sender.getId() == userOnBlockList.getId()){
+                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+        }
 
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
@@ -136,12 +147,15 @@ public class UserController {
                 eventRepository.save(event);
             }
         }
+
         responseMap.put("message", "Invite Sent");
+        responseMap.put("returnCode", "200");
         return responseMap;
     }
 
     @GetMapping(value="/find-user-invite")
     public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
+        User sender = userRepository.findByUsername(username);
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
         //filter out confirmed event
         List<Event> tmp = new ArrayList<>();
@@ -152,12 +166,22 @@ public class UserController {
         }
         userEvents = tmp;
         List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
+        List<Invite> invitesResult = new ArrayList<>();
         //filter out confirmed invite --- not implemented
         for(Invite invite : invites){
-            List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
+
+            //List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
+            List<Event> inviteEvents = new ArrayList<>();
+            for(Event userEvent : userEvents){
+                if(userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())){
+                    inviteEvents.add(userEvent);
+                }
+            }
             invite.setInvite_events_list(inviteEvents);
+            invite.setSender(sender);
+            invitesResult.add(invite);
         }
-        return invites;
+        return invitesResult;
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -166,10 +190,15 @@ public class UserController {
         List<Event> inviteEvents = inviteRepository.findById(inviteId).get().getInvite_events_list();
         List<Event> useInviteEvent = new ArrayList<>();
         for(Event userEvent : userEvents){
-             Event event = inviteEvents.stream().filter(inviteEvent -> userEvent.getId().equals(inviteEvent.getId())).findAny().orElse(null);
-             if(event != null){
-                 useInviteEvent.add(event);
-             }
+//             Event event = inviteEvents.stream().filter(inviteEvent -> userEvent.getId().equals(inviteEvent.getId())).findAny().orElse(null);
+//             if(event != null){
+//                 useInviteEvent.add(event);
+//             }
+            for(Event inviteEvent : inviteEvents){
+                if(userEvent.getId().equals(inviteEvent.getId())){
+                    useInviteEvent.add(userEvent);
+                }
+            }
         }
         return useInviteEvent;
     }
@@ -248,6 +277,7 @@ public class UserController {
 
     @PostMapping(value="/reply-invite")
     public @ResponseBody Map<String, String> replyInvite (@RequestParam("username") String username, @RequestBody List<Event> events) throws JsonProcessingException {
+
         Map<String, String> response = new HashMap<>();
         for(Event event : events){
             event.setStatus("confirmed");

@@ -95,6 +95,7 @@ public class UserRepositoryTest {
         Invite invite = new Invite();
         invite.setInviteName("inviteName");
         invite.setCreateDate(date);
+        invite.getReceivers();
         invites.add(invite);
         inviteRepository.save(invite);
         Invite inviteReturn = inviteRepository.findTopByOrderByIdDesc();
@@ -105,6 +106,15 @@ public class UserRepositoryTest {
         user.setReceive_invites_list(invites);
         user.setSend_invites_list(invites);
         user.getReceive_invites_list();
+        user.setStartDate(date);
+        user.setEndDate(date);
+        user.getStartDate();
+        user.getEndDate();
+        user.setBlock_list(null);
+        user.getBlock_list();
+        user.setBlocked_by_list(null);
+        user.getBlocked_by_list();
+        user.getSend_invites_list();
 
         event.setUsers_who_hold_event(users);
         event.setInvites_which_hold_event(invites);
