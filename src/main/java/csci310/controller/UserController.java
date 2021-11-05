@@ -203,6 +203,7 @@ public class UserController {
         return useInviteEvent;
     }
 
+    //this api has not been completed
     @PostMapping(value="/finalize-invite")
     public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
@@ -223,6 +224,7 @@ public class UserController {
         // Iterating eventMap through for loop
         for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
             //evaluate event feasibility
+
         }
 
         Map<String, String> responseMap = new HashMap<>();
@@ -274,8 +276,16 @@ public class UserController {
     }
 
     @PostMapping(value="/reply-invite")
-    public @ResponseBody Map<String, String> replyInvite (@RequestBody Map<String, Object> map) throws JsonProcessingException {
-        return new HashMap<>();
+    public @ResponseBody Map<String, String> replyInvite (@RequestParam("username") String username, @RequestBody List<Event> events) throws JsonProcessingException {
+
+        Map<String, String> response = new HashMap<>();
+        for(Event event : events){
+            event.setStatus("confirmed");
+            eventRepository.save(event);
+        }
+        response.put("message", "Reply Sent");
+        response.put("returnCode", "200");
+        return response;
     }
 
 }
