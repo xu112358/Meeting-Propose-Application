@@ -1,4 +1,4 @@
-Feature: User receive an invitation of an event to other users
+Feature: Receivers can accept or decline, track and visualize their received proposals on the same page.
 
   Scenario: Receive an invitation of an event to other users - Success
     Given I am on the messages page
