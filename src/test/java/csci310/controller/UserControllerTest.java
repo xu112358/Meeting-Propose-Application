@@ -371,42 +371,37 @@ class UserControllerTest {
     public void testFindUserInvite() throws Exception{
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
-                        .param("username", "minyiche2")
+                        .param("username", "minyiche3")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-            //resultActions.andDo(MockMvcResultHandlers.print());
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("Friend Invite")));
 
-        resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
-                        .param("username", "minyiche2")
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-        resultActions.andDo(MockMvcResultHandlers.print());
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test
     public void testEventSearch() throws Exception{
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","minyiche3");
-        params.add("invite_id","6");
+        params.add("invite_id","7");
 
         mockMvc.perform(MockMvcRequestBuilders.get("/search-event-by-invite-and-username")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", is(9)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", is(10))); //this can be changed with regard to data in database
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("Justin Bieber")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("KaRol G")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[2].eventName", is("Bad Bunny")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[3].eventName", is("Bad Bunny"))); //this can be changed with regard to data in database
     }
 
     @Test
     @Transactional
     public void testFinalizeInvite() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
-                        .param("invite_id","6")
+                        .param("invite_id","7")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())

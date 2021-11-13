@@ -228,7 +228,7 @@ public class UserController {
                 double multiply = 0;
                 if(event.getStatus().equals("yes")){
                     multiply = 1;
-                }else if(event.getStatus().equals("no")){
+                }else if(event.getStatus().equals("maybe")){
                     multiply = 0.5;
                 }else if(event.getStatus().equals("no")){
                     multiply = 0;
