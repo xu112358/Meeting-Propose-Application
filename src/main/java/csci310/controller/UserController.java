@@ -261,7 +261,12 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
 
         List<User> blockedUsers = userRepository.findByUsername(username).getBlock_list();
-        User isBlocked = blockedUsers.stream().filter(tmp -> tmp.getId().equals(toBlock.getId())).findAny().orElse(null);
+        User isBlocked = null;
+        for(User blockeduser : blockedUsers){
+            if(blockeduser.getId() == toBlock.getId()){
+                isBlocked = blockeduser;
+            }
+        }
         if(isBlocked != null){
             response.put("message", block + " is already on your blocked list");
             response.put("returnCode", "400");
