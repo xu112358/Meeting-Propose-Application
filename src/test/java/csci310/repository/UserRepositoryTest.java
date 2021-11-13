@@ -3,6 +3,7 @@ package csci310.repository;
 import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
+import csci310.model.InviteModel;
 import io.cucumber.java.bs.A;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ public class UserRepositoryTest {
     }
 
 //    @Test
-//    //@Transactional
+    //@Transactional
+    //generate data for testing
 //    public void generateUserTestingData(){
 //        User sender = new User();
 //        sender.setUsername("minyiche1");
@@ -46,10 +48,17 @@ public class UserRepositoryTest {
 //        receiver1.setUsername("minyiche2");
 //        receiver1.setHashPassword("password");
 //        userRepository.save(receiver1);
+//
 //        User receiver2 = new User();
 //        receiver2.setUsername("minyiche3");
 //        receiver2.setHashPassword("password");
 //        userRepository.save(receiver2);
+//
+//        User receiver3 = new User();
+//        receiver3.setUsername("minyiche4");
+//        receiver3.setHashPassword("password");
+//        userRepository.save(receiver3);
+//
 //        //login data
 //        User loginUser = new User();
 //        loginUser.setUsername("root");

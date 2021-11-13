@@ -14,9 +14,9 @@ import org.junit.runner.RunWith;
 @CucumberOptions(strict = true)
 //@CucumberOptions(strict = true, features = {"src/test/resources/cucumber/signup.feature"})
 public class RunCucumberTests {
-	@BeforeClass
-	public static void setup() {
-		WebDriverManager.chromedriver().setup();
-	}
+    @BeforeClass
+    public static void setup() {
+        WebDriverManager.chromedriver().setup();
+    }
 
 }

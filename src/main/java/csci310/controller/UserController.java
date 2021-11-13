@@ -153,10 +153,11 @@ public class UserController {
         return responseMap;
     }
 
-    @GetMapping(value="/find-user-invite")
+    @GetMapping(value="/find-received-invite")
     public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
         User sender = userRepository.findByUsername(username);
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
+        List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
         //filter out confirmed event
         List<Event> tmp = new ArrayList<>();
         for(Event event : userEvents){
@@ -165,7 +166,6 @@ public class UserController {
              }
         }
         userEvents = tmp;
-        List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
         List<Invite> invitesResult = new ArrayList<>();
         //filter out confirmed invite --- not implemented
         for(Invite invite : invites){
@@ -207,7 +207,7 @@ public class UserController {
     @PostMapping(value="/finalize-invite")
     public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
-        Invite invite = inviteOptional.get();
+        //get invite
         List<Event> events = inviteOptional.get().getInvite_events_list();
         Map<String, List<Event>> eventMap = new HashMap<>();
         for(Event event :events) {
@@ -215,18 +215,40 @@ public class UserController {
             List<Event> tmp = eventMap.get(eventKey);
             if(tmp == null){
                 tmp = new ArrayList<>();
-                eventMap.put(eventKey, tmp);
             }
             tmp.add(event);
             eventMap.put(eventKey, tmp);
         }
-        Map<String, Integer> eventEvaluation = new HashMap<>();
+        Map<String, Double> eventEvaluation = new HashMap<>();
         // Iterating eventMap through for loop
         for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
             //evaluate event feasibility
-
+            double evaluate = 0;
+            for(Event event : eventKeyValue.getValue()){
+                double multiply = 0;
+                if(event.getStatus().equals("yes")){
+                    multiply = 1;
+                }else if(event.getStatus().equals("no")){
+                    multiply = 0.5;
+                }else if(event.getStatus().equals("no")){
+                    multiply = 0;
+                }
+                evaluate += multiply * event.getPreference();
+            }
+            eventEvaluation.put(eventKeyValue.getKey(), evaluate);
         }
-
+        //find event with highest evaluation
+        double maxEvaluate = 0;
+        String maxEventKey = "";
+        for (Map.Entry<String, Double> eventKeyValue : eventEvaluation.entrySet()) {
+            if(eventKeyValue.getValue() > maxEvaluate) {
+                maxEvaluate = eventKeyValue.getValue();
+                maxEventKey = eventKeyValue.getKey();
+            }
+        }
+        for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
+            //what to do after finalizing event
+        }
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("message", "Invite Finalized");
         return responseMap;
@@ -245,7 +267,6 @@ public class UserController {
             response.put("returnCode", "400");
             return response;
         }
-
         user.getBlock_list().add(toBlock);
         userRepository.save(user);
         response.put("message", "added to blocklist");
@@ -256,8 +277,6 @@ public class UserController {
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
-
-
         String name=(String) map.get("name");
 
         List<User> users=userRepository.findByUsernameStartingWith(name);
@@ -280,8 +299,11 @@ public class UserController {
 
         Map<String, String> response = new HashMap<>();
         for(Event event : events){
-            event.setStatus("confirmed");
-            eventRepository.save(event);
+            Event responseEvent = eventRepository.getById(event.getId());
+            responseEvent.setStatus("confirmed");
+            responseEvent.setPreference(event.getPreference());
+            responseEvent.setAvailability(event.getAvailability());
+            eventRepository.save(responseEvent);
         }
         response.put("message", "Reply Sent");
         response.put("returnCode", "200");
