@@ -84,19 +84,120 @@ class UserControllerTest {
         //mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        User sender = new User();
-        sender.setUsername("minyiche1");
-        sender.setHashPassword("password");
-        userRepository.save(sender);
-
-        User receiver = new User();
-        receiver.setUsername("minyiche2");
-        receiver.setHashPassword("password");
-        userRepository.save(receiver);
-        receiver.setUsername("minyiche3");
-        userRepository.save(receiver);
     }
 
+
+//    @Test
+//    //@Transactional
+//    //generate data for testing
+//    public void generateUserTestingData() throws Exception{
+//        List<String> receivers = new ArrayList<>();
+//
+//        receivers.add("minyiche2");
+//        receivers.add("minyiche3");
+//
+//        List<Event> events = new ArrayList<>();
+//        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+//
+//        Event event1 = new Event();
+//        event1.setEventName("Justin Bieber");
+//        event1.setGenre("Music");
+//        event1.setEventDate(eventDate);
+//        event1.setLocation("Los Angeles");
+//
+//        Event event2 = new Event();
+//        event2.setEventName("KaRol G");
+//        event2.setGenre("Music");
+//        event2.setEventDate(eventDate);
+//        event2.setLocation("Los Angeles");
+//
+//        Event event3 = new Event();
+//        event3.setEventName("Bad Bunny");
+//        event3.setGenre("Music");
+//        event3.setEventDate(eventDate);
+//        event3.setLocation("Los Angeles");
+//
+//        Event event4 = new Event();
+//        event4.setEventName("Knotfest: Los Angeles");
+//        event4.setGenre("Music");
+//        event4.setEventDate(eventDate);
+//        event4.setLocation("Los Angeles");
+//
+//        events.add(event1);
+//        events.add(event2);
+//        events.add(event3);
+//        events.add(event3);
+//
+//        InviteModel inviteModel = new InviteModel();
+//        inviteModel.setSender("minyiche1");
+//        inviteModel.setInvite_name("Music Invite");
+//        inviteModel.setReceivers(receivers);
+//        inviteModel.setEvents(events);
+//
+//        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+//        String json = ow.writeValueAsString(inviteModel);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        //one more invite
+//        receivers = new ArrayList<>();
+//        receivers.add("minyiche3");
+//        receivers.add("minyiche4");
+//
+//        events.remove(0);
+//
+//        inviteModel = new InviteModel();
+//        inviteModel.setSender("minyiche1");
+//        inviteModel.setInvite_name("Friend Invite");
+//        inviteModel.setReceivers(receivers);
+//        inviteModel.setEvents(events);
+//
+//        json = ow.writeValueAsString(inviteModel);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        //add blocked user
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche3");
+//        params.add("block", "minyiche2");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        events = new ArrayList<>();
+//
+//        event1 = new Event();
+//        event1.setId(8L);
+//        event1.setAvailability("yes");
+//        event1.setPreference(1);
+//
+//        event2 = new Event();
+//        event2.setId(9L);
+//        event2.setAvailability("maybe");
+//        event2.setPreference(1);
+//
+//        events.add(event1);
+//        events.add(event2);
+//
+//        json = ow.writeValueAsString(events);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+//                .param("username", "minyiche2")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//    }
 
 
     @Test
@@ -236,14 +337,13 @@ class UserControllerTest {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(inviteModel);
-//        System.out.println(json);
-//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-//                        .content(json)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .sessionAttr("loginUser", "minyiche1")
-//                ).andExpect(status().isOk())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("you are blocked by minyiche2")))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
+        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("you are blocked by minyiche2")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("400")));
 
 
         receivers = new ArrayList<>();
@@ -257,7 +357,6 @@ class UserControllerTest {
 
         ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         json = ow.writeValueAsString(inviteModel);
-        System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -271,43 +370,38 @@ class UserControllerTest {
     @Transactional
     public void testFindUserInvite() throws Exception{
 
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
-                        .param("username", "minyiche2")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
+                        .param("username", "minyiche3")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-            //resultActions.andDo(MockMvcResultHandlers.print());
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("Friend Invite")));
 
-        resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-user-invite")
-                        .param("username", "minyiche2")
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("invite")));
-        resultActions.andDo(MockMvcResultHandlers.print());
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test
     public void testEventSearch() throws Exception{
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","minyiche3");
-        params.add("invite_id","6");
+        params.add("invite_id","7");
 
         mockMvc.perform(MockMvcRequestBuilders.get("/search-event-by-invite-and-username")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("event1")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("event2")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", is(9)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", is(10))); //this can be changed with regard to data in database
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("Justin Bieber")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("KaRol G")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[2].eventName", is("Bad Bunny")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[3].eventName", is("Bad Bunny"))); //this can be changed with regard to data in database
     }
 
     @Test
     @Transactional
     public void testFinalizeInvite() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
-                        .param("invite_id","6")
+                        .param("invite_id","7")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
@@ -392,22 +486,14 @@ class UserControllerTest {
         java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
 
         Event event1 = new Event();
-        event1.setId(7L);
-        event1.setEventName("event1");
-        event1.setGenre("event");
-        event1.setEventDate(eventDate);
-        event1.setLocation("LA");
+        event1.setId(9L);
         event1.setAvailability("yes");
         event1.setPreference(1);
 
         Event event2 = new Event();
-        event1.setId(8L);
-        event2.setEventName("event2");
-        event2.setGenre("event");
-        event2.setEventDate(eventDate);
-        event2.setLocation("LA");
+        event2.setId(10L);
         event2.setAvailability("maybe");
-        event1.setPreference(1);
+        event2.setPreference(1);
 
         events.add(event1);
         events.add(event2);
