@@ -547,6 +547,8 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/delete-blocked-user")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk());
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("User unblocked")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
 }

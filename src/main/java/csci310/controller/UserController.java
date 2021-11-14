@@ -291,7 +291,19 @@ public class UserController {
 
     @DeleteMapping(value="/delete-blocked-user")
     public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("username") String username, @RequestParam("blocked") String blockedUsername) {
-        return new HashMap<>();
+        Map<String, String> response = new HashMap<>();
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        for(int i = 0; i < users.size(); i ++){
+            if(users.get(i).getUsername().equals(blockedUsername)){
+                users.remove(i);
+            }
+        }
+        User user = userRepository.findByUsername(username);
+        user.setBlock_list(users);
+        userRepository.save(user);
+        response.put("message", "User unblocked");
+        response.put("returnCode", "200");
+        return response;
     }
 
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
