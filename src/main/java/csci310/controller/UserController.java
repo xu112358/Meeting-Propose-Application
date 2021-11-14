@@ -280,8 +280,13 @@ public class UserController {
     }
 
     @GetMapping(value="/get-blocked-user")
-    public @ResponseBody Map<String,List<String>> getBlockedUser(@RequestParam("username") String username) {
-        return new HashMap<>();
+    public @ResponseBody List<String> getBlockedUser(@RequestParam("username") String username) {
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        List<String> usernameList = new ArrayList<>();
+        for(User user : users){
+            usernameList.add(user.getUsername());
+        }
+        return usernameList;
     }
 
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")

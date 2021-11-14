@@ -534,6 +534,7 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
                 .params(params)
                 .sessionAttr("loginUser", "minyiche1")
-        ).andExpect(status().isOk());
+        ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
     }
 }
