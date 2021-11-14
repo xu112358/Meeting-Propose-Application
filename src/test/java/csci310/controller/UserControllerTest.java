@@ -512,4 +512,17 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Reply Sent")));
 
     }
+
+    @Test
+    @Transactional
+    public void testUpdateUserDateRange() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2021-10-16");
+        params.add("endDate", "2021-10-18");
+        params.add("username", "minyiche4");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andExpect(status().isOk());
+    }
 }

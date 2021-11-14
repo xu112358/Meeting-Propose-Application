@@ -315,4 +315,8 @@ public class UserController {
         return response;
     }
 
+    @PostMapping(value="/update-unavailable-date")
+    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("username") String username, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws JsonProcessingException {
+        return new HashMap<>();
+    }
 }
