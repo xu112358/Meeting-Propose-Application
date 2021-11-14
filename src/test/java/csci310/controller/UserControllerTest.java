@@ -573,4 +573,15 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("User unblocked")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
+
+    @Test
+    @Transactional
+    public void testFindSentInvite() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.get("/find-sent-invite")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk());
+    }
 }

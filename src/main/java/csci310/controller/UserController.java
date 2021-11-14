@@ -184,6 +184,11 @@ public class UserController {
         return invitesResult;
     }
 
+    @GetMapping(value="/find-sent-invite")
+    public @ResponseBody Map<String, List<Invite>> findSentInvite(@RequestParam("username") String username) {
+        return new HashMap<>();
+    }
+
     @GetMapping(value="/search-event-by-invite-and-username")
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
