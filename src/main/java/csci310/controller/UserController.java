@@ -280,16 +280,19 @@ public class UserController {
     }
 
     @GetMapping(value="/get-blocked-user")
-    public @ResponseBody List<String> getBlockedUser(@RequestParam("username") String username) {
+    public @ResponseBody Map<String, List<String>> getBlockedUser(@RequestParam("username") String username) {
         List<User> users = userRepository.findByUsername(username).getBlock_list();
         List<String> usernameList = new ArrayList<>();
         for(User user : users){
             usernameList.add(user.getUsername());
         }
-        return usernameList;
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("blocked_usernames",usernameList);
+        return result;
+
     }
 
-    @DeleteMapping(value="/delete-blocked-user")
+    @PostMapping(value="/delete-blocked-user")
     public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("username") String username, @RequestParam("blocked") String blockedUsername) {
         Map<String, String> response = new HashMap<>();
         List<User> users = userRepository.findByUsername(username).getBlock_list();

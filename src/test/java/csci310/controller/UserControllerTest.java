@@ -547,11 +547,30 @@ class UserControllerTest {
     public void testGetBlockedUser() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username", "minyiche2");
-        mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
+//        mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        ).andExpect(status().isOk())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
+
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
                 .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
+                .sessionAttr("loginUser", "minyiche1")).andReturn();
+
+        String response_json=mvcResult.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, List<String>> map = mapper.readValue(response_json, Map.class);
+        List<String> names=map.get("blocked_usernames");
+
+        String target="minyiche1";
+        Boolean found=false;
+        for(String name:names){
+            if (name.equals(target)) {
+                found=true;
+            }
+
+        }
+        Assert.assertTrue(found);
     }
 
     @Test
@@ -560,7 +579,7 @@ class UserControllerTest {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username", "minyiche4");
         params.add("blocked", "minyiche2");
-        mockMvc.perform(MockMvcRequestBuilders.delete("/delete-blocked-user")
+        mockMvc.perform(MockMvcRequestBuilders.post("/delete-blocked-user")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
