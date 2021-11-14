@@ -36,8 +36,8 @@ public class UserRepositoryTest {
     }
 
 //    @Test
-    //@Transactional
-    //generate data for testing
+//    //@Transactional
+//    //generate data for testing
 //    public void generateUserTestingData(){
 //        User sender = new User();
 //        sender.setUsername("minyiche1");
