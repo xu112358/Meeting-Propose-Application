@@ -400,6 +400,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")));
 
         //resultActions.andDo(MockMvcResultHandlers.print());
+
     }
 
     @Test

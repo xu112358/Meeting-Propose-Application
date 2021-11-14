@@ -25,7 +25,7 @@ public class Event implements Serializable {
     private String genre;
     @Column(name = "event_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date eventDate;
     @Column(name = "location")
     private String location;
