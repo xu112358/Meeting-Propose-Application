@@ -173,6 +173,22 @@ class UserControllerTest {
 //                .sessionAttr("loginUser", "minyiche1")
 //        );
 //
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche4");
+//        params.add("block", "minyiche2");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche2");
+//        params.add("block", "minyiche1");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
 //        events = new ArrayList<>();
 //
 //        event1 = new Event();
@@ -542,11 +558,13 @@ class UserControllerTest {
     @Transactional
     public void testDeleteBlockedUser() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche2");
-        params.add("blocked", "minyiche1");
+        params.add("username", "minyiche4");
+        params.add("blocked", "minyiche2");
         mockMvc.perform(MockMvcRequestBuilders.delete("/delete-blocked-user")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk());
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("User unblocked")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
 }
