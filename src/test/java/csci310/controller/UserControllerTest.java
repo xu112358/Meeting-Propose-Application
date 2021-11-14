@@ -579,9 +579,12 @@ class UserControllerTest {
     public void testFindSentInvite() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username", "minyiche1");
-        mockMvc.perform(MockMvcRequestBuilders.get("/find-sent-invite")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-sent-invite")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk());
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[0].inviteName", is("Music Invite")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 }
