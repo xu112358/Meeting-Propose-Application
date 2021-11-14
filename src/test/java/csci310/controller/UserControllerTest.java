@@ -188,6 +188,13 @@ class UserControllerTest {
 //                .params(params)
 //                .sessionAttr("loginUser", "minyiche1")
 //        );
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche4");
+//        params.add("block", "minyiche3");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
 //
 //        events = new ArrayList<>();
 //
@@ -387,11 +394,10 @@ class UserControllerTest {
     public void testFindUserInvite() throws Exception{
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
-                        .param("username", "minyiche3")
+                        .param("username", "minyiche2")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("Friend Invite")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")));
 
         //resultActions.andDo(MockMvcResultHandlers.print());
     }
