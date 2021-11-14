@@ -188,6 +188,13 @@ class UserControllerTest {
 //                .params(params)
 //                .sessionAttr("loginUser", "minyiche1")
 //        );
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche4");
+//        params.add("block", "minyiche3");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
 //
 //        events = new ArrayList<>();
 //
@@ -387,11 +394,10 @@ class UserControllerTest {
     public void testFindUserInvite() throws Exception{
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
-                        .param("username", "minyiche3")
+                        .param("username", "minyiche2")
                         .sessionAttr("loginUser", "minyiche1")
                 ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].inviteName", is("Friend Invite")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")));
 
         //resultActions.andDo(MockMvcResultHandlers.print());
     }
@@ -585,5 +591,19 @@ class UserControllerTest {
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("User unblocked")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
+    }
+
+    @Test
+    @Transactional
+    public void testFindSentInvite() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche1");
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-sent-invite")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[0].inviteName", is("Music Invite")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 }

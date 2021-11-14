@@ -184,6 +184,21 @@ public class UserController {
         return invitesResult;
     }
 
+    @GetMapping(value="/find-sent-invite")
+    public @ResponseBody Map<String, List<Invite>> findSentInvite(@RequestParam("username") String username) {
+        List<Invite> invites = userRepository.findByUsername(username).getSend_invites_list();
+        Map<String, List<Invite>> responseMap = new HashMap<>();
+        List<Invite> resultInvites = new ArrayList<>();
+        for(Invite invite : invites){
+            List<Event> events =  inviteRepository.findById(invite.getId()).get().getInvite_events_list();
+            Invite tmp = invite;
+            tmp.setInvite_events_list(events);
+            resultInvites.add(tmp);
+        }
+        responseMap.put("invites", resultInvites);
+        return responseMap;
+    }
+
     @GetMapping(value="/search-event-by-invite-and-username")
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
