@@ -512,4 +512,41 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Reply Sent")));
 
     }
+
+    @Test
+    @Transactional
+    public void testUpdateUserDateRange() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2021-10-16");
+        params.add("endDate", "2021-10-18");
+        params.add("username", "minyiche4");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    @Transactional
+    public void testGetBlockedUser() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteBlockedUser() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        params.add("blocked", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.delete("/delete-blocked-user")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk());
+    }
 }

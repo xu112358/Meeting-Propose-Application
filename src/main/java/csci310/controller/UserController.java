@@ -279,6 +279,21 @@ public class UserController {
         return response;
     }
 
+    @GetMapping(value="/get-blocked-user")
+    public @ResponseBody List<String> getBlockedUser(@RequestParam("username") String username) {
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        List<String> usernameList = new ArrayList<>();
+        for(User user : users){
+            usernameList.add(user.getUsername());
+        }
+        return usernameList;
+    }
+
+    @DeleteMapping(value="/delete-blocked-user")
+    public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("username") String username, @RequestParam("blocked") String blockedUsername) {
+        return new HashMap<>();
+    }
+
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
@@ -315,4 +330,8 @@ public class UserController {
         return response;
     }
 
+    @PostMapping(value="/update-unavailable-date")
+    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("username") String username, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws JsonProcessingException {
+        return new HashMap<>();
+    }
 }
