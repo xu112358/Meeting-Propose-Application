@@ -289,6 +289,11 @@ public class UserController {
         return usernameList;
     }
 
+    @DeleteMapping(value="/delete-blocked-user")
+    public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("username") String username, @RequestParam("blocked") String blockedUsername) {
+        return new HashMap<>();
+    }
+
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {

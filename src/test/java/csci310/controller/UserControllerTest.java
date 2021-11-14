@@ -537,4 +537,16 @@ class UserControllerTest {
         ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
     }
+
+    @Test
+    @Transactional
+    public void testDeleteBlockedUser() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        params.add("blocked", "minyiche1");
+        mockMvc.perform(MockMvcRequestBuilders.delete("/delete-blocked-user")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk());
+    }
 }
