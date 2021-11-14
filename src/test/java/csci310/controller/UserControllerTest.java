@@ -525,4 +525,15 @@ class UserControllerTest {
                 .sessionAttr("loginUser", "minyiche1")
         ).andExpect(status().isOk());
     }
+
+    @Test
+    @Transactional
+    public void testGetBlockedUser() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "minyiche2");
+        mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andExpect(status().isOk());
+    }
 }

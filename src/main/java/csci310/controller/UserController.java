@@ -279,6 +279,11 @@ public class UserController {
         return response;
     }
 
+    @GetMapping(value="/get-blocked-user")
+    public @ResponseBody Map<String,List<String>> getBlockedUser(@RequestParam("username") String username) {
+        return new HashMap<>();
+    }
+
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
