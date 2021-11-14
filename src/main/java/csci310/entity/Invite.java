@@ -21,11 +21,11 @@ public class Invite {
     private Long id;
     @Column(name = "create_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone="America/Los_Angeles")
     private Date createDate;
     @Column(name = "invite_name")
     private String inviteName;
-    @JsonBackReference
+    //@JsonBackReference
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;
@@ -60,11 +60,11 @@ public class Invite {
     public void setInviteName(String inviteName) {
         this.inviteName = inviteName;
     }
-    @JsonIgnore
+
     public User getSender() {
         return sender;
     }
-    @JsonIgnore
+
     public void setSender(User sender) {
         this.sender = sender;
     }

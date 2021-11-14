@@ -169,7 +169,6 @@ public class UserController {
         List<Invite> invitesResult = new ArrayList<>();
         //filter out confirmed invite --- not implemented
         for(Invite invite : invites){
-
             //List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
             List<Event> inviteEvents = new ArrayList<>();
             for(Event userEvent : userEvents){
@@ -178,7 +177,7 @@ public class UserController {
                 }
             }
             invite.setInvite_events_list(inviteEvents);
-            invite.setSender(sender);
+            invite.setSender(inviteRepository.findById(invite.getId()).get().getSender());
             invitesResult.add(invite);
         }
         return invitesResult;
