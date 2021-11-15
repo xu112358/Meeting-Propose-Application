@@ -10,8 +10,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Step definitions for Cucumber tests.
@@ -119,6 +118,107 @@ public class StepDefinitions {
         assertEquals("You need to log in first!", text);
     }
 
+    @Given("I am on the Search Events page")
+    public void i_am_on_the_Search_Events_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/SearchEvents");
+    }
+
+    @When("I click the targeted keyword field")
+    public void i_click_the_targeted_keyword_field() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#check_mark")).getText();
+//		assertEquals("Add Event", text);
+    }
+    @When("I enter start date in the start date field")
+    public void i_enter_start_date_in_the_start_date_field() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#input-group date form_date")).getText();
+    }
+    @When("I enter end date in the end date field")
+    public void i_enter_end_date_in_the_end_date_field() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#input-group date form_date")).getText();
+    }
+    @Then("I will be listed all the events that satisfied my above requirement")
+    public void i_will_be_listed_all_the_events_that_satisfied_my_above_requirement() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.className("event")).getText();
+        assertNotNull(text);
+    }
+
+    //homepage acceptance tests
+    @Given("I am on the homepage and signed in successfully")
+    public void i_am_on_the_homepage_and_signed_in_successfully() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
+        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#signin")).click();
+    }
+    @When("I click the date of the event I want to create")
+    public void i_click_the_date_of_the_event_I_want_to_create() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.className("calendar-container")).getText();
+        assertNotNull(text);
+    }
+    @When("click the add event button")
+    public void click_the_add_event_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.xpath("//*[@id=\"add-button\"]")).click();
+    }
+    @Then("I should see a form to let me enter event details")
+    public void i_should_see_a_form_to_let_me_enter_event_details() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.className("dialog-header")).getText();
+        assertEquals("Add New Event", text);
+    }
+
+    @Given("I am on the homepage and the event form has poped up and signed in successfully")
+    public void i_am_on_the_homepage_and_the_event_form_has_poped_up_and_signed_in_successfully() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
+        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.findElement(By.xpath("//*[@id=\"add-button\"]")).click();
+    }
+    @When("I enter the name of the event {string}")
+    public void i_enter_the_name_of_the_event(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#name")).sendKeys(string);
+    }
+
+    @When("I enter the {int} people I'd like to invite")
+    public void i_enter_the_people_I_d_like_to_invite(Integer int1) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#count")).sendKeys(int1.toString());
+    }
+    @When("I enter OK")
+    public void i_enter_OK() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#ok-button")).click();
+    }
+    @Then("I should see a event info about {string} with {int} people invited")
+    public void i_should_see_a_event_info_about_with_people_invited(String string, Integer int1) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.className("event-name")).getText();
+        assertEquals(string+":", text);
+        String text2 = driver.findElement(By.className("event-count")).getText();
+        assertEquals(int1.toString()+" Invited", text2);
+    }
+
+    @When("I enter the cancel button")
+    public void i_enter_the_cancel_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#cancel-button")).click();
+    }
+
+    @Then("I should see a event info unchanged")
+    public void i_should_see_a_event_info_unchanged() {
+        String text2 = driver.findElement(By.className("event-card")).getText();
+        assertNotNull(text2);
+    }
 
     @After()
     public void cleanup() {

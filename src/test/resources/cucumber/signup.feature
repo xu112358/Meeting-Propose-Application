@@ -38,7 +38,5 @@ Feature: Sign Up
 #    When I enter "unique-username" in Username field
 #    And I enter "password" in Password field
 #    And I enter "password" in Re-Password field
-#    And I enter "firstname" in First Name field
-#    And I enter "lastname" in Last Name field
 #    And I press create account button
 #    Then I should sign up succesfully

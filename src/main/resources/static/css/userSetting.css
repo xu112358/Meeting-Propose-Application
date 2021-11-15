@@ -1,0 +1,42 @@
+.center{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.padding{
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-bottom: 2%;
+    
+}
+
+
+table {
+    font-size: 1vw;
+}
+
+.noshow{
+    display: none;
+}
+
+#result {
+    border: 1px dotted #ccc;
+    padding: 3px;
+    box-sizing: border-box;
+}
+#result ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+#result ul li {
+    padding: 5px 0;
+    box-sizing: border-box;
+}
+#result ul li:hover {
+    background: #eee;
+}
+
+.responsive-width {
+    font-size: 1vw;
+}
