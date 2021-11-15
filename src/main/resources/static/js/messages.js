@@ -1,20 +1,55 @@
 document.addEventListener('click',function(e){
     
     if(e.target && e.target.classList.contains('save')){
-          let td=e.target.parentElement.parentElement.parentElement.querySelectorAll("tr td");
-          
-          for(let i=0;i<td.length;i++){
-              if(i%7==5 || i%7==6){
-                console.log("value:");  
-                console.log(td[i].querySelector("select").value);
-              }
-             
+          let groupDateName=e.target.parentElement.parentElement.querySelector("button").innerText;
+          let event_el=e.target.parentElement.parentElement.parentElement.querySelectorAll("tbody tr");
+          let invite_id=e.target.parentElement.parentElement.parentElement.parentElement.dataset.invite_id;
+          console.log(invite_id);
+          let event_list_temp=[];
+
+          for(let i=0;i<event_el.length;i++){
+              let curr_event={};
+              let event_id=event_el[i].dataset.event_id;
+              curr_event.id=event_id;
+
+
+              curr_event.preference=event_el[i].querySelector(".preference").value;
+              curr_event.availability=event_el[i].querySelector(".availabilty").value;
+
+              event_list_temp.push(curr_event);
           }
+
+          let data={id:invite_id,invite_events_list:event_list_temp};
+          console.log(data);
+          console.log(JSON.stringify(data));
+
+          $.ajax({
+                type: "POST",
+                url: "../reply-invite",
+
+                contentType : 'application/json; charset=utf-8',
+                dataType : 'json',
+                processData: false,
+                data: JSON.stringify(data),
+
+
+          }).done(function(results) {
+                    if(results.returnCode=='200'){
+
+                    }
+
+                }).fail(function(results) {
+                    // this function runs if the request fails for some reason
+                    console.log("API request failed");
+                });
+
+
      }
  });
 
 function recieveGroupDates(){
     let curr_user = document.querySelector("#brand-name span").innerText;
+    document.querySelector("#save_msg").classList.add("noshow");
     $.get('../find-received-invite', { username: curr_user},
         function(returnedData){
             console.log(returnedData);
@@ -113,21 +148,21 @@ function recieveGroupDates(){
                     }
 
                     let avl_el=`<select name="availabilty"  class="form-control availabilty">
-                        <option value="available" selected>available</option>
-                        <option value="unavailable" >unavailable</option>
+                        <option value="yes" selected>available</option>
+                        <option value="no" >unavailable</option>
                         <option value="maybe">maybe</option>
                         </select>`;
                     if(avil=="no"){
                         avl_el=`<select name="availabilty"  class="form-control availabilty">
-                        <option value="available" >available</option>
-                        <option value="unavailable" selected>unavailable</option>
+                        <option value="yes" >available</option>
+                        <option value="no" selected>unavailable</option>
                         <option value="maybe">maybe</option>
                         </select>`;
                     }
                     else if(avil=="maybe"){
                         avl_el=`<select name="availabilty"  class="form-control availabilty">
-                        <option value="available">available</option>
-                        <option value="unavailable" >unavailable</option>
+                        <option value="yes">available</option>
+                        <option value="no" >unavailable</option>
                         <option value="maybe"  selected>maybe</option>
                         </select>`;
                     }
