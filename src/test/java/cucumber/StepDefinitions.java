@@ -9,6 +9,10 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -218,6 +222,95 @@ public class StepDefinitions {
     public void i_should_see_a_event_info_unchanged() {
         String text2 = driver.findElement(By.className("event-card")).getText();
         assertNotNull(text2);
+    }
+
+    @Given("I am on the propose event page")
+    public void i_am_on_the_propose_event_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
+        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get("http://localhost:8080/proposeEvent");
+    }
+
+    @When("I enter {string} in Username search field")
+    public void i_enter_in_the_username_search_field(String string) {
+        driver.findElement(By.cssSelector("#searchusername")).sendKeys(string);
+    }
+
+    @When("I enter {string} in the Keyword field")
+    public void i_enter_in_the_keyword_field(String string) {
+
+        driver.findElement(By.cssSelector("#keyword")).sendKeys(string);
+    }
+
+    @When("I enter {string} in the Location field")
+    public void i_enter_in_the_location_field(String string) {
+        driver.findElement(By.cssSelector("#city-name")).sendKeys(string);
+    }
+
+    @When("I enter {string} in the GroupDate name field")
+    public void i_enter_in_the_groupdate_name_field(String string) {
+        driver.findElement(By.cssSelector("#groupDate_name")).sendKeys(string);
+    }
+
+    @When("I select a date")
+    public void i_select_a_date() {
+        driver.findElement(By.cssSelector("#choose-date")).sendKeys("01232019");
+    }
+
+    @When("I click the Username Add button")
+    public void i_click_the_username_add_button() {
+        driver.findElement(By.cssSelector("#username_add")).click();
+    }
+
+    @When("I click event search button")
+    public void i_click_event_event_search_button() {
+        driver.findElement(By.cssSelector("#searchbutton")).click();
+    }
+
+    @When("I click the propose event button")
+    public void i_click_the_propose_event_button() {
+        driver.findElement(By.cssSelector("#propose-events")).click();
+    }
+
+    @When("I click add event")
+    public void i_click_add_event() {
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        driver.findElement(By.cssSelector(".add-event")).click();
+    }
+
+    @Then("I successfully proposed the groupdate")
+    public void i_successfully_proposed_the_groupdate() {
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#proposeEvent_success")));
+        String temp = driver.findElement(By.cssSelector("#proposeEvent_success")).getText();
+        assertEquals(temp, "Successfully Propose the GroupDate!");
+    }
+
+    @Then("input text is empty")
+    public void input_text_is_empty() {
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#errmsg")));
+        String temp = driver.findElement(By.cssSelector("#errmsg")).getText();
+        assertEquals(temp, "There is input text is empty!");
+    }
+
+    @Then("sender users list or groupdate name is empty")
+    public void sender_users_list_or_groupdate_name_is_empty() {
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#proposeEvent_errmsg")));
+        String temp = driver.findElement(By.cssSelector("#proposeEvent_errmsg")).getText();
+        assertEquals(temp, "Sender Users List or Events List or GroupDate Name is Empty!");
+    }
+
+    @Then("username already exists in the sender list")
+    public void username_already_exists_in_the_sender_list() {
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#username_errmsg")));
+        String temp = driver.findElement(By.cssSelector("#username_errmsg")).getText();
+        assertEquals(temp, "Username already exists in the sender list!");
     }
 
     @After()
