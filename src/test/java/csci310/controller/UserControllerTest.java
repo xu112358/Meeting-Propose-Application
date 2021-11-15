@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import csci310.entity.Event;
+import csci310.entity.Invite;
 import csci310.entity.User;
 import csci310.filter.LoginInterceptor;
 import csci310.model.InviteModel;
@@ -506,27 +507,30 @@ class UserControllerTest {
     public void testReplyInvite() throws Exception {
         //prepare reply event
         List<Event> events = new ArrayList<>();
-        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+
+        Invite invite = new Invite();
+        invite.setId(7L);
 
         Event event1 = new Event();
         event1.setId(9L);
         event1.setAvailability("yes");
-        event1.setPreference(1);
+        event1.setPreference(2);
 
         Event event2 = new Event();
         event2.setId(10L);
         event2.setAvailability("maybe");
-        event2.setPreference(1);
+        event2.setPreference(2);
+
 
         events.add(event1);
         events.add(event2);
 
+        invite.setInvite_events_list(events);
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(events);
+        String json = ow.writeValueAsString(invite);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
-                        .param("username", "minyiche2")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .sessionAttr("loginUser", "minyiche1")
