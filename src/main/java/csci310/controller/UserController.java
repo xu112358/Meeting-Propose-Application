@@ -341,8 +341,8 @@ public class UserController {
     }
 
     @PostMapping(value="/reply-invite")
-    public @ResponseBody Map<String, String> replyInvite (@RequestParam("username") String username, @RequestBody List<Event> events) throws JsonProcessingException {
-
+    public @ResponseBody Map<String, String> replyInvite (@RequestBody Invite invite) throws JsonProcessingException {
+        List<Event> events = invite.getInvite_events_list();
         Map<String, String> response = new HashMap<>();
         for(Event event : events){
             Event responseEvent = eventRepository.getById(event.getId());
