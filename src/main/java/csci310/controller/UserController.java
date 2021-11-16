@@ -20,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -360,7 +361,16 @@ public class UserController {
     }
 
     @PostMapping(value="/update-unavailable-date")
-    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("username") String username, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws JsonProcessingException {
-        return new HashMap<>();
+    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("username") String username, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws Exception {
+        Map<String, String> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+        Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(start);
+        Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(end);
+        user.setStartDate(startDate);
+        user.setEndDate(endDate);
+        userRepository.save(user);
+        response.put("message", username + " unavailable date range is set");
+        response.put("returnCode", "200");
+        return response;
     }
 }
