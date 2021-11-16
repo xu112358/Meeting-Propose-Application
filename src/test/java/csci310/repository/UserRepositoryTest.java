@@ -125,10 +125,10 @@ public class UserRepositoryTest {
         user.getBlocked_by_list();
         user.getSend_invites_list();
 
-        event.setUsers_who_hold_event(users);
-        event.setInvites_which_hold_event(invites);
-        event.getUsers_who_hold_event();
-        event.getInvites_which_hold_event();
+        event.setReceiver(user);
+        event.setInvite(invite);
+        event.getReceiver();
+        event.getInvite();
 
         invite.setInvite_events_list(events);
         invite.setSender(user);

@@ -30,21 +30,22 @@ public class Event implements Serializable {
     @Column(name = "location")
     private String location;
     @Column(name = "status")
-    private String status; // "confirmed", "not confirmed"
+    private String status = "not confirmed"; // "confirmed", "not confirmed" "accepted"
     @Column(name = "preference")
-    private int preference; //"1-5"
+    private int preference = 0; //"0-5"
     @Column(name = "availability")
-    private String availability;//"0","1","maybe?"
+    private String availability = "no";//"no","yes","maybe?"
 
+    @OneToOne(cascade=CascadeType.ALL, mappedBy = "finalEvent")
+    private Invite finalizedInvite; // finalized invite
 
+    @ManyToOne
+    @JoinColumn(name = "receiver_id", referencedColumnName = "id")
+    private User receiver;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "user_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
-    private List<User> users_who_hold_event = new ArrayList<>();
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_event",joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="invite_id", referencedColumnName = "id"))
-    private List<Invite> invites_which_hold_event = new ArrayList<>();;
+    @ManyToOne
+    @JoinColumn(name = "invite_id", referencedColumnName = "id")
+    private Invite invite;
 
 
     public Event() {
@@ -122,19 +123,27 @@ public class Event implements Serializable {
         this.location = location;
     }
     @JsonIgnore
-    public List<User> getUsers_who_hold_event() {
-        return users_who_hold_event;
+    public Invite getFinalizedInvite() {
+        return finalizedInvite;
     }
     @JsonIgnore
-    public void setUsers_who_hold_event(List<User> users_who_hold_event) {
-        this.users_who_hold_event = users_who_hold_event;
+    public void setFinalizedInvite(Invite finalizedInvite) {
+        this.finalizedInvite = finalizedInvite;
     }
     @JsonIgnore
-    public List<Invite> getInvites_which_hold_event() {
-        return invites_which_hold_event;
+    public User getReceiver() {
+        return receiver;
     }
     @JsonIgnore
-    public void setInvites_which_hold_event(List<Invite> invites_which_hold_event) {
-        this.invites_which_hold_event = invites_which_hold_event;
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
+    }
+    @JsonIgnore
+    public Invite getInvite() {
+        return invite;
+    }
+    @JsonIgnore
+    public void setInvite(Invite invite) {
+        this.invite = invite;
     }
 }
