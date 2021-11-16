@@ -313,6 +313,125 @@ public class StepDefinitions {
         assertEquals(temp, "Username already exists in the sender list!");
     }
 
+    @Given("I am on the user setting page and signed in as unique-username")
+    public void i_am_on_the_user_setting_page_and_signed_in_as_unique_username() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
+        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get("http://localhost:8080/setting");
+    }
+
+    @When("I enter {string} in the Username Search form")
+    public void i_enter_in_the_Username_Search_form(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#searchusername")).sendKeys(string);
+    }
+
+    @When("{string} is not in the blocked user list")
+    public void is_not_in_the_blocked_user_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#blockedUsers")).getText();
+        assertNotSame(string, text);
+    }
+
+    @When("I click the Blocked This Username button")
+    public void i_click_the_Blocked_This_Username_button() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("#username_add")).click();
+    }
+
+    @Then("I should see {string} appear on the Username list")
+    public void i_should_see_appear_on_the_Username_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
+        assertEquals(string+" Remove", text);
+    }
+
+    @When("{string} is in the blocked user list")
+    public void is_in_the_blocked_user_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
+        assertEquals(string + " Remove", text);
+    }
+
+    @Then("I should see an error message of test1 is already on your blocked list")
+    public void i_should_see_an_error_message_of_test1_is_already_on_your_blocked_list() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        String text = driver.findElement(By.cssSelector("#username_errmsg")).getText();
+        assertEquals("test1 is already on your blocked list", text);
+    }
+
+    @Then("I should see an error message of You cannot block yourself!")
+    public void i_should_see_an_error_message_of_You_cannot_block_yourself() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#username_errmsg")).getText();
+        assertEquals("You cannot block yourself!", text);
+    }
+
+    @When("I enter nothing in the Username Search form")
+    public void i_enter_nothing_in_the_Username_Search_form() {
+        // Write code here that turns the phrase above into concrete actions
+    }
+
+    @Then("I should see an error message of Input Username is Empty!")
+    public void i_should_see_an_error_message_of_Input_Username_is_Empty() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#username_errmsg")).getText();
+        assertEquals("Input Username is Empty!", text);
+    }
+
+    @Given("I am on the user setting page and signed in as {string} and {string} is on my blocked user list")
+    public void i_am_on_the_user_setting_page_and_signed_in_as_and_is_on_my_blocked_user_list(String string, String string2) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8080/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string);
+        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get("http://localhost:8080/setting");
+        driver.findElement(By.cssSelector("#searchusername")).sendKeys(string2);
+        driver.findElement(By.cssSelector("#username_add")).click();
+    }
+
+    @When("I click the remove button of {string}")
+    public void i_click_the_remove_button_of(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("button.btn.btn-outline-danger.delete-btn.removeUser")).click();
+    }
+    @When("I see a warning saying {string}")
+    public void i_see_a_warning_saying(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.switchTo().alert().getText();
+        assertEquals(string, text);
+    }
+    @When("I click OK button")
+    public void i_click_OK_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().accept();
+    }
+    @Then("test1 will be deleted from the blocked user list")
+    public void test1_will_be_deleted_from_the_blocked_user_list() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
+        assertNotSame("test1 Remove", text);
+    }
+    @When("I click cancel button")
+    public void i_click_cancel_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().dismiss();
+    }
+    @Then("test1 will still be on the blocked user list")
+    public void test1_will_still_be_on_the_blocked_user_list() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
+        assertEquals("test1 Remove", text);
+    }
     @After()
     public void cleanup() {
         try {
