@@ -394,13 +394,17 @@ class UserControllerTest {
     @Transactional
     public void testFindUserInvite() throws Exception{
 
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
-                        .param("username", "minyiche2")
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].inviteName", is("Music Invite")));
+        //MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
 
-        //resultActions.andDo(MockMvcResultHandlers.print());
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/find-received-invite")
+                        .sessionAttr("loginUser", "minyiche2")
+                ).andReturn();
+        ModelMap map = mvcResult.getModelAndView().getModelMap();
+        List<Invite> invites = (List<Invite>)map.get("invites");
+        Assert.assertEquals(1, invites.size());
+        Assert.assertEquals("Music Invite", invites.get(0).getInviteName());
+        Assert.assertEquals(4, invites.get(0).getInvite_events_list().size());
+
 
     }
 

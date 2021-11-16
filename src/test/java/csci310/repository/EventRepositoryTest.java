@@ -52,7 +52,7 @@ class EventRepositoryTest {
         User user0=userRepository.findByUsername("root");
         System.out.println(user0.getUser_events_list());
         for(Event obj:events){
-            obj.getUsers_who_hold_event().add(user0);
+            obj.setReceiver(user0);
             user0.getUser_events_list().add(obj);
         }
         System.out.println(user0.getUser_events_list());

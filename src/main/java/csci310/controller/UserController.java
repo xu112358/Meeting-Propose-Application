@@ -131,7 +131,13 @@ public class UserController {
 
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
-        invite.setCreateDate(new Date());
+        Date earlyDate = events.get(0).getEventDate();
+        for(Event event : events){
+            if(earlyDate.compareTo(event.getEventDate()) > 0){
+                earlyDate = event.getEventDate();
+            }
+        }
+        invite.setCreateDate(earlyDate);
         invite.setSender(sender);
         invite.setReceivers((receivers));
         inviteRepository.save(invite);
@@ -140,11 +146,8 @@ public class UserController {
         for(int i = 0; i < receivers.size(); i ++){
             for(int j = 0; j < events.size(); j ++){
                 Event event = new Event(events.get(j));
-                event.setStatus("not confirmed");
-                event.setInvites_which_hold_event(new ArrayList<Invite>(
-                        Arrays.asList(invite)));
-                event.setUsers_who_hold_event(new ArrayList<User>(
-                        Arrays.asList(receivers.get(i))));
+                event.setInvite(invite);
+                event.setReceiver(receivers.get(i));
                 eventRepository.save(event);
             }
         }
@@ -155,25 +158,18 @@ public class UserController {
     }
 
     @GetMapping(value="/find-received-invite")
-    public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
-        User sender = userRepository.findByUsername(username);
+    public String findUserInvite(Model model, HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute("loginUser");
+        User receiver = userRepository.findByUsername(username);
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
         List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
-        //filter out confirmed event
-        List<Event> tmp = new ArrayList<>();
-        for(Event event : userEvents){
-             if(event.getStatus().equals("not confirmed")){
-                 tmp.add(event);
-             }
-        }
-        userEvents = tmp;
         List<Invite> invitesResult = new ArrayList<>();
-        //filter out confirmed invite --- not implemented
         for(Invite invite : invites){
             //List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
             List<Event> inviteEvents = new ArrayList<>();
             for(Event userEvent : userEvents){
-                if(userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())){
+                // find overlap events of a received invite and receiver
+                if(userEvent.getInvite().getId().equals(invite.getId())){
                     inviteEvents.add(userEvent);
                 }
             }
@@ -181,7 +177,8 @@ public class UserController {
             invite.setSender(inviteRepository.findById(invite.getId()).get().getSender());
             invitesResult.add(invite);
         }
-        return invitesResult;
+        model.addAttribute("invites", invitesResult);
+        return "messages";
     }
 
     @GetMapping(value="/find-sent-invite")

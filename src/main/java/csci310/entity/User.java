@@ -30,14 +30,20 @@ public class User {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date endDate;
 
-    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "users_who_hold_event")
-    private List<Event> user_events_list = new ArrayList<>();;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "receiver")
+    private List<Event> user_events_list = new ArrayList<>();; // all received event
 
     @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Invite> send_invites_list = new ArrayList<>();;
+    private List<Invite> send_invites_list = new ArrayList<>();; //sent invite list
 
     @ManyToMany(cascade = CascadeType.ALL,mappedBy = "receivers")
-    private List<Invite> receive_invites_list = new ArrayList<>();;
+    private List<Invite> receive_invites_list = new ArrayList<>();; //receive invite list not rejected
+
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "reject_receivers")
+    private List<Invite> reject_invites_list = new ArrayList<>();;  //reject invite list
+
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "confirmed_receivers")
+    private List<Invite> confirmed_invites_list = new ArrayList<>();;  //confirmed invite list
 
     @ManyToMany(mappedBy = "block_list", cascade = CascadeType.ALL)
     private List<User> blocked_by_list = new ArrayList<>();
@@ -115,6 +121,23 @@ public class User {
     public void setReceive_invites_list(List<Invite> receive_invites_list) {
         this.receive_invites_list = receive_invites_list;
     }
+    @JsonIgnore
+    public List<Invite> getReject_invites_list() {
+        return reject_invites_list;
+    }
+    @JsonIgnore
+    public void setReject_invites_list(List<Invite> reject_invites_list) {
+        this.reject_invites_list = reject_invites_list;
+    }
+    @JsonIgnore
+    public List<Invite> getConfirmed_invites_list() {
+        return confirmed_invites_list;
+    }
+    @JsonIgnore
+    public void setConfirmed_invites_list(List<Invite> confirmed_invites_list) {
+        this.confirmed_invites_list = confirmed_invites_list;
+    }
+
     @JsonIgnore
     public List<User> getBlocked_by_list() {
         return blocked_by_list;
