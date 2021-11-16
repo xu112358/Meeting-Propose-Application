@@ -548,9 +548,11 @@ class UserControllerTest {
         params.add("endDate", "2021-10-18");
         params.add("username", "minyiche4");
         mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
-                .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        ).andExpect(status().isOk());
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
 
     @Test
