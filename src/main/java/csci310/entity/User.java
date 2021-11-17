@@ -36,13 +36,16 @@ public class User {
     @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Invite> send_invites_list = new ArrayList<>();; //sent invite list
 
-    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "receivers")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_receivers",inverseJoinColumns = @JoinColumn(name = "invite_id"),joinColumns = @JoinColumn(name="user_id"))
     private List<Invite> receive_invites_list = new ArrayList<>();; //receive invite list not rejected
 
-    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "reject_receivers")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_reject_receivers",inverseJoinColumns = @JoinColumn(name = "invite_id"), joinColumns = @JoinColumn(name="user_id"))
     private List<Invite> reject_invites_list = new ArrayList<>();;  //reject invite list
 
-    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "confirmed_receivers")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "invite_confirmed_receivers",inverseJoinColumns = @JoinColumn(name = "invite_id"),joinColumns = @JoinColumn(name="user_id"))
     private List<Invite> confirmed_invites_list = new ArrayList<>();;  //confirmed invite list
 
     @ManyToMany(mappedBy = "block_list", cascade = CascadeType.ALL)

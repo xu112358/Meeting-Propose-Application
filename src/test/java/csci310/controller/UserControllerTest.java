@@ -212,14 +212,18 @@ class UserControllerTest {
 //        events.add(event1);
 //        events.add(event2);
 //
-//        json = ow.writeValueAsString(events);
+//        Invite invite = new Invite();
+//        invite.setId(7L);
+//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2)));
+//
+//        json = ow.writeValueAsString(invite);
 //
 //        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
 //                .param("username", "minyiche2")
 //                .content(json)
 //                .contentType(MediaType.APPLICATION_JSON)
 //                .sessionAttr("loginUser", "minyiche1")
-//        );
+//        ).andExpect(status().isOk());
 //
 //    }
 

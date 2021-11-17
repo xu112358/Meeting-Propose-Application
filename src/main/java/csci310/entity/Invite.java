@@ -39,16 +39,13 @@ public class Invite {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invite")
     private List<Event> invite_events_list = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_receivers",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "receive_invites_list")
     private List<User> receivers = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_reject_receivers",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "reject_invites_list")
     private List<User> reject_receivers = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_confirmed_receivers",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "confirmed_invites_list")
     private List<User> confirmed_receivers = new ArrayList<>();
 
     public Long getId() {
