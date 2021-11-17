@@ -664,4 +664,21 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
         //resultActions.andDo(MockMvcResultHandlers.print());
     }
+
+    @Test
+    @Transactional
+    public void testSearchEvent() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("city", "LA");
+        params.add("genre", "Music");
+        params.add("keyword", "music");
+        params.add("startDate", "today");
+        params.add("endDate", "tomorrow");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/search-ticketmaster-event")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).andExpect(status().isOk());
+        //resultActions.andDo(MockMvcResultHandlers.print());
+    }
 }

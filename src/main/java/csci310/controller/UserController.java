@@ -443,4 +443,10 @@ public class UserController {
         response.put("returnCode", "200");
         return response;
     }
+
+    @GetMapping(value="/search-ticketmaster-event")
+    public String searchEvent (@RequestParam("city") String city, @RequestParam("keyword") String keyword, @RequestParam("genre") String genre, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, Model model){
+
+        return "proposeEvent";
+    }
 }
