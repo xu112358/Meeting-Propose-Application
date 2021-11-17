@@ -32,7 +32,7 @@ public class Event implements Serializable {
     @Column(name = "status")
     private String status = "not confirmed"; // "confirmed", "not confirmed" "accepted"
     @Column(name = "preference")
-    private int preference = 1; //"0-5"
+    private int preference = 1; //"1-5"
     @Column(name = "availability")
     private String availability = "no";//"no","yes","maybe?"
 

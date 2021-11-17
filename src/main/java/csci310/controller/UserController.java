@@ -219,7 +219,7 @@ public class UserController {
             Map<String,String> map=new HashMap<>();
             map.put("inviteName",obj.getInviteName());
             map.put("inviteId",obj.getId().toString());
-            map.put("status","Update");
+            map.put("status","New");
             list.add(map);
 
         }
@@ -244,6 +244,162 @@ public class UserController {
         model.addAttribute("invites", list);
 
         return "recieive_invite";
+    }
+    @GetMapping(value = "/receive_invite_events")
+    public String receiveGroupDateEvents(@RequestParam("inviteId") String inviteId,@RequestParam("status") String status,Model model, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        Long inviteId_value=Long.parseLong(inviteId);
+        String invite_name="";
+
+        User cur_user=userRepository.findByUsername(cur_username);
+        List<Map<String,String>> list=new ArrayList<>();
+        for(Event obj:cur_user.getUser_events_list()){
+            if(obj.getInvite().getId().equals(inviteId_value)){
+                Map<String,String> map=new HashMap<>();
+                map.put("eventName",obj.getEventName());
+                map.put("genre",obj.getGenre());
+                map.put("location",obj.getLocation());
+                map.put("date",obj.getEventDate().toString());
+                map.put("sender",obj.getInvite().getSender().getUsername());
+                map.put("preference",obj.getPreference()+"");
+                map.put("availability",obj.getAvailability());
+                map.put("eventId",obj.getId()+"");
+                invite_name=obj.getInvite().getInviteName();
+                list.add(map);
+            }
+        }
+
+        model.addAttribute("inviteId",inviteId);
+        model.addAttribute("status",status);
+        model.addAttribute("events",list);
+        model.addAttribute("inviteName",invite_name);
+
+
+        return "receive_invite_event";
+    }
+
+    @GetMapping(value = "/update_receive_invite_events")
+    public @ResponseBody Map<String,String> updateReceiveGroupDateEvents(@RequestParam("eventId") Long eventId,@RequestParam("preference") int preference,@RequestParam("availability") String availability, HttpSession httpSession) {
+        Map<String,String> result=new HashMap<>();
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        String message="Not Updated";
+        for(Event obj: cur_user.getUser_events_list()){
+            if(obj.getId().equals(eventId)){
+                obj.setPreference(preference);
+                obj.setAvailability(availability);
+                message="Updated";
+                break;
+            }
+        }
+        userRepository.save(cur_user);
+        result.put("message",message);
+
+        return result;
+    }
+
+    @GetMapping(value = "/confirm_receive_invite")
+    public String confirmReceiveGroupDate(@RequestParam("inviteId") Long inviteId, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        Invite find_invite=null;
+
+        for(Invite obj:cur_user.getReceive_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getConfirmed_invites_list().add(find_invite);
+            cur_user.getReceive_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("confirmed");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+        find_invite=null;
+
+        for(Invite obj:cur_user.getReject_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().remove(find_invite);
+            cur_user.getConfirmed_invites_list().add(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("confirmed");
+
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+
+        return "redirect:/receive-groupDates";
+    }
+
+
+    @GetMapping(value = "/reject_receive_invite")
+    public String rejectReceiveGroupDate(@RequestParam("inviteId") Long inviteId, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        Invite find_invite=null;
+
+        for(Invite obj:cur_user.getReceive_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getReceive_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("not confirmed");
+                    obj.setPreference(1);
+                    obj.setAvailability("no");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+
+        find_invite=null;
+
+        for(Invite obj:cur_user.getConfirmed_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getConfirmed_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("not confirmed");
+                    obj.setPreference(1);
+                    obj.setAvailability("no");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+        return "redirect:/receive-groupDates";
     }
 
     @GetMapping(value="/find-sent-invite")
