@@ -127,7 +127,7 @@ class UserControllerTest {
 //        events.add(event1);
 //        events.add(event2);
 //        events.add(event3);
-//        events.add(event3);
+//        events.add(event4);
 //
 //        InviteModel inviteModel = new InviteModel();
 //        inviteModel.setSender("minyiche1");
@@ -198,23 +198,35 @@ class UserControllerTest {
 //        );
 //
 //        events = new ArrayList<>();
-//
 //        event1 = new Event();
 //        event1.setId(8L);
 //        event1.setAvailability("yes");
-//        event1.setPreference(1);
+//        event1.setPreference(5);
 //
 //        event2 = new Event();
 //        event2.setId(9L);
 //        event2.setAvailability("maybe");
-//        event2.setPreference(1);
+//        event2.setPreference(2);
+//
+//        event3 = new Event();
+//        event3.setId(10L);
+//        event3.setAvailability("maybe");
+//        event3.setPreference(4);
+//
+//        event4 = new Event();
+//        event4.setId(11L);
+//        event4.setAvailability("no");
+//        event4.setPreference(1);
 //
 //        events.add(event1);
 //        events.add(event2);
+//        events.add(event3);
+//        events.add(event4);
+//
 //
 //        Invite invite = new Invite();
 //        invite.setId(7L);
-//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2)));
+//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
 //
 //        json = ow.writeValueAsString(invite);
 //
@@ -225,6 +237,21 @@ class UserControllerTest {
 //                .sessionAttr("loginUser", "minyiche1")
 //        ).andExpect(status().isOk());
 //
+//        events.get(0).setId(12L);
+//        events.get(1).setId(13L);
+//        events.get(2).setId(14L);
+//        events.get(3).setId(15L);
+//
+//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
+//
+//        json = ow.writeValueAsString(invite);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+//                .param("username", "minyiche3")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        ).andExpect(status().isOk());
 //    }
 
 
@@ -438,18 +465,22 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].eventName", is("Justin Bieber")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].eventName", is("KaRol G")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[2].eventName", is("Bad Bunny")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[3].eventName", is("Bad Bunny"))); //this can be changed with regard to data in database
+                .andExpect(MockMvcResultMatchers.jsonPath("$[3].eventName", is("Knotfest: Los Angeles"))); //this can be changed with regard to data in database
     }
 
     @Test
     @Transactional
     public void testFinalizeInvite() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/finalize-invite")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/propose-finalize-invite")
                         .param("invite_id","7")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Invite Finalized")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.proposedEvent.eventName", is("Justin Bieber")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.average", is(4.0)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.median", is(3.0)));
+
+        //resultActions.andDo(MockMvcResultHandlers.print());
     }
 
     @Test

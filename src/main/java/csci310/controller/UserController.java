@@ -117,26 +117,24 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
-        //Check if every receiver is able to attend every event;
+
         for(User receiver : receivers){
+            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+            //Check if sender is on the block list of receiver
+            for(User userOnBlockList : receiverBlockList){
+                if(sender.getId() == userOnBlockList.getId()){
+                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+            //Check if every receiver is able to attend every event
             for(Event event : events){
                 if(receiver.getStartDate() == null || receiver.getEndDate() == null){
                     continue;
                 }
                 if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
                     responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
-                }
-            }
-        }
-
-        //Check if sender is on the block list of receiver
-        for(User receiver : receivers){
-            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
-            for(User userOnBlockList : receiverBlockList){
-                if(sender.getId() == userOnBlockList.getId()){
-                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
                     responseMap.put("returnCode", "400");
                     return responseMap;
                 }
@@ -277,11 +275,16 @@ public class UserController {
     }
 
     //this api has not been completed
-    @PostMapping(value="/finalize-invite")
-    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
+    @PostMapping(value="/propose-finalize-invite")
+    /*          status, preference, availablilty should be ignored in the return json
+    * {"average":4.0,"median":3.0,"proposedEvent":{"id":8,"eventName":"Justin Bieber","genre":"Music","eventDate":"2021-10-15","location":"Los Angeles","status":"confirmed","preference":5,"availability":"yes"}}
+    * */
+    public @ResponseBody Map<String, Object> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
+        Map<String, Object> response = new HashMap<>();
         //get invite
         List<Event> events = inviteOptional.get().getInvite_events_list();
+        //event name + event date map to same events with different users
         Map<String, List<Event>> eventMap = new HashMap<>();
         for(Event event :events) {
             String eventKey = event.getEventName() + event.getEventDate().toString();
@@ -299,11 +302,11 @@ public class UserController {
             double evaluate = 0;
             for(Event event : eventKeyValue.getValue()){
                 double multiply = 0;
-                if(event.getStatus().equals("yes")){
+                if(event.getAvailability().equals("yes")){
                     multiply = 1;
-                }else if(event.getStatus().equals("maybe")){
+                }else if(event.getAvailability().equals("maybe")){
                     multiply = 0.5;
-                }else if(event.getStatus().equals("no")){
+                }else if(event.getAvailability().equals("no")){
                     multiply = 0;
                 }
                 evaluate += multiply * event.getPreference();
@@ -311,20 +314,29 @@ public class UserController {
             eventEvaluation.put(eventKeyValue.getKey(), evaluate);
         }
         //find event with highest evaluation
-        double maxEvaluate = 0;
-        String maxEventKey = "";
-        for (Map.Entry<String, Double> eventKeyValue : eventEvaluation.entrySet()) {
-            if(eventKeyValue.getValue() > maxEvaluate) {
-                maxEvaluate = eventKeyValue.getValue();
-                maxEventKey = eventKeyValue.getKey();
-            }
+        List<Map.Entry<String, Double>> eventKeyValues = new ArrayList<>(eventEvaluation.entrySet());
+        eventKeyValues.sort(Map.Entry.comparingByValue());
+        Map.Entry<String, Double> maxPair = eventKeyValues.get(eventKeyValues.size() - 1);
+        Double median = 0d;
+        Double sum = 0d;
+        Double average;
+        if(eventKeyValues.size() % 2 == 0){
+            Double left = eventKeyValues.get(eventKeyValues.size() / 2 - 1).getValue();
+            Double right = eventKeyValues.get(eventKeyValues.size() / 2).getValue();
+            median = (left + right) / 2;
+        }else{
+            median = eventKeyValues.get(eventKeyValues.size() / 2).getValue();
         }
-        for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
-            //what to do after finalizing event
+        for(Map.Entry<String, Double> eventKeyValue : eventKeyValues){
+            sum += eventKeyValue.getValue();
         }
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("message", "Invite Finalized");
-        return responseMap;
+        average = sum / eventKeyValues.size();
+        //procedure after finalize invite
+        Event finalEvent = eventMap.get(maxPair.getKey()).get(0);
+        response.put("proposedEvent", finalEvent);
+        response.put("average", average);
+        response.put("median", median);
+        return response;
     }
 
     @PostMapping(value="/add-blocked-user")
