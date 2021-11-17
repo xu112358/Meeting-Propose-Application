@@ -1,5 +1,6 @@
 package csci310.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -669,16 +670,21 @@ class UserControllerTest {
     @Transactional
     public void testSearchEvent() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("city", "LA");
+        params.add("city", "Los Angeles");
         params.add("genre", "Music");
-        params.add("keyword", "music");
-        params.add("startDate", "today");
-        params.add("endDate", "tomorrow");
+        params.add("keyword", "Justin");
+        params.add("startDate", "2021-11-17");
+        params.add("endDate", "2022-03-08");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/search-ticketmaster-event")
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/search-ticketmaster-event")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk());
-        //resultActions.andDo(MockMvcResultHandlers.print());
+                ).andReturn();
+        ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
+
+        JsonNode eventNode = new ObjectMapper().readTree((String)modelMap.getAttribute("events"));
+        //System.out.println((String)modelMap.getAttribute("events"));
+        Assert.assertEquals(1, eventNode.get("_embedded").get("events").size());
+        Assert.assertEquals("Justin Bieber", eventNode.get("_embedded").get("events").get(0).get("name").asText());
     }
 }
