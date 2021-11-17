@@ -117,6 +117,20 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
+        //Check if every receiver is able to attend every event;
+        for(User receiver : receivers){
+            for(Event event : events){
+                if(receiver.getStartDate() == null || receiver.getEndDate() == null){
+                    continue;
+                }
+                if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
+                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+        }
+
         //Check if sender is on the block list of receiver
         for(User receiver : receivers){
             List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
@@ -139,7 +153,6 @@ public class UserController {
         }
         invite.setCreateDate(earlyDate);
         invite.setSender(sender);
-        invite.setReceivers((receivers));
         inviteRepository.save(invite);
         //can cause problem with multithreaded server
         invite = inviteRepository.findTopByOrderByIdDesc();
@@ -150,6 +163,12 @@ public class UserController {
                 event.setReceiver(receivers.get(i));
                 eventRepository.save(event);
             }
+            //add received invite
+            User receiver = receivers.get(i);
+            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+            newReceivedInviteList.add(invite);
+            receiver.setReceive_invites_list(newReceivedInviteList);
+            userRepository.save(receiver);
         }
 
         responseMap.put("message", "Invite Sent");
