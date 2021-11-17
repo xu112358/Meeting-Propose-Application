@@ -409,6 +409,18 @@ class UserControllerTest {
     }
 
     @Test
+    @Transactional
+    public void testReceiveGroupDate() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/receive-groupDates")
+                .sessionAttr("loginUser", "minyiche2")
+        ).andReturn();
+        System.out.println(mvcResult.getResponse().getStatus());
+        ModelMap map = mvcResult.getModelAndView().getModelMap();
+        System.out.println(map.getAttribute("invites"));
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+    }
+
+    @Test
     public void testEventSearch() throws Exception{
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username","minyiche3");

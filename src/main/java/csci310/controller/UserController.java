@@ -181,6 +181,48 @@ public class UserController {
         return "messages";
     }
 
+    @GetMapping(value="/receive-groupDates")
+    public String receiveGroupDate(Model model, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User receiver=userRepository.findByUsername(cur_username);
+        List<Invite> receive_invites=receiver.getReceive_invites_list();
+        List<Invite> rejected_receive_invites=receiver.getReject_invites_list();
+        List<Invite> confirm_receive_invites=receiver.getConfirmed_invites_list();
+
+        List<Map<String,String>> list=new ArrayList<>();
+
+
+        for(Invite obj:receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("status","Update");
+            list.add(map);
+
+        }
+
+        for(Invite obj:rejected_receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("status","Rejected");
+            list.add(map);
+        }
+
+        for(Invite obj:confirm_receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("status","Confirmed");
+            list.add(map);
+        }
+
+
+        model.addAttribute("invites", list);
+
+        return "recieive_invite";
+    }
+
     @GetMapping(value="/find-sent-invite")
     public @ResponseBody Map<String, List<Invite>> findSentInvite(@RequestParam("username") String username) {
         List<Invite> invites = userRepository.findByUsername(username).getSend_invites_list();
