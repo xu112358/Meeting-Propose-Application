@@ -54,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @RunWith(MockitoJUnitRunner.class)
+
 class UserControllerTest {
 
     @Autowired
@@ -450,6 +451,165 @@ class UserControllerTest {
         ModelMap map = mvcResult.getModelAndView().getModelMap();
         System.out.println(map.getAttribute("invites"));
         Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+    }
+    @Test
+    @Transactional
+    public void testReceiveGroupDateEvents() throws Exception {
+        MvcResult mvcResult0 = mockMvc.perform(MockMvcRequestBuilders.get("/receive-groupDates")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
+        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+
+        Map<String,String> first_invite=list.get(0);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("inviteId",first_invite.get("inviteId"));
+        params.add("status",first_invite.get("status"));
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/receive_invite_events").params(params)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        //ModelMap map = mvcResult.getModelAndView().getModelMap();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+    }
+    @Test
+    @Transactional
+    public void testUpdateReceiveGroupDateEvents() throws Exception {
+        MvcResult mvcResult0 = mockMvc.perform(MockMvcRequestBuilders.get("/receive-groupDates")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
+        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+
+        Map<String,String> first_invite=list.get(0);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("inviteId",first_invite.get("inviteId"));
+        params.add("status",first_invite.get("status"));
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/receive_invite_events").params(params)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        ModelMap map = mvcResult.getModelAndView().getModelMap();
+        List<Map<String,String>> events=(List<Map<String,String>>)map.getAttribute("events");
+
+
+        MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
+
+
+        params1.add("eventId", events.get(0).get("eventId"));
+        params1.add("preference", "5");
+        params1.add("availability", "yes");
+        mockMvc.perform(MockMvcRequestBuilders.get("/update_receive_invite_events")
+                        .params(params1)
+                        .sessionAttr("loginUser", "root")
+                )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Updated")));
+
+    }
+
+    @Test
+    @Transactional
+    public void testConfirmReceiveGroupDate() throws Exception {
+
+        MvcResult mvcResult0 = mockMvc.perform(MockMvcRequestBuilders.get("/receive-groupDates")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
+        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+
+        String inviteId="";
+        for(Map<String,String> obj:list){
+            if(obj.get("status").equalsIgnoreCase("new")){
+                inviteId=obj.get("inviteId");
+                break;
+            }
+        }
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("inviteId",inviteId);
+
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+
+        inviteId="";
+        for(Map<String,String> obj:list){
+            if(obj.get("status").equalsIgnoreCase("Rejected")){
+                inviteId=obj.get("inviteId");
+                break;
+            }
+        }
+        MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
+        params1.add("inviteId",inviteId);
+
+        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+
+        params1.add("inviteId","999999");
+
+        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+    }
+
+
+    @Test
+    @Transactional
+    public void testRejectReceiveGroupDate() throws Exception {
+        MvcResult mvcResult0 = mockMvc.perform(MockMvcRequestBuilders.get("/receive-groupDates")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
+        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+
+        String inviteId="";
+        for(Map<String,String> obj:list){
+            if(obj.get("status").equalsIgnoreCase("new")){
+                inviteId=obj.get("inviteId");
+                break;
+            }
+        }
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("inviteId",inviteId);
+
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+
+        inviteId="";
+        for(Map<String,String> obj:list){
+            if(obj.get("status").equalsIgnoreCase("Confirmed")){
+                inviteId=obj.get("inviteId");
+                break;
+            }
+        }
+        MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
+        params1.add("inviteId",inviteId);
+
+        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+
+        params1.add("inviteId","999999");
+
+        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
     }
 
     @Test

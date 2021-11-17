@@ -87,7 +87,7 @@
 										<tr th:each="map : ${invites}">
 
 											<td>
-												<a th:href="@{'/receive_invite_events?inviteId=' + ${map.get('inviteId')}}" th:text="${map.get('inviteName')}"></a>
+												<a th:href="@{'/receive_invite_events?inviteId=' + ${map.get('inviteId')}+'&status='+${map.get('status')}}" th:text="${map.get('inviteName')}"></a>
 											</td>
 											<td th:text="${map.get('status')}"></td>
 
