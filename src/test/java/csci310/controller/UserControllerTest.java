@@ -61,26 +61,25 @@ class UserControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @InjectMocks
+    @Autowired
     private UserController userController;
 
-    @Mock
-    private UserRepository userRepositoryMock;
 
-    @Mock
-    private EventRepository eventRepositoryMock;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Mock
-    InviteRepository inviteRepositoryMock;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+
+    @Autowired
+    InviteRepository inviteRepository;
+
 
     @Mock
     HttpSession session;
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private EventRepository eventRepository;
-    @Autowired
-    private InviteRepository inviteRepository;
 
     private MockMvc mockMvc;
 
@@ -100,7 +99,7 @@ class UserControllerTest {
     @Test
     //@Transactional
     //generate data for testing
-    public void generateUserTestingData() throws Exception{
+    public void generateUserTestingData() throws Exception {
         /*List<String> receivers = new ArrayList<>();
 
         receivers.add("minyiche2");
@@ -337,36 +336,36 @@ class UserControllerTest {
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/signup")
         ).andExpect(status().isOk());
-                //.andExpect(MockMvcResultMatchers.model().attribute("welcome", "welcome"));
+        //.andExpect(MockMvcResultMatchers.model().attribute("welcome", "welcome"));
     }
 
     @Test
     @Transactional
     public void testCreateUser() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","test");
-        params.add("password","123");
-        params.add("re_password","123");
+        params.add("username", "test");
+        params.add("password", "123");
+        params.add("re_password", "123");
 //        params.add("fname","tommy");
 //        params.add("lname","trojan");
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signup").params(params)).andReturn();
         int status = mvcResult.getResponse().getStatus();
 
-        ModelMap map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals("Sign Up Successfully!",map.get("message"));
+        ModelMap map = mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Sign Up Successfully!", map.get("message"));
 
-        Assert.assertEquals(200,status);
+        Assert.assertEquals(200, status);
 
 
-        params.set("username","root");
+        params.set("username", "root");
         mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signup").params(params)).andReturn();
         status = mvcResult.getResponse().getStatus();
 
-        map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals("Username is taken. Try another one.",map.get("error_message"));
+        map = mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Username is taken. Try another one.", map.get("error_message"));
 
-        Assert.assertEquals(200,status);
+        Assert.assertEquals(200, status);
 
     }
 
@@ -374,8 +373,8 @@ class UserControllerTest {
     @Transactional
     public void testSignin() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","test");
-        params.add("password","123");
+        params.add("username", "test");
+        params.add("password", "123");
 
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
@@ -388,14 +387,14 @@ class UserControllerTest {
 
         int status = mvcResult.getResponse().getStatus();
 
-        ModelMap map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals("Username does not exist!",map.get("error_message"));
-        Assert.assertEquals("123",map.get("password"));
-        Assert.assertEquals("test",map.get("username"));
-        Assert.assertEquals(200,status);
+        ModelMap map = mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Username does not exist!", map.get("error_message"));
+        Assert.assertEquals("123", map.get("password"));
+        Assert.assertEquals("test", map.get("username"));
+        Assert.assertEquals(200, status);
 
 
-        params.set("username","root");
+        params.set("username", "root");
         mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andExpect(redirectedUrl("/home")).andExpect(status().isFound());
 //        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
 //        status = mvcResult.getResponse().getStatus();
@@ -404,26 +403,26 @@ class UserControllerTest {
 //        Assert.assertEquals(200,status);
 
 
-        params.set("password","1111");
+        params.set("password", "1111");
         mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
         status = mvcResult.getResponse().getStatus();
-        map=mvcResult.getModelAndView().getModelMap();
-        Assert.assertEquals("Username and password do not match!",map.get("error_message"));
-        Assert.assertEquals("1111",map.get("password"));
-        Assert.assertEquals("root",map.get("username"));
-        Assert.assertEquals(200,status);
+        map = mvcResult.getModelAndView().getModelMap();
+        Assert.assertEquals("Username and password do not match!", map.get("error_message"));
+        Assert.assertEquals("1111", map.get("password"));
+        Assert.assertEquals("root", map.get("username"));
+        Assert.assertEquals(200, status);
 
     }
 
     @Test
     @Transactional
-    public void testSendInvite() throws Exception{
+    public void testSendInvite() throws Exception {
         List<String> receivers = new ArrayList<>();
 
         receivers.add("minyiche2");
 
         List<Event> events = new ArrayList<>();
-        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+        java.sql.Date eventDate = java.sql.Date.valueOf("2021-10-16");
 
         Event event1 = new Event();
         event1.setEventName("event1");
@@ -501,7 +500,7 @@ class UserControllerTest {
 
     @Test
     @Transactional
-    public void testFindUserInvite() throws Exception{
+    public void testFindUserInvite() throws Exception {
 
         //MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
 
@@ -509,7 +508,7 @@ class UserControllerTest {
                 .sessionAttr("loginUser", "minyiche4")
         ).andReturn();
         ModelMap map = mvcResult.getModelAndView().getModelMap();
-        List<Invite> invites = (List<Invite>)map.get("invites");
+        List<Invite> invites = (List<Invite>) map.get("invites");
         Assert.assertEquals(3, invites.size());
         Assert.assertEquals("Friend Invite", invites.get(0).getInviteName());
         Assert.assertEquals(3, invites.get(0).getInvite_events_list().size());
@@ -525,8 +524,9 @@ class UserControllerTest {
         System.out.println(mvcResult.getResponse().getStatus());
         ModelMap map = mvcResult.getModelAndView().getModelMap();
         System.out.println(map.getAttribute("invites"));
-        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+        Assert.assertEquals(200, mvcResult.getResponse().getStatus());
     }
+
     @Test
     @Transactional
     public void testReceiveGroupDateEvents() throws Exception {
@@ -535,20 +535,21 @@ class UserControllerTest {
         ).andReturn();
 
         ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
-        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
-
-        Map<String,String> first_invite=list.get(0);
+        List<Map<String, String>> list = (List<Map<String, String>>) map0.getAttribute("invites");
+        System.out.println(list);
+        Map<String, String> first_invite = list.get(0);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("inviteId",first_invite.get("inviteId"));
-        params.add("status",first_invite.get("status"));
+        params.add("inviteId", first_invite.get("inviteId"));
+        params.add("status", first_invite.get("status"));
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/receive_invite_events").params(params)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
         //ModelMap map = mvcResult.getModelAndView().getModelMap();
 
-        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+        Assert.assertEquals(200, mvcResult.getResponse().getStatus());
     }
+
     @Test
     @Transactional
     public void testUpdateReceiveGroupDateEvents() throws Exception {
@@ -557,24 +558,24 @@ class UserControllerTest {
         ).andReturn();
 
         ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
-        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+        List<Map<String, String>> list = (List<Map<String, String>>) map0.getAttribute("invites");
 
-        Map<String,String> first_invite=list.get(0);
+        Map<String, String> first_invite = list.get(0);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("inviteId",first_invite.get("inviteId"));
-        params.add("status",first_invite.get("status"));
+        params.add("inviteId", first_invite.get("inviteId"));
+        params.add("status", first_invite.get("status"));
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/receive_invite_events").params(params)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
         ModelMap map = mvcResult.getModelAndView().getModelMap();
-        List<Map<String,String>> events=(List<Map<String,String>>)map.getAttribute("events");
+        List<Map<String, String>> events = (List<Map<String, String>>) map.getAttribute("events");
 
 
         MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
 
 
-        params1.add("eventId", events.get(0).get("eventId"));
+        params1.add("eventId", events.get(events.size() - 1).get("eventId"));
         params1.add("preference", "5");
         params1.add("availability", "yes");
         mockMvc.perform(MockMvcRequestBuilders.get("/update_receive_invite_events")
@@ -595,43 +596,43 @@ class UserControllerTest {
         ).andReturn();
 
         ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
-        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+        List<Map<String, String>> list = (List<Map<String, String>>) map0.getAttribute("invites");
 
-        String inviteId="";
-        for(Map<String,String> obj:list){
-            if(obj.get("status").equalsIgnoreCase("new")){
-                inviteId=obj.get("inviteId");
+        String inviteId = "";
+        for (Map<String, String> obj : list) {
+            if (obj.get("status").equalsIgnoreCase("new")) {
+                inviteId = obj.get("inviteId");
                 break;
             }
         }
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("inviteId",inviteId);
+        params.add("inviteId", inviteId);
 
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params)
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
-        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+        Assert.assertEquals("302", mvcResult.getResponse().getStatus() + "");
 
-        inviteId="";
-        for(Map<String,String> obj:list){
-            if(obj.get("status").equalsIgnoreCase("Rejected")){
-                inviteId=obj.get("inviteId");
+        inviteId = "";
+        for (Map<String, String> obj : list) {
+            if (obj.get("status").equalsIgnoreCase("Rejected")) {
+                inviteId = obj.get("inviteId");
                 break;
             }
         }
         MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
-        params1.add("inviteId",inviteId);
+        params1.add("inviteId", inviteId);
 
-        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
-        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+        Assert.assertEquals("302", mvcResult.getResponse().getStatus() + "");
 
-        params1.add("inviteId","999999");
+        params1.add("inviteId", "999999");
 
-        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite").params(params1)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
     }
@@ -645,53 +646,53 @@ class UserControllerTest {
         ).andReturn();
 
         ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
-        List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
+        List<Map<String, String>> list = (List<Map<String, String>>) map0.getAttribute("invites");
 
-        String inviteId="";
-        for(Map<String,String> obj:list){
-            if(obj.get("status").equalsIgnoreCase("new")){
-                inviteId=obj.get("inviteId");
+        String inviteId = "";
+        for (Map<String, String> obj : list) {
+            if (obj.get("status").equalsIgnoreCase("new")) {
+                inviteId = obj.get("inviteId");
                 break;
             }
         }
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("inviteId",inviteId);
+        params.add("inviteId", inviteId);
 
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params)
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
-        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+        Assert.assertEquals("302", mvcResult.getResponse().getStatus() + "");
 
-        inviteId="";
-        for(Map<String,String> obj:list){
-            if(obj.get("status").equalsIgnoreCase("Confirmed")){
-                inviteId=obj.get("inviteId");
+        inviteId = "";
+        for (Map<String, String> obj : list) {
+            if (obj.get("status").equalsIgnoreCase("Confirmed")) {
+                inviteId = obj.get("inviteId");
                 break;
             }
         }
         MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
-        params1.add("inviteId",inviteId);
+        params1.add("inviteId", inviteId);
 
-        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
-        Assert.assertEquals("302",mvcResult.getResponse().getStatus()+"");
+        Assert.assertEquals("302", mvcResult.getResponse().getStatus() + "");
 
-        params1.add("inviteId","999999");
+        params1.add("inviteId", "999999");
 
-        mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite").params(params1)
                 .sessionAttr("loginUser", "root")
         ).andReturn();
 
     }
 
     @Test
-    public void testEventSearch() throws Exception{
+    public void testEventSearch() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","minyiche3");
-        params.add("invite_id","7");
+        params.add("username", "minyiche3");
+        params.add("invite_id", "7");
 
         mockMvc.perform(MockMvcRequestBuilders.get("/search-event-by-invite-and-username")
                         .params(params)
@@ -708,7 +709,7 @@ class UserControllerTest {
     @Transactional
     public void testFinalizeInvite() throws Exception {
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/propose-finalize-invite")
-                        .param("invite_id","7")
+                        .param("invite_id", "7")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk())
@@ -717,7 +718,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.median", is(3.0)));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/propose-finalize-invite")
-                        .param("invite_id","31")
+                        .param("invite_id", "31")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk());
@@ -728,24 +729,24 @@ class UserControllerTest {
     @Test
     public void testLogout() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username","root");
-        params.add("password","123");
-        MvcResult mvcResult= mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
+        params.add("username", "root");
+        params.add("password", "123");
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin").params(params)).andReturn();
         MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
         mockMvc.perform(MockMvcRequestBuilders.get("/logout").session(session)).andExpect(redirectedUrl("/signin")).andExpect(status().isFound());
     }
 
     @Test
-    public void access_home_without_login() throws Exception{
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/home")).andReturn();
-        String value= (String) mvcResult.getRequest().getAttribute("error_message");
+    public void access_home_without_login() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/home")).andReturn();
+        String value = (String) mvcResult.getRequest().getAttribute("error_message");
 
-        Assert.assertEquals("You need to log in first!",value);
+        Assert.assertEquals("You need to log in first!", value);
     }
 
     @Test
     @Transactional
-    void testAddBlockedUser()  throws Exception {
+    void testAddBlockedUser() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("username", "minyiche2");
         params.add("block", "minyiche1");
@@ -772,20 +773,20 @@ class UserControllerTest {
 
     @Test
     public void testUsernameStartingWith() throws Exception {
-        String json="{\"name\":\"r\"}";
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andReturn();
-        String response_json=mvcResult.getResponse().getContentAsString();
+        String json = "{\"name\":\"r\"}";
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        String response_json = mvcResult.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, List<String>> map = mapper.readValue(response_json, Map.class);
-        List<String> names=map.get("names");
-        Boolean found=true;
-        for(String name:names){
-            if(name.substring(0).equalsIgnoreCase("r")){
-                found=false;
+        List<String> names = map.get("names");
+        Boolean found = true;
+        for (String name : names) {
+            if (name.substring(0).equalsIgnoreCase("r")) {
+                found = false;
                 break;
             }
         }
@@ -824,10 +825,10 @@ class UserControllerTest {
         String json = ow.writeValueAsString(invite);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
-        ).
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .sessionAttr("loginUser", "minyiche1")
+                ).
                 andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("Reply Sent")));
 
@@ -838,13 +839,29 @@ class UserControllerTest {
     public void testUpdateUserDateRange() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("startDate", "2021-10-16");
-        params.add("endDate", "2024-10-18");
-        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
-                        .params(params)
-                        .sessionAttr("loginUser", "minyiche4")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
+
+        params.add("endDate", "2021-10-18");
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/update-unavailable-date")
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+
+        Assert.assertEquals(302, mvcResult.getResponse().getStatus()); // 302 redirection http code
+    }
+
+    @Test
+    @Transactional
+    public void testRemoveUserDateRange() throws Exception {
+
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/remove-unavailable-date")
+
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+
+        Assert.assertEquals(302, mvcResult.getResponse().getStatus()); // 302 redirection http code
+
     }
 
     @Test
@@ -858,20 +875,20 @@ class UserControllerTest {
 //        ).andExpect(status().isOk())
 //                .andExpect(MockMvcResultMatchers.jsonPath("$[0]", is("minyiche1")));
 
-        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/get-blocked-user")
                 .params(params)
                 .sessionAttr("loginUser", "minyiche1")).andReturn();
 
-        String response_json=mvcResult.getResponse().getContentAsString();
+        String response_json = mvcResult.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, List<String>> map = mapper.readValue(response_json, Map.class);
-        List<String> names=map.get("blocked_usernames");
+        List<String> names = map.get("blocked_usernames");
 
-        String target="minyiche1";
-        Boolean found=false;
-        for(String name:names){
+        String target = "minyiche1";
+        Boolean found = false;
+        for (String name : names) {
             if (name.equals(target)) {
-                found=true;
+                found = true;
             }
 
         }
@@ -896,10 +913,10 @@ class UserControllerTest {
     public void testFindSentInvite() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite")
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andReturn();
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
-        List<Invite> invites = (List<Invite>)modelMap.getAttribute("invites");
+        List<Invite> invites = (List<Invite>) modelMap.getAttribute("invites");
         Assert.assertEquals(4, invites.size());
 //                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[0].inviteName", is("Music Invite")))
 //                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
@@ -916,12 +933,12 @@ class UserControllerTest {
         params.add("endDate", "2022-03-08");
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/search-ticketmaster-event")
-                        .params(params)
-                        .sessionAttr("loginUser", "minyiche1")
-                ).andReturn();
+                .params(params)
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
 
-        JsonNode eventNode = new ObjectMapper().readTree((String)modelMap.getAttribute("events"));
+        JsonNode eventNode = new ObjectMapper().readTree((String) modelMap.getAttribute("events"));
         //System.out.println((String)modelMap.getAttribute("events"));
         Assert.assertEquals(1, eventNode.get("_embedded").get("events").size());
         Assert.assertEquals("Justin Bieber", eventNode.get("_embedded").get("events").get(0).get("name").asText());
@@ -929,28 +946,51 @@ class UserControllerTest {
 
     @Test
     @Transactional
+
+    public void testSetting() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/setting")
+
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200, mvcResult.getResponse().getStatus());
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/setting")
+
+                .sessionAttr("loginUser", "root1")
+        ).andReturn();
+
+        Assert.assertEquals(200, mvcResult.getResponse().getStatus());
+    }
+
     public void testFindSentInviteEvent() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
-                        .param("inviteId", "7")
+                .param("inviteId", "7")
                 .sessionAttr("loginUser", "minyiche1")
         ).andReturn();
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(200, status);
-        Invite invite = (Invite)modelMap.getAttribute("invite");
-        List<List<Event>> eventsMap = (List<List<Event>>)modelMap.getAttribute("eventsReceivers");
-        List<User> receivers = (List<User>)modelMap.getAttribute("receivers");
-        List<Event> events = (List<Event>)modelMap.getAttribute("events");
+        Invite invite = (Invite) modelMap.getAttribute("invite");
+        List<List<Event>> eventsMap = (List<List<Event>>) modelMap.getAttribute("eventsReceivers");
+        List<User> receivers = (List<User>) modelMap.getAttribute("receivers");
+        List<Event> events = (List<Event>) modelMap.getAttribute("events");
         Assert.assertEquals(4, eventsMap.size());
         Assert.assertEquals(2, eventsMap.get(0).size());
         Assert.assertEquals(2, receivers.size());
         Assert.assertEquals(4, events.size());
         Assert.assertEquals("Music Invite", invite.getInviteName());
+
     }
 
     @Test
     @Transactional
-    public void testSetting(){
-        Assert.assertTrue(true);
+
+    public void testRemove_receive_invites_lists() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/remove_receive_invites_lists")
+
+                .sessionAttr("loginUser", "root")
+        ).andExpect(status().isOk());
+
     }
 }

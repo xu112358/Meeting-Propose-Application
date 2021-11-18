@@ -296,7 +296,7 @@ public class UserController {
                 obj.setPreference(preference);
                 obj.setAvailability(availability);
                 message="Updated";
-                break;
+
             }
         }
         userRepository.save(cur_user);
@@ -627,19 +627,30 @@ public class UserController {
         return response;
     }
 
-    @PostMapping(value="/update-unavailable-date")
-    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("startDate") String start, @RequestParam("endDate") String end, HttpSession httpSession) throws Exception {
-        String username =(String)httpSession.getAttribute("loginUser");
-        Map<String, String> response = new HashMap<>();
-        User user = userRepository.findByUsername(username);
+
+    @GetMapping(value="/update-unavailable-date")
+    public String updateUserDateRange (HttpSession session, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws Exception {
+        System.out.println("update-unavailable-date");
+        String cur_usrname=(String)session.getAttribute("loginUser");
+        User user = userRepository.findByUsername(cur_usrname);
+
         Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(start);
         Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(end);
         user.setStartDate(startDate);
         user.setEndDate(endDate);
         userRepository.save(user);
-        response.put("message", username + " unavailable date range is set");
-        response.put("returnCode", "200");
-        return response;
+        return "redirect:/setting";
+    }
+
+    @GetMapping(value="/remove-unavailable-date")
+    public String removeUserDateRange (HttpSession session) throws Exception {
+        String cur_usrname=(String)session.getAttribute("loginUser");
+        User user = userRepository.findByUsername(cur_usrname);
+
+        user.setStartDate(null);
+        user.setEndDate(null);
+        userRepository.save(user);
+        return "redirect:/setting";
     }
 
     @GetMapping(value="/setting")
@@ -647,13 +658,14 @@ public class UserController {
         String name=(String)httpSession.getAttribute("loginUser");
         User user=userRepository.findByUsername(name);
 
-        if(user.getEndDate()!=null && user.getStartDate()!=null){
-            model.addAttribute("startDate",user.getStartDate().toString());
-            model.addAttribute("endDate",user.getEndDate().toString());
-        }
-        else{
+
+        if(user.getStartDate()==null){
             model.addAttribute("startDate","null");
             model.addAttribute("endDate","null");
+        }
+        else{
+            model.addAttribute("startDate",user.getStartDate().toString());
+            model.addAttribute("endDate",user.getEndDate().toString());
         }
 
         return "setting";
@@ -686,5 +698,18 @@ public class UserController {
         in.close();
         model.addAttribute("events", response.toString());
         return "proposeEvent";
+    }
+
+    @GetMapping(value="/remove_receive_invites_lists")
+    public @ResponseBody Map<String,String> remove_receive_invites_lists(HttpSession httpSession){
+        User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
+        user.getReceive_invites_list().clear();
+        user.getReject_invites_list().clear();
+        user.getConfirmed_invites_list().clear();
+        userRepository.save(user);
+
+        Map<String,String> res=new HashMap<>();
+        res.put("message","200");
+        return res;
     }
 }
