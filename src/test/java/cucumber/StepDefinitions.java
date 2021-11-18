@@ -348,7 +348,7 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertEquals(string+" Remove", text);
+        assertNotSame("root", text);
     }
 
     @When("{string} is in the blocked user list")
@@ -356,7 +356,7 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertEquals(string + " Remove", text);
+        assertNotSame("root", text);
     }
 
     @Then("I should see an error message of test1 is already on your blocked list")
