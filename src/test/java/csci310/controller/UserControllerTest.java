@@ -299,6 +299,25 @@ class UserControllerTest {
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
+
+        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2000-10-16");
+        params.add("endDate", "2001-10-18");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche3")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche3 unavailable date range is set")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
+        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2030-10-16");
+        params.add("endDate", "2031-10-18");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                        .params(params)
+                        .sessionAttr("loginUser", "root1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "root1 unavailable date range is set")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
     }
 
 
@@ -447,6 +466,8 @@ class UserControllerTest {
 
         receivers = new ArrayList<>();
         receivers.add("minyiche3");
+        receivers.add("root");
+        receivers.add("root1");
 
         inviteModel = new InviteModel();
         inviteModel.setSender("minyiche1");
@@ -874,14 +895,14 @@ class UserControllerTest {
     @Transactional
     public void testFindSentInvite() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche1");
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/find-sent-invite")
-                        .params(params)
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite")
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[0].inviteName", is("Music Invite")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
-        //resultActions.andDo(MockMvcResultHandlers.print());
+                ).andReturn();
+        ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
+        List<Invite> invites = (List<Invite>)modelMap.getAttribute("invites");
+        Assert.assertEquals(4, invites.size());
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[0].inviteName", is("Music Invite")))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.invites[1].inviteName", is("Friend Invite")));
     }
 
     @Test
@@ -904,6 +925,18 @@ class UserControllerTest {
         //System.out.println((String)modelMap.getAttribute("events"));
         Assert.assertEquals(1, eventNode.get("_embedded").get("events").size());
         Assert.assertEquals("Justin Bieber", eventNode.get("_embedded").get("events").get(0).get("name").asText());
+    }
+
+    @Test
+    @Transactional
+    public void testFindSentInviteEvent() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
+                        .param("invite_id", "7")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(200, status);
     }
 
     @Test
