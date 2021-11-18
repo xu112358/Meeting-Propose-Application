@@ -299,6 +299,25 @@ class UserControllerTest {
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
+
+        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2000-10-16");
+        params.add("endDate", "2001-10-18");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                        .params(params)
+                        .sessionAttr("loginUser", "minyiche3")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche3 unavailable date range is set")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
+        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDate", "2030-10-16");
+        params.add("endDate", "2031-10-18");
+        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+                        .params(params)
+                        .sessionAttr("loginUser", "root1")
+                ).andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "root1 unavailable date range is set")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
     }
 
 
@@ -447,6 +466,8 @@ class UserControllerTest {
 
         receivers = new ArrayList<>();
         receivers.add("minyiche3");
+        receivers.add("root");
+        receivers.add("root1");
 
         inviteModel = new InviteModel();
         inviteModel.setSender("minyiche1");
