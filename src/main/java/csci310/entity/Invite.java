@@ -21,21 +21,32 @@ public class Invite {
     private Long id;
     @Column(name = "create_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd")
-    private Date createDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone="America/Los_Angeles")
+    private Date createDate; // invite sort date
     @Column(name = "invite_name")
     private String inviteName;
-    @JsonBackReference
+    @Column(name = "status")
+    private String status = "not finalized"; // finalized or not finalized
+    //@JsonBackReference
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;
 
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "invites_which_hold_event")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "final_event_id")
+    private Event finalEvent;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "invite")
     private List<Event> invite_events_list = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "invite_receivers",joinColumns = @JoinColumn(name = "invite_id", referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"))
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "receive_invites_list")
     private List<User> receivers = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "reject_invites_list")
+    private List<User> reject_receivers = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL,mappedBy = "confirmed_invites_list")
+    private List<User> confirmed_receivers = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -60,11 +71,27 @@ public class Invite {
     public void setInviteName(String inviteName) {
         this.inviteName = inviteName;
     }
-    @JsonIgnore
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Event getFinalEvent() {
+        return finalEvent;
+    }
+
+    public void setFinalEvent(Event finalEvent) {
+        this.finalEvent = finalEvent;
+    }
+
     public User getSender() {
         return sender;
     }
-    @JsonIgnore
+
     public void setSender(User sender) {
         this.sender = sender;
     }
@@ -76,6 +103,23 @@ public class Invite {
     public void setInvite_events_list(List<Event> invite_events_list) {
         this.invite_events_list = invite_events_list;
     }
+
+    public List<User> getReject_receivers() {
+        return reject_receivers;
+    }
+
+    public void setReject_receivers(List<User> reject_receivers) {
+        this.reject_receivers = reject_receivers;
+    }
+
+    public List<User> getConfirmed_receivers() {
+        return confirmed_receivers;
+    }
+
+    public void setConfirmed_receivers(List<User> confirmed_receivers) {
+        this.confirmed_receivers = confirmed_receivers;
+    }
+
     @JsonIgnore
     public List<User> getReceivers() {
         return receivers;

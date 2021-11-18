@@ -20,6 +20,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.sound.midi.Receiver;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -116,12 +124,24 @@ public class UserController {
         for(String receiverUsername : receiversUsername){
             receivers.add(userRepository.findByUsername(receiverUsername));
         }
-        //Check if sender is on the block list of receiver
+
         for(User receiver : receivers){
             List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+            //Check if sender is on the block list of receiver
             for(User userOnBlockList : receiverBlockList){
                 if(sender.getId() == userOnBlockList.getId()){
                     responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+            //Check if every receiver is able to attend every event
+            for(Event event : events){
+                if(receiver.getStartDate() == null){ //we update startDate and endDate at the same time, check startDate would be enough
+                    continue;
+                }
+                if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
+                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
                     responseMap.put("returnCode", "400");
                     return responseMap;
                 }
@@ -130,22 +150,25 @@ public class UserController {
 
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
-        invite.setCreateDate(new Date());
+        Collections.sort(events, Comparator.comparing(Event::getEventDate));
+        invite.setCreateDate(events.get(0).getEventDate());
         invite.setSender(sender);
-        invite.setReceivers((receivers));
         inviteRepository.save(invite);
         //can cause problem with multithreaded server
         invite = inviteRepository.findTopByOrderByIdDesc();
         for(int i = 0; i < receivers.size(); i ++){
             for(int j = 0; j < events.size(); j ++){
                 Event event = new Event(events.get(j));
-                event.setStatus("not confirmed");
-                event.setInvites_which_hold_event(new ArrayList<Invite>(
-                        Arrays.asList(invite)));
-                event.setUsers_who_hold_event(new ArrayList<User>(
-                        Arrays.asList(receivers.get(i))));
+                event.setInvite(invite);
+                event.setReceiver(receivers.get(i));
                 eventRepository.save(event);
             }
+            //add received invite
+            User receiver = receivers.get(i);
+            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+            newReceivedInviteList.add(invite);
+            receiver.setReceive_invites_list(newReceivedInviteList);
+            userRepository.save(receiver);
         }
 
         responseMap.put("message", "Invite Sent");
@@ -153,35 +176,281 @@ public class UserController {
         return responseMap;
     }
 
-    @GetMapping(value="/find-user-invite")
-    public @ResponseBody List<Invite> findUserInvite(@RequestParam("username") String username) {
-        User sender = userRepository.findByUsername(username);
+    @GetMapping(value="/find-received-invite")
+    public String findUserInvite(Model model, HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute("loginUser");
+        User receiver = userRepository.findByUsername(username);
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
-        //filter out confirmed event
-        List<Event> tmp = new ArrayList<>();
-        for(Event event : userEvents){
-             if(event.getStatus().equals("not confirmed")){
-                 tmp.add(event);
-             }
-        }
-        userEvents = tmp;
         List<Invite> invites = userRepository.findByUsername(username).getReceive_invites_list();
         List<Invite> invitesResult = new ArrayList<>();
-        //filter out confirmed invite --- not implemented
         for(Invite invite : invites){
-
             //List<Event> inviteEvents = userEvents.stream().filter(userEvent -> userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())).collect(Collectors.toList());
             List<Event> inviteEvents = new ArrayList<>();
             for(Event userEvent : userEvents){
-                if(userEvent.getInvites_which_hold_event().get(0).getId().equals(invite.getId())){
+                // find overlap events of a received invite and receiver
+                if(userEvent.getInvite().getId().equals(invite.getId())){
                     inviteEvents.add(userEvent);
                 }
             }
             invite.setInvite_events_list(inviteEvents);
-            invite.setSender(sender);
+            invite.setSender(inviteRepository.findById(invite.getId()).get().getSender());
             invitesResult.add(invite);
         }
-        return invitesResult;
+        model.addAttribute("invites", invitesResult);
+        return "messages";
+    }
+
+    @GetMapping(value="/receive-groupDates")
+    public String receiveGroupDate(Model model, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User receiver=userRepository.findByUsername(cur_username);
+        List<Invite> receive_invites=receiver.getReceive_invites_list();
+        List<Invite> rejected_receive_invites=receiver.getReject_invites_list();
+        List<Invite> confirm_receive_invites=receiver.getConfirmed_invites_list();
+
+        List<Map<String,String>> list=new ArrayList<>();
+
+
+        for(Invite obj:receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
+            map.put("status","New");
+            list.add(map);
+
+        }
+
+        for(Invite obj:rejected_receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
+            map.put("status","Rejected");
+            list.add(map);
+        }
+
+        for(Invite obj:confirm_receive_invites){
+            Map<String,String> map=new HashMap<>();
+            map.put("inviteName",obj.getInviteName());
+            map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
+            map.put("status","Confirmed");
+            list.add(map);
+        }
+
+
+        Collections.sort(list, new Comparator<Map<String, String>>() {
+                    @Override
+                    public int compare(Map<String, String> o1, Map<String, String> o2) {
+                        return o1.get("date").compareTo(o2.get("date"));
+                    }
+                }
+        );
+        model.addAttribute("invites", list);
+
+        return "recieive_invite";
+    }
+    @GetMapping(value = "/receive_invite_events")
+    public String receiveGroupDateEvents(@RequestParam("inviteId") String inviteId,@RequestParam("status") String status,Model model, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        Long inviteId_value=Long.parseLong(inviteId);
+        String invite_name="";
+
+        User cur_user=userRepository.findByUsername(cur_username);
+        List<Map<String,String>> list=new ArrayList<>();
+        for(Event obj:cur_user.getUser_events_list()){
+            if(obj.getInvite().getId().equals(inviteId_value)){
+                Map<String,String> map=new HashMap<>();
+                map.put("eventName",obj.getEventName());
+                map.put("genre",obj.getGenre());
+                map.put("location",obj.getLocation());
+                map.put("date",obj.getEventDate().toString());
+                map.put("sender",obj.getInvite().getSender().getUsername());
+                map.put("preference",obj.getPreference()+"");
+                map.put("availability",obj.getAvailability());
+                map.put("eventId",obj.getId()+"");
+                invite_name=obj.getInvite().getInviteName();
+                list.add(map);
+            }
+        }
+
+        model.addAttribute("inviteId",inviteId);
+        model.addAttribute("status",status);
+        model.addAttribute("events",list);
+        model.addAttribute("inviteName",invite_name);
+
+
+        return "receive_invite_event";
+    }
+
+    @GetMapping(value = "/update_receive_invite_events")
+    public @ResponseBody Map<String,String> updateReceiveGroupDateEvents(@RequestParam("eventId") Long eventId,@RequestParam("preference") int preference,@RequestParam("availability") String availability, HttpSession httpSession) {
+        Map<String,String> result=new HashMap<>();
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        String message="Not Updated";
+        for(Event obj: cur_user.getUser_events_list()){
+            if(obj.getId().equals(eventId)){
+                obj.setPreference(preference);
+                obj.setAvailability(availability);
+                message="Updated";
+                break;
+            }
+        }
+        userRepository.save(cur_user);
+        result.put("message",message);
+
+        return result;
+    }
+
+    @GetMapping(value = "/confirm_receive_invite")
+    public String confirmReceiveGroupDate(@RequestParam("inviteId") Long inviteId, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        Invite find_invite=null;
+
+        for(Invite obj:cur_user.getReceive_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getConfirmed_invites_list().add(find_invite);
+            cur_user.getReceive_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("confirmed");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+        find_invite=null;
+
+        for(Invite obj:cur_user.getReject_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().remove(find_invite);
+            cur_user.getConfirmed_invites_list().add(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("confirmed");
+
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+
+        return "redirect:/receive-groupDates";
+    }
+
+
+    @GetMapping(value = "/reject_receive_invite")
+    public String rejectReceiveGroupDate(@RequestParam("inviteId") Long inviteId, HttpSession httpSession) {
+        String cur_username=(String)httpSession.getAttribute("loginUser");
+        User cur_user=userRepository.findByUsername(cur_username);
+
+        Invite find_invite=null;
+
+        for(Invite obj:cur_user.getReceive_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getReceive_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("not confirmed");
+                    obj.setPreference(1);
+                    obj.setAvailability("no");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+
+
+        find_invite=null;
+
+        for(Invite obj:cur_user.getConfirmed_invites_list()){
+            if(obj.getId().equals(inviteId)){
+                find_invite=obj;
+
+            }
+        }
+        if(find_invite!=null){
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getConfirmed_invites_list().remove(find_invite);
+
+            for(Event obj:cur_user.getUser_events_list()){
+                if(obj.getInvite().getId().equals(inviteId)){
+                    obj.setStatus("not confirmed");
+                    obj.setPreference(1);
+                    obj.setAvailability("no");
+                }
+            }
+            userRepository.save(cur_user);
+        }
+        return "redirect:/receive-groupDates";
+    }
+
+    @GetMapping(value="/list-sent-invite")
+    public String findSentInvite(Model model, HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute("loginUser");
+        User user = userRepository.findByUsername(username);
+        List<Invite> invites = user.getSend_invites_list();
+        Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
+        model.addAttribute("invites", invites);
+        return "sent_groupDate";
+    }
+
+    @GetMapping(value="/list-sent-invite-event")
+    public String findSentInviteEvent(@RequestParam("inviteId") Long inviteId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = inviteRepository.findById(inviteId).get().getInvite_events_list();
+        Map<String, List<Event>> eventsMap = new HashMap<>();
+        List<Event> eventMap = new ArrayList<>();
+        for(Event event : events){
+            String eventKey = event.getEventName() + event.getEventDate().toString();
+            List<Event> tmp = eventsMap.get(eventKey);
+            if(tmp == null){
+                tmp = new ArrayList<>();
+            }
+            event.setReceiver(eventRepository.findById(event.getId()).get().getReceiver());
+            tmp.add(event);
+            eventsMap.put(eventKey, tmp);
+        }
+        List<List<Event>> eventsList = new ArrayList<>();
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+
+            eventsList.add(eventsMapEntry.getValue());
+        }
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+            eventMap.add(eventsMapEntry.getValue().get(0));
+        }
+
+        List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
+        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
+        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        model.addAttribute("eventsReceivers", eventsList);
+        model.addAttribute("receivers", receivers);
+        model.addAttribute("events", eventMap);
+        model.addAttribute("invite", invite);
+        return "sent_invite_event";
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -204,32 +473,69 @@ public class UserController {
     }
 
     //this api has not been completed
-    @PostMapping(value="/finalize-invite")
-    public @ResponseBody Map<String, String> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
+    @PostMapping(value="/propose-finalize-invite")
+    /*          status, preference, availablilty should be ignored in the return json
+    * {"average":4.0,"median":3.0,"proposedEvent":{"id":8,"eventName":"Justin Bieber","genre":"Music","eventDate":"2021-10-15","location":"Los Angeles","status":"confirmed","preference":5,"availability":"yes"}}
+    * */
+    public @ResponseBody Map<String, Object> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
-        Invite invite = inviteOptional.get();
+        Map<String, Object> response = new HashMap<>();
+        //get invite
         List<Event> events = inviteOptional.get().getInvite_events_list();
+        //event name + event date map to same events with different users
         Map<String, List<Event>> eventMap = new HashMap<>();
         for(Event event :events) {
+            //do not need to check if event is not confirmed or rejected because they give 1 to all events
             String eventKey = event.getEventName() + event.getEventDate().toString();
             List<Event> tmp = eventMap.get(eventKey);
             if(tmp == null){
                 tmp = new ArrayList<>();
-                eventMap.put(eventKey, tmp);
             }
             tmp.add(event);
             eventMap.put(eventKey, tmp);
         }
-        Map<String, Integer> eventEvaluation = new HashMap<>();
+        Map<String, Double> eventEvaluation = new HashMap<>();
         // Iterating eventMap through for loop
         for (Map.Entry<String, List<Event>> eventKeyValue : eventMap.entrySet()) {
             //evaluate event feasibility
-
+            double evaluate = 0;
+            for(Event event : eventKeyValue.getValue()){
+                double multiply = 0;
+                if(event.getAvailability().equals("yes")){
+                    multiply = 1;
+                }else if(event.getAvailability().equals("maybe")){
+                    multiply = 0.5;
+                }else{ // availability: no ---- don't change it cuz branch coverage
+                    multiply = 0;
+                }
+                evaluate += multiply * event.getPreference();
+            }
+            eventEvaluation.put(eventKeyValue.getKey(), evaluate);
         }
-
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("message", "Invite Finalized");
-        return responseMap;
+        //find event with highest evaluation
+        List<Map.Entry<String, Double>> eventKeyValues = new ArrayList<>(eventEvaluation.entrySet());
+        eventKeyValues.sort(Map.Entry.comparingByValue());
+        Map.Entry<String, Double> maxPair = eventKeyValues.get(eventKeyValues.size() - 1);
+        Double median = 0d;
+        Double sum = 0d;
+        Double average;
+        if(eventKeyValues.size() % 2 == 0){
+            Double left = eventKeyValues.get(eventKeyValues.size() / 2 - 1).getValue();
+            Double right = eventKeyValues.get(eventKeyValues.size() / 2).getValue();
+            median = (left + right) / 2;
+        }else{
+            median = eventKeyValues.get(eventKeyValues.size() / 2).getValue();
+        }
+        for(Map.Entry<String, Double> eventKeyValue : eventKeyValues){
+            sum += eventKeyValue.getValue();
+        }
+        average = sum / eventKeyValues.size();
+        //procedure after finalize invite
+        Event finalEvent = eventMap.get(maxPair.getKey()).get(0);
+        response.put("proposedEvent", finalEvent);
+        response.put("average", average);
+        response.put("median", median);
+        return response;
     }
 
     @PostMapping(value="/add-blocked-user")
@@ -239,13 +545,17 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
 
         List<User> blockedUsers = userRepository.findByUsername(username).getBlock_list();
-        User isBlocked = blockedUsers.stream().filter(tmp -> tmp.getId().equals(toBlock.getId())).findAny().orElse(null);
+        User isBlocked = null;
+        for(User blockeduser : blockedUsers){
+            if(blockeduser.getId() == toBlock.getId()){
+                isBlocked = blockeduser;
+            }
+        }
         if(isBlocked != null){
             response.put("message", block + " is already on your blocked list");
             response.put("returnCode", "400");
             return response;
         }
-
         user.getBlock_list().add(toBlock);
         userRepository.save(user);
         response.put("message", "added to blocklist");
@@ -253,11 +563,37 @@ public class UserController {
         return response;
     }
 
+    @GetMapping(value="/get-blocked-user")
+    public @ResponseBody Map<String, List<String>> getBlockedUser(@RequestParam("username") String username) {
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        List<String> usernameList = new ArrayList<>();
+        for(User user : users){
+            usernameList.add(user.getUsername());
+        }
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("blocked_usernames",usernameList);
+        return result;
+
+    }
+
+    @PostMapping(value="/delete-blocked-user")
+    public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("blocked") String blockedUsername, HttpSession httpSession) {
+        Map<String, String> response = new HashMap<>();
+        String username = (String)httpSession.getAttribute("loginUser");
+        User user = userRepository.findByUsername(username);
+        User toBlock = userRepository.findByUsername(blockedUsername);
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        users.remove(toBlock);
+        user.setBlock_list(users);
+        userRepository.save(user);
+        response.put("message", "User unblocked");
+        response.put("returnCode", "200");
+        return response;
+    }
+
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
-
-
         String name=(String) map.get("name");
 
         List<User> users=userRepository.findByUsernameStartingWith(name);
@@ -276,16 +612,79 @@ public class UserController {
     }
 
     @PostMapping(value="/reply-invite")
-    public @ResponseBody Map<String, String> replyInvite (@RequestParam("username") String username, @RequestBody List<Event> events) throws JsonProcessingException {
-
+    public @ResponseBody Map<String, String> replyInvite (@RequestBody Invite invite) throws JsonProcessingException {
+        List<Event> events = invite.getInvite_events_list();
         Map<String, String> response = new HashMap<>();
         for(Event event : events){
-            event.setStatus("confirmed");
-            eventRepository.save(event);
+            Event responseEvent = eventRepository.getById(event.getId());
+            responseEvent.setStatus("confirmed");
+            responseEvent.setPreference(event.getPreference());
+            responseEvent.setAvailability(event.getAvailability());
+            eventRepository.save(responseEvent);
         }
         response.put("message", "Reply Sent");
         response.put("returnCode", "200");
         return response;
     }
 
+    @PostMapping(value="/update-unavailable-date")
+    public @ResponseBody Map<String, String> updateUserDateRange (@RequestParam("startDate") String start, @RequestParam("endDate") String end, HttpSession httpSession) throws Exception {
+        String username =(String)httpSession.getAttribute("loginUser");
+        Map<String, String> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+        Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(start);
+        Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(end);
+        user.setStartDate(startDate);
+        user.setEndDate(endDate);
+        userRepository.save(user);
+        response.put("message", username + " unavailable date range is set");
+        response.put("returnCode", "200");
+        return response;
+    }
+
+    @GetMapping(value="/setting")
+    public String setting(HttpSession httpSession, Model model){
+        String name=(String)httpSession.getAttribute("loginUser");
+        User user=userRepository.findByUsername(name);
+
+        if(user.getEndDate()!=null && user.getStartDate()!=null){
+            model.addAttribute("startDate",user.getStartDate().toString());
+            model.addAttribute("endDate",user.getEndDate().toString());
+        }
+        else{
+            model.addAttribute("startDate","null");
+            model.addAttribute("endDate","null");
+        }
+
+        return "setting";
+    }
+
+    @GetMapping(value="/search-ticketmaster-event")
+    /*
+    * sample event return
+    * {"_embedded":{"events":[{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfja","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com%2Fevent%2FZ7r9jZ1AdAfja","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-08T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-07","localTime":"19:30:00","dateTime":"2022-03-08T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-07-2022/event/Zu0FM1R0e5t5lRJ","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-20510-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfja?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}},{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfjp","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=http%3A%2F%2Fwww.ticketsnow.com%2FInventoryBrowse%2FTicketList.aspx%3FPID%3D3154716","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-09T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-08","localTime":"19:30:00","dateTime":"2022-03-09T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-08-2022/event/Zu0FM1R0e5t5lRg","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-1-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfjp?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}}]},"_links":{"self":{"href":"/discovery/v2/events.json?startDateTime=2021-11-17T12%3A00%3A00Z&size=12&city=Los+Angeles&classificationName=Music&endDateTime=2023-11-17T12%3A00%3A00Z&keyword=Justin"}},"page":{"size":12,"totalElements":2,"totalPages":1,"number":0}}
+    * */
+    public String searchEvent (@RequestParam("city") String city, @RequestParam("keyword") String keyword, @RequestParam("genre") String genre, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, Model model) throws Exception{
+        String urlString = "https://app.ticketmaster.com/discovery/v2/events.json?size=12&city=" + city + "&keyword=" + keyword + "&classificationName="
+                + genre + "&startDateTime=" + startDate + "T12:00:00Z" + "&endDateTime=" + endDate + "T12:00:00Z" + "&apikey=f3kuGY9d20QsgYWlhdQ0PwnnkeU2Mqym";
+
+        URL url = new URL(urlString);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("User-Agent", "Groupie/1.0");
+
+        int responseCode = con.getResponseCode();
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String output;
+        StringBuffer response = new StringBuffer();
+
+        while ((output = in.readLine()) != null) {
+            response.append(output);
+        }
+        in.close();
+        model.addAttribute("events", response.toString());
+        return "proposeEvent";
+    }
 }

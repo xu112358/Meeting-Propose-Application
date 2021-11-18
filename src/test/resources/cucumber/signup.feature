@@ -9,8 +9,6 @@ Feature: Sign Up
     When I enter "username" in Username field
     And I enter "password" in Password field
     And I enter "password" in Re-Password field
-    And I enter "firstname" in First Name field
-    And I enter "lastname" in Last Name field
     And I press create account button
     Then I should sign up unsuccesfully
 
@@ -19,8 +17,6 @@ Feature: Sign Up
     When I enter "test" in Username field
     And I enter "password" in Password field
     And I enter "1" in Re-Password field
-    And I enter "firstname" in First Name field
-    And I enter "lastname" in Last Name field
     And I press create account button
     Then Signup Password Mismatch
   Scenario: One Input Missing
@@ -28,8 +24,6 @@ Feature: Sign Up
     When I enter "" in Username field
     And I enter "password" in Password field
     And I enter "1" in Re-Password field
-    And I enter "firstname" in First Name field
-    And I enter "lastname" in Last Name field
     And I press create account button
     Then Fill up all inputs
   Scenario: All Values Null
@@ -37,8 +31,6 @@ Feature: Sign Up
     When I enter "" in Username field
     And I enter "" in Password field
     And I enter "" in Re-Password field
-    And I enter "" in First Name field
-    And I enter "" in Last Name field
     And I press create account button
     Then Fill up all inputs
 #  Scenario: Sign up successfully
@@ -46,7 +38,5 @@ Feature: Sign Up
 #    When I enter "unique-username" in Username field
 #    And I enter "password" in Password field
 #    And I enter "password" in Re-Password field
-#    And I enter "firstname" in First Name field
-#    And I enter "lastname" in Last Name field
 #    And I press create account button
 #    Then I should sign up succesfully
