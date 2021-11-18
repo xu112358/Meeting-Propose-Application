@@ -931,12 +931,21 @@ class UserControllerTest {
     @Transactional
     public void testFindSentInviteEvent() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
-                        .param("invite_id", "7")
+                        .param("inviteId", "7")
                 .sessionAttr("loginUser", "minyiche1")
         ).andReturn();
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(200, status);
+        Invite invite = (Invite)modelMap.getAttribute("invite");
+        List<List<Event>> eventsMap = (List<List<Event>>)modelMap.getAttribute("eventsReceivers");
+        List<User> receivers = (List<User>)modelMap.getAttribute("receivers");
+        List<Event> events = (List<Event>)modelMap.getAttribute("events");
+        Assert.assertEquals(4, eventsMap.size());
+        Assert.assertEquals(2, eventsMap.get(0).size());
+        Assert.assertEquals(2, receivers.size());
+        Assert.assertEquals(4, events.size());
+        Assert.assertEquals("Music Invite", invite.getInviteName());
     }
 
     @Test

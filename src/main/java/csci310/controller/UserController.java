@@ -419,8 +419,38 @@ public class UserController {
     }
 
     @GetMapping(value="/list-sent-invite-event")
-    public String findSentInviteEvent(@RequestParam("invite_id") Long inviteId, Model model, HttpSession httpSession) {
-        return "home";
+    public String findSentInviteEvent(@RequestParam("inviteId") Long inviteId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = inviteRepository.findById(inviteId).get().getInvite_events_list();
+        Map<String, List<Event>> eventsMap = new HashMap<>();
+        List<Event> eventMap = new ArrayList<>();
+        for(Event event : events){
+            String eventKey = event.getEventName() + event.getEventDate().toString();
+            List<Event> tmp = eventsMap.get(eventKey);
+            if(tmp == null){
+                tmp = new ArrayList<>();
+            }
+            event.setReceiver(eventRepository.findById(event.getId()).get().getReceiver());
+            tmp.add(event);
+            eventsMap.put(eventKey, tmp);
+        }
+        List<List<Event>> eventsList = new ArrayList<>();
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+
+            eventsList.add(eventsMapEntry.getValue());
+        }
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+            eventMap.add(eventsMapEntry.getValue().get(0));
+        }
+
+        List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
+        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
+        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        model.addAttribute("eventsReceivers", eventsList);
+        model.addAttribute("receivers", receivers);
+        model.addAttribute("events", eventMap);
+        model.addAttribute("invite", invite);
+        return "sent_invite_event";
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -455,6 +485,7 @@ public class UserController {
         //event name + event date map to same events with different users
         Map<String, List<Event>> eventMap = new HashMap<>();
         for(Event event :events) {
+            //do not need to check if event is not confirmed or rejected because they give 1 to all events
             String eventKey = event.getEventName() + event.getEventDate().toString();
             List<Event> tmp = eventMap.get(eventKey);
             if(tmp == null){
@@ -610,6 +641,7 @@ public class UserController {
         response.put("returnCode", "200");
         return response;
     }
+
     @GetMapping(value="/setting")
     public String setting(HttpSession httpSession, Model model){
         String name=(String)httpSession.getAttribute("loginUser");
