@@ -20,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.sound.midi.Receiver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -407,19 +408,19 @@ public class UserController {
         return "redirect:/receive-groupDates";
     }
 
-    @GetMapping(value="/find-sent-invite")
-    public @ResponseBody Map<String, List<Invite>> findSentInvite(@RequestParam("username") String username) {
-        List<Invite> invites = userRepository.findByUsername(username).getSend_invites_list();
-        Map<String, List<Invite>> responseMap = new HashMap<>();
-        List<Invite> resultInvites = new ArrayList<>();
-        for(Invite invite : invites){
-            List<Event> events =  inviteRepository.findById(invite.getId()).get().getInvite_events_list();
-            Invite tmp = invite;
-            tmp.setInvite_events_list(events);
-            resultInvites.add(tmp);
-        }
-        responseMap.put("invites", resultInvites);
-        return responseMap;
+    @GetMapping(value="/list-sent-invite")
+    public String findSentInvite(Model model, HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute("loginUser");
+        User user = userRepository.findByUsername(username);
+        List<Invite> invites = user.getSend_invites_list();
+        Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
+        model.addAttribute("invites", invites);
+        return "sent_groupDate";
+    }
+
+    @GetMapping(value="/list-sent-invite-event")
+    public String findSentInviteEvent(@RequestParam("invite_id") Long inviteId, Model model, HttpSession httpSession) {
+        return "home";
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
