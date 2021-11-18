@@ -179,7 +179,7 @@
 										<tr th:if="${startDate} != 'null' AND ${endDate} != 'null' ">
 											<td th:text="${startDate}"></td>
 											<td th:text="${endDate}"></td>
-											<td><a href="" class="btn btn-outline-danger delete-btn">Remove</a></td>
+											<td><a href="../remove-unavailable-date" class="btn btn-outline-danger delete-btn">Remove</a></td>
 											
 										</tr>
 									
@@ -190,20 +190,21 @@
 					</div> <!-- .col -->
 
 					<div class="col-6  mt-3 mb-3 form-group">
-						
-						<label><strong>Start Date:</strong></label>
-						<input type="date" class="form-control mb-1" id="end-date" name="start-date" >
+						<form method="get" action="../update-unavailable-date" id="updateDate">
+							<label><strong>Start Date:</strong></label>
+							<input type="date" class="form-control mb-1"  id="start-date" name="startDate" >
 
-						<label><strong>End Date:</strong></label>
-						<input type="date" class="form-control mb-1" id="start-date" name="end-date" >
+							<label><strong>End Date:</strong></label>
+							<input type="date" class="form-control mb-1" id="end-date" name="endDate" >
 
-						<div class="alert alert-danger col-12 mt-3 mb-3 text-center noshow" id="daterange_errmsg" role="alert">
+							<div class="alert alert-danger col-12 mt-3 mb-3 text-center noshow" id="daterange_errmsg" role="alert">
 
-						</div>
-	
-						<div class="col-12  mt-3 mb-3 text-center ">
-							<button id="daterange_add" class="btn btn-primary responsive-width" type="button">Add Date Range </button>
-						</div>
+							</div>
+
+							<div class="col-12  mt-3 mb-3 text-center ">
+								<button id="daterange_add" class="btn btn-primary responsive-width" type="submit">Add Date Range </button>
+							</div>
+						</form>
 					</div>
 				
 				

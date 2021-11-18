@@ -61,18 +61,23 @@ class UserControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @InjectMocks
+    @Autowired
     private UserController userController;
 
-    @Mock
+
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
+
+    @Autowired
     private EventRepository eventRepository;
 
-    @Mock
+
+    @Autowired
     InviteRepository inviteRepository;
 
     @Mock
+
     HttpSession session;
 
     private MockMvc mockMvc;
@@ -461,7 +466,7 @@ class UserControllerTest {
 
         ModelMap map0 = mvcResult0.getModelAndView().getModelMap();
         List<Map<String,String>> list=(List<Map<String,String>>)map0.getAttribute("invites");
-
+        System.out.println(list);
         Map<String,String> first_invite=list.get(0);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("inviteId",first_invite.get("inviteId"));
@@ -499,7 +504,7 @@ class UserControllerTest {
         MultiValueMap<String, String> params1 = new LinkedMultiValueMap<>();
 
 
-        params1.add("eventId", events.get(0).get("eventId"));
+        params1.add("eventId", events.get(events.size()-1).get("eventId"));
         params1.add("preference", "5");
         params1.add("availability", "yes");
         mockMvc.perform(MockMvcRequestBuilders.get("/update_receive_invite_events")
@@ -760,13 +765,26 @@ class UserControllerTest {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("startDate", "2021-10-16");
         params.add("endDate", "2021-10-18");
-        params.add("username", "minyiche4");
-        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
+
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/update-unavailable-date")
                         .params(params)
                         .sessionAttr("loginUser", "minyiche1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
+                ).andReturn();
+
+        Assert.assertEquals(302,mvcResult.getResponse().getStatus()); // 302 redirection http code
+    }
+
+    @Test
+    @Transactional
+    public void testRemoveUserDateRange() throws Exception {
+
+
+        MvcResult mvcResult=mockMvc.perform(MockMvcRequestBuilders.get("/remove-unavailable-date")
+
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+
+        Assert.assertEquals(302,mvcResult.getResponse().getStatus()); // 302 redirection http code
     }
 
     @Test
@@ -852,7 +870,28 @@ class UserControllerTest {
 
     @Test
     @Transactional
-    public void testSetting(){
-        Assert.assertTrue(true);
+    public void testSetting() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/setting")
+
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/setting")
+
+                .sessionAttr("loginUser", "root1")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
+    }
+
+    @Test
+    @Transactional
+    public void testRemove_receive_invites_lists() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/remove_receive_invites_lists")
+
+                .sessionAttr("loginUser", "root")
+        ).andExpect(status().isOk());
     }
 }
