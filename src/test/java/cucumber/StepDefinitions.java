@@ -156,8 +156,8 @@ public class StepDefinitions {
     public void i_am_on_the_homepage_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
         driver.get("http://localhost:8080/home");
-        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
-        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
     }
     @When("I click the date of the event I want to create")
@@ -182,8 +182,8 @@ public class StepDefinitions {
     public void i_am_on_the_homepage_and_the_event_form_has_poped_up_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
         driver.get("http://localhost:8080/home");
-        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
-        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
         driver.findElement(By.xpath("//*[@id=\"add-button\"]")).click();
     }
@@ -228,8 +228,8 @@ public class StepDefinitions {
     public void i_am_on_the_propose_event_page() {
         // Write code here that turns the phrase above into concrete actions
         driver.get("http://localhost:8080/home");
-        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
-        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
         driver.get("http://localhost:8080/proposeEvent");
     }
@@ -313,12 +313,18 @@ public class StepDefinitions {
         assertEquals(temp, "Username already exists in the sender list!");
     }
 
-    @Given("I am on the user setting page and signed in as unique-username")
-    public void i_am_on_the_user_setting_page_and_signed_in_as_unique_username() {
+    @Given("I am on the user setting page and signed in as root")
+    public void i_am_on_the_user_setting_page_and_signed_in_as_root() {
         // Write code here that turns the phrase above into concrete actions
+
+        driver.get("http://localhost:8080/signup");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#re_password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signup")).click();
         driver.get("http://localhost:8080/home");
-        driver.findElement(By.cssSelector("#username")).sendKeys("unique-username");
-        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
         driver.get("http://localhost:8080/setting");
     }
@@ -348,7 +354,7 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertEquals(string+" Remove", text);
+        assertNotSame("root", text);
     }
 
     @When("{string} is in the blocked user list")
@@ -356,15 +362,15 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertEquals(string + " Remove", text);
+        assertNotSame("root", text);
     }
 
-    @Then("I should see an error message of test1 is already on your blocked list")
-    public void i_should_see_an_error_message_of_test1_is_already_on_your_blocked_list() {
+    @Then("I should see an error message of root1 is already on your blocked list")
+    public void i_should_see_an_error_message_of_root1_is_already_on_your_blocked_list() {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("#username_errmsg")).getText();
-        assertEquals("test1 is already on your blocked list", text);
+        assertEquals("root1 is already on your blocked list", text);
     }
 
     @Then("I should see an error message of You cannot block yourself!")
@@ -391,7 +397,7 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         driver.get("http://localhost:8080/home");
         driver.findElement(By.cssSelector("#username")).sendKeys(string);
-        driver.findElement(By.cssSelector("#password")).sendKeys("password");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
         driver.get("http://localhost:8080/setting");
         driver.findElement(By.cssSelector("#searchusername")).sendKeys(string2);
@@ -415,22 +421,22 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         driver.switchTo().alert().accept();
     }
-    @Then("test1 will be deleted from the blocked user list")
-    public void test1_will_be_deleted_from_the_blocked_user_list() {
+    @Then("root1 will be deleted from the blocked user list")
+    public void root1_will_be_deleted_from_the_blocked_user_list() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertNotSame("test1 Remove", text);
+        assertNotSame("root1 Remove", text);
     }
     @When("I click cancel button")
     public void i_click_cancel_button() {
         // Write code here that turns the phrase above into concrete actions
         driver.switchTo().alert().dismiss();
     }
-    @Then("test1 will still be on the blocked user list")
-    public void test1_will_still_be_on_the_blocked_user_list() {
+    @Then("root1 will still be on the blocked user list")
+    public void root1_will_still_be_on_the_blocked_user_list() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
-        assertEquals("test1 Remove", text);
+        assertEquals("root1 Remove", text);
     }
     @After()
     public void cleanup() {

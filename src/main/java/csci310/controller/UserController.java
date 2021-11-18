@@ -20,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.sound.midi.Receiver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -136,7 +137,7 @@ public class UserController {
             }
             //Check if every receiver is able to attend every event
             for(Event event : events){
-                if(receiver.getStartDate() == null || receiver.getEndDate() == null){
+                if(receiver.getStartDate() == null){ //we update startDate and endDate at the same time, check startDate would be enough
                     continue;
                 }
                 if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
@@ -149,13 +150,8 @@ public class UserController {
 
         Invite invite = new Invite();
         invite.setInviteName(inviteName);
-        Date earlyDate = events.get(0).getEventDate();
-        for(Event event : events){
-            if(earlyDate.compareTo(event.getEventDate()) > 0){
-                earlyDate = event.getEventDate();
-            }
-        }
-        invite.setCreateDate(earlyDate);
+        Collections.sort(events, Comparator.comparing(Event::getEventDate));
+        invite.setCreateDate(events.get(0).getEventDate());
         invite.setSender(sender);
         inviteRepository.save(invite);
         //can cause problem with multithreaded server
@@ -412,19 +408,49 @@ public class UserController {
         return "redirect:/receive-groupDates";
     }
 
-    @GetMapping(value="/find-sent-invite")
-    public @ResponseBody Map<String, List<Invite>> findSentInvite(@RequestParam("username") String username) {
-        List<Invite> invites = userRepository.findByUsername(username).getSend_invites_list();
-        Map<String, List<Invite>> responseMap = new HashMap<>();
-        List<Invite> resultInvites = new ArrayList<>();
-        for(Invite invite : invites){
-            List<Event> events =  inviteRepository.findById(invite.getId()).get().getInvite_events_list();
-            Invite tmp = invite;
-            tmp.setInvite_events_list(events);
-            resultInvites.add(tmp);
+    @GetMapping(value="/list-sent-invite")
+    public String findSentInvite(Model model, HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute("loginUser");
+        User user = userRepository.findByUsername(username);
+        List<Invite> invites = user.getSend_invites_list();
+        Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
+        model.addAttribute("invites", invites);
+        return "sent_groupDate";
+    }
+
+    @GetMapping(value="/list-sent-invite-event")
+    public String findSentInviteEvent(@RequestParam("inviteId") Long inviteId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = inviteRepository.findById(inviteId).get().getInvite_events_list();
+        Map<String, List<Event>> eventsMap = new HashMap<>();
+        List<Event> eventMap = new ArrayList<>();
+        for(Event event : events){
+            String eventKey = event.getEventName() + event.getEventDate().toString();
+            List<Event> tmp = eventsMap.get(eventKey);
+            if(tmp == null){
+                tmp = new ArrayList<>();
+            }
+            event.setReceiver(eventRepository.findById(event.getId()).get().getReceiver());
+            tmp.add(event);
+            eventsMap.put(eventKey, tmp);
         }
-        responseMap.put("invites", resultInvites);
-        return responseMap;
+        List<List<Event>> eventsList = new ArrayList<>();
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+
+            eventsList.add(eventsMapEntry.getValue());
+        }
+        for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
+            eventMap.add(eventsMapEntry.getValue().get(0));
+        }
+
+        List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
+        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
+        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        model.addAttribute("eventsReceivers", eventsList);
+        model.addAttribute("receivers", receivers);
+        model.addAttribute("events", eventMap);
+        model.addAttribute("invite", invite);
+        return "sent_invite_event";
     }
 
     @GetMapping(value="/search-event-by-invite-and-username")
@@ -459,6 +485,7 @@ public class UserController {
         //event name + event date map to same events with different users
         Map<String, List<Event>> eventMap = new HashMap<>();
         for(Event event :events) {
+            //do not need to check if event is not confirmed or rejected because they give 1 to all events
             String eventKey = event.getEventName() + event.getEventDate().toString();
             List<Event> tmp = eventMap.get(eventKey);
             if(tmp == null){
@@ -478,7 +505,7 @@ public class UserController {
                     multiply = 1;
                 }else if(event.getAvailability().equals("maybe")){
                     multiply = 0.5;
-                }else if(event.getAvailability().equals("no")){
+                }else{ // availability: no ---- don't change it cuz branch coverage
                     multiply = 0;
                 }
                 evaluate += multiply * event.getPreference();
@@ -550,15 +577,13 @@ public class UserController {
     }
 
     @PostMapping(value="/delete-blocked-user")
-    public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("username") String username, @RequestParam("blocked") String blockedUsername) {
+    public @ResponseBody Map<String, String> deleteBlockedUser(@RequestParam("blocked") String blockedUsername, HttpSession httpSession) {
         Map<String, String> response = new HashMap<>();
-        List<User> users = userRepository.findByUsername(username).getBlock_list();
-        for(int i = 0; i < users.size(); i ++){
-            if(users.get(i).getUsername().equals(blockedUsername)){
-                users.remove(i);
-            }
-        }
+        String username = (String)httpSession.getAttribute("loginUser");
         User user = userRepository.findByUsername(username);
+        User toBlock = userRepository.findByUsername(blockedUsername);
+        List<User> users = userRepository.findByUsername(username).getBlock_list();
+        users.remove(toBlock);
         user.setBlock_list(users);
         userRepository.save(user);
         response.put("message", "User unblocked");
@@ -602,11 +627,13 @@ public class UserController {
         return response;
     }
 
+
     @GetMapping(value="/update-unavailable-date")
     public String updateUserDateRange (HttpSession session, @RequestParam("startDate") String start, @RequestParam("endDate") String end) throws Exception {
         System.out.println("update-unavailable-date");
         String cur_usrname=(String)session.getAttribute("loginUser");
         User user = userRepository.findByUsername(cur_usrname);
+
         Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(start);
         Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(end);
         user.setStartDate(startDate);
@@ -625,6 +652,7 @@ public class UserController {
         userRepository.save(user);
         return "redirect:/setting";
     }
+
     @GetMapping(value="/setting")
     public String setting(HttpSession httpSession, Model model){
         String name=(String)httpSession.getAttribute("loginUser");
