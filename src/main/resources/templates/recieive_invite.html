@@ -76,6 +76,7 @@
 								<thead>
 									<tr>
 										<th>GroupDate Name</th>
+										<th>Date</th>
 										<th>Status</th>
 										
 										
@@ -89,6 +90,7 @@
 											<td>
 												<a th:href="@{'/receive_invite_events?inviteId=' + ${map.get('inviteId')}+'&status='+${map.get('status')}}" th:text="${map.get('inviteName')}"></a>
 											</td>
+											<td th:text="${map.get('date')}"></td>
 											<td th:text="${map.get('status')}"></td>
 
 										</tr>

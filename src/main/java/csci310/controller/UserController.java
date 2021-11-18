@@ -219,6 +219,7 @@ public class UserController {
             Map<String,String> map=new HashMap<>();
             map.put("inviteName",obj.getInviteName());
             map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
             map.put("status","New");
             list.add(map);
 
@@ -228,6 +229,7 @@ public class UserController {
             Map<String,String> map=new HashMap<>();
             map.put("inviteName",obj.getInviteName());
             map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
             map.put("status","Rejected");
             list.add(map);
         }
@@ -236,11 +238,19 @@ public class UserController {
             Map<String,String> map=new HashMap<>();
             map.put("inviteName",obj.getInviteName());
             map.put("inviteId",obj.getId().toString());
+            map.put("date",obj.getCreateDate().toString());
             map.put("status","Confirmed");
             list.add(map);
         }
 
 
+        Collections.sort(list, new Comparator<Map<String, String>>() {
+                    @Override
+                    public int compare(Map<String, String> o1, Map<String, String> o2) {
+                        return o1.get("date").compareTo(o2.get("date"));
+                    }
+                }
+        );
         model.addAttribute("invites", list);
 
         return "recieive_invite";
@@ -604,6 +614,22 @@ public class UserController {
         response.put("message", username + " unavailable date range is set");
         response.put("returnCode", "200");
         return response;
+    }
+    @GetMapping(value="/setting")
+    public String setting(HttpSession httpSession, Model model){
+        String name=(String)httpSession.getAttribute("loginUser");
+        User user=userRepository.findByUsername(name);
+
+        if(user.getEndDate()!=null && user.getStartDate()!=null){
+            model.addAttribute("startDate",user.getStartDate().toString());
+            model.addAttribute("endDate",user.getEndDate().toString());
+        }
+        else{
+            model.addAttribute("startDate","null");
+            model.addAttribute("endDate","null");
+        }
+
+        return "setting";
     }
 
     @GetMapping(value="/search-ticketmaster-event")
