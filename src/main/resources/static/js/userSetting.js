@@ -157,3 +157,30 @@ document.addEventListener('click',function(e){
         }
     }
 });
+
+
+document.querySelector("#updateDate").onsubmit=function(event){
+
+    event.preventDefault();
+    let startDate=document.querySelector("#start-date").value;
+    let endDate=document.querySelector("#end-date").value;
+    let msg=document.querySelector("#daterange_errmsg");
+    msg.classList.add("noshow");
+    if(startDate.length==0||endDate.length==0){
+        msg.innerText="Start Date or End Date is Empty!";
+        msg.classList.remove("noshow");
+        return;
+    }
+
+    if(startDate>endDate){
+        console.log("The Date Range is Invalid!");
+        msg.innerText="The Date Range is Invalid!";
+        msg.classList.remove("noshow");
+        return;
+    }
+
+    event.target.submit();
+
+
+
+};
