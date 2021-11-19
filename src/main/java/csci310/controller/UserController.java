@@ -453,7 +453,29 @@ public class UserController {
         return "sent_invite_event";
     }
 
-    @GetMapping(value="/search-event-by-invite-and-username")
+    @GetMapping(value="/delete-sent-invite-event")
+    public String deleteSentInviteEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("eventId") Long eventId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = inviteRepository.findById(inviteId).get().getInvite_events_list();
+        Event event = eventRepository.getById(eventId);
+        String eventAndDate = event.getEventName() + event.getEventDate().toString();
+        events.removeIf(Eachevent -> eventAndDate.equals(Eachevent.getEventName()+Eachevent.getEventDate().toString()));
+        invite.setInvite_events_list(events);
+        inviteRepository.save(invite);
+        return "redirect:/sent_invite_event";
+    }
+
+    @GetMapping(value="/delete-sent-invite-user")
+    public String deleteSentInviteUser(@RequestParam("inviteId") Long inviteId, @RequestParam("username") String username, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<User> receivers = inviteRepository.findById(inviteId).get().getReceivers();
+        receivers.removeIf(receiver -> receiver.getUsername().equals(username));
+        invite.setReceivers(receivers);
+        inviteRepository.save(invite);
+        return "redirect:/sent_invite_event";
+    }
+
+        @GetMapping(value="/search-event-by-invite-and-username")
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
         List<Event> inviteEvents = inviteRepository.findById(inviteId).get().getInvite_events_list();
