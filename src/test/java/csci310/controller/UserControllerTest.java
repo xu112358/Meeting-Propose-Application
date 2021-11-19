@@ -950,6 +950,40 @@ class UserControllerTest {
 
     @Test
     @Transactional
+    public void testDeleteSentInviteEvent() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-event")
+                .param("inviteId", "7")
+                .param("eventId", "8")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+        List<Event> events = inviteRepository.findById(7L).get().getInvite_events_list();
+        for(Event event : events){
+            Assert.assertNotEquals(new Long(8L),event.getId());
+        }
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteSentInviteUser() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-user")
+                .param("inviteId", "7")
+                .param("username", "minyiche2")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+        List<User> receivers = inviteRepository.findById(7L).get().getReceivers();
+        for(User receiver : receivers){
+            Assert.assertNotEquals("minyiche2", receiver.getUsername());
+        }
+    }
+
+    @Test
+    @Transactional
     public void testSetting(){
         Assert.assertTrue(true);
     }
