@@ -963,6 +963,8 @@ class UserControllerTest {
         Assert.assertEquals(200, mvcResult.getResponse().getStatus());
     }
 
+    @Test
+    @Transactional
     public void testFindSentInviteEvent() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
                 .param("inviteId", "7")
