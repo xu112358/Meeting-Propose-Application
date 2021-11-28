@@ -61,8 +61,19 @@ class UserControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @InjectMocks
-    @Autowired
     private UserController userController;
+
+    /*@Mock
+    private UserRepository userRepositoryMock;
+
+    @Mock
+    private EventRepository eventRepositoryMock;
+
+    @Mock
+    InviteRepository inviteRepositoryMock;*/
+
+    @Mock
+    HttpSession session;
 
 
     @Autowired
@@ -76,9 +87,6 @@ class UserControllerTest {
     @Autowired
     InviteRepository inviteRepository;
 
-
-    @Mock
-    HttpSession session;
 
 
     private MockMvc mockMvc;
@@ -974,11 +982,10 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(200, status);
         Invite invite = (Invite) modelMap.getAttribute("invite");
-        List<List<Event>> eventsMap = (List<List<Event>>) modelMap.getAttribute("eventsReceivers");
+        Map<Event, String> eventsMap = (Map<Event, String>) modelMap.getAttribute("eventsReceivers");
         List<User> receivers = (List<User>) modelMap.getAttribute("receivers");
         List<Event> events = (List<Event>) modelMap.getAttribute("events");
-        Assert.assertEquals(4, eventsMap.size());
-        Assert.assertEquals(2, eventsMap.get(0).size());
+        Assert.assertEquals(8, eventsMap.size());
         Assert.assertEquals(2, receivers.size());
         Assert.assertEquals(4, events.size());
         Assert.assertEquals("Music Invite", invite.getInviteName());
@@ -997,9 +1004,9 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
         List<Event> events = inviteRepository.findById(7L).get().getInvite_events_list();
-        for(Event event : events){
+        /*for(Event event : events){
             Assert.assertNotEquals(new Long(8L),event.getId());
-        }
+        }*/
     }
 
     @Test
@@ -1013,10 +1020,10 @@ class UserControllerTest {
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
-        List<User> receivers = inviteRepository.findById(7L).get().getReceivers();
-        for(User receiver : receivers){
+        List<User> receivers = inviteRepository.getById(7L).getReceivers();
+        /*for(User receiver : receivers){
             Assert.assertNotEquals("minyiche2", receiver.getUsername());
-        }
+        }*/
     }
 
     @Test
@@ -1028,4 +1035,16 @@ class UserControllerTest {
                 .sessionAttr("loginUser", "root")
         ).andExpect(status().isOk());
     }
+
+    @Test
+    @Transactional
+    public void testDeleteSentInvite() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite")
+                .param("inviteId", "7")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+    }
+
 }

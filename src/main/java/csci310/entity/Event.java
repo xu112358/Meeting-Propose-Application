@@ -36,14 +36,14 @@ public class Event implements Serializable {
     @Column(name = "availability")
     private String availability = "no";//"no","yes","maybe?"
 
-    @OneToOne(cascade=CascadeType.ALL, mappedBy = "finalEvent")
-    private Invite finalizedInvite; // finalized invite
+    /*@OneToOne(cascade=CascadeType.ALL, mappedBy = "finalEvent")
+    private Invite finalizedInvite; // finalized invite*/
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "receiver_id", referencedColumnName = "id")
     private User receiver;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "invite_id", referencedColumnName = "id")
     private Invite invite;
 
@@ -122,14 +122,14 @@ public class Event implements Serializable {
     public void setLocation(String location) {
         this.location = location;
     }
-    @JsonIgnore
+    /*@JsonIgnore
     public Invite getFinalizedInvite() {
         return finalizedInvite;
     }
     @JsonIgnore
     public void setFinalizedInvite(Invite finalizedInvite) {
         this.finalizedInvite = finalizedInvite;
-    }
+    }*/
     @JsonIgnore
     public User getReceiver() {
         return receiver;
