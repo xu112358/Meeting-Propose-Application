@@ -28,7 +28,7 @@ public class Invite {
     @Column(name = "status")
     private String status = "not finalized"; // finalized or not finalized
     //@JsonBackReference
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;
 

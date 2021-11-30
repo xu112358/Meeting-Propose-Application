@@ -61,8 +61,19 @@ class UserControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @InjectMocks
-    @Autowired
     private UserController userController;
+
+    /*@Mock
+    private UserRepository userRepositoryMock;
+
+    @Mock
+    private EventRepository eventRepositoryMock;
+
+    @Mock
+    InviteRepository inviteRepositoryMock;*/
+
+    @Mock
+    HttpSession session;
 
 
     @Autowired
@@ -76,9 +87,6 @@ class UserControllerTest {
     @Autowired
     InviteRepository inviteRepository;
 
-
-    @Mock
-    HttpSession session;
 
 
     private MockMvc mockMvc;
@@ -96,228 +104,223 @@ class UserControllerTest {
     }
 
 
-    @Test
-    //@Transactional
-    //generate data for testing
-    public void generateUserTestingData() throws Exception {
-        /*List<String> receivers = new ArrayList<>();
-
-        receivers.add("minyiche2");
-        receivers.add("minyiche3");
-
-        List<Event> events = new ArrayList<>();
-        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
-
-        Event event1 = new Event();
-        event1.setEventName("Justin Bieber");
-        event1.setGenre("Music");
-        event1.setEventDate(eventDate);
-        event1.setLocation("Los Angeles");
-
-        Event event2 = new Event();
-        event2.setEventName("KaRol G");
-        event2.setGenre("Music");
-        event2.setEventDate(eventDate);
-        event2.setLocation("Los Angeles");
-
-        Event event3 = new Event();
-        event3.setEventName("Bad Bunny");
-        event3.setGenre("Music");
-        event3.setEventDate(eventDate);
-        event3.setLocation("Los Angeles");
-
-        Event event4 = new Event();
-        event4.setEventName("Knotfest: Los Angeles");
-        event4.setGenre("Music");
-        event4.setEventDate(eventDate);
-        event4.setLocation("Los Angeles");
-
-        events.add(event1);
-        events.add(event2);
-        events.add(event3);
-        events.add(event4);
-
-        InviteModel inviteModel = new InviteModel();
-        inviteModel.setSender("minyiche1");
-        inviteModel.setInvite_name("Music Invite");
-        inviteModel.setReceivers(receivers);
-        inviteModel.setEvents(events);
-
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(inviteModel);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        //one more invite
-        receivers = new ArrayList<>();
-        receivers.add("minyiche3");
-        receivers.add("minyiche4");
-
-        events.remove(0);
-
-        inviteModel = new InviteModel();
-        inviteModel.setSender("minyiche1");
-        inviteModel.setInvite_name("Friend Invite");
-        inviteModel.setReceivers(receivers);
-        inviteModel.setEvents(events);
-
-        json = ow.writeValueAsString(inviteModel);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        //add blocked user
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche3");
-        params.add("block", "minyiche2");
-        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
-                .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche4");
-        params.add("block", "minyiche2");
-        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
-                .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche2");
-        params.add("block", "minyiche1");
-        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
-                .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-        params = new LinkedMultiValueMap<>();
-        params.add("username", "minyiche4");
-        params.add("block", "minyiche3");
-        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
-                .params(params)
-                .sessionAttr("loginUser", "minyiche1")
-        );
-
-        events = new ArrayList<>();
-        event1 = new Event();
-        event1.setId(8L);
-        event1.setAvailability("yes");
-        event1.setPreference(5);
-
-        event2 = new Event();
-        event2.setId(9L);
-        event2.setAvailability("maybe");
-        event2.setPreference(2);
-
-        event3 = new Event();
-        event3.setId(10L);
-        event3.setAvailability("maybe");
-        event3.setPreference(4);
-
-        event4 = new Event();
-        event4.setId(11L);
-        event4.setAvailability("no");
-        event4.setPreference(1);
-
-        events.add(event1);
-        events.add(event2);
-        events.add(event3);
-        events.add(event4);
-
-
-        Invite invite = new Invite();
-        invite.setId(7L);
-        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
-
-        json = ow.writeValueAsString(invite);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche2")
-        ).andExpect(status().isOk());
-
-        events.get(0).setId(12L);
-        events.get(1).setId(13L);
-        events.get(2).setId(14L);
-        events.get(3).setId(15L);
-
-        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
-
-        json = ow.writeValueAsString(invite);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche3")
-        ).andExpect(status().isOk());
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite")
-                .param("inviteId", "30")
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche3")
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite")
-                .param("inviteId", "23")
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche3")
-        );*/
-
-        /*mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite")
-                .param("inviteId", "7")
-                .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche3")
-        );*/
-
-        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("startDate", "2020-10-16");
-        params.add("endDate", "2024-10-18");
-        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
-                        .params(params)
-                        .sessionAttr("loginUser", "minyiche4")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche4 unavailable date range is set")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
-
-        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("startDate", "2000-10-16");
-        params.add("endDate", "2001-10-18");
-        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
-                        .params(params)
-                        .sessionAttr("loginUser", "minyiche3")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "minyiche3 unavailable date range is set")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
-        /*MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("startDate", "2030-10-16");
-        params.add("endDate", "2031-10-18");
-        mockMvc.perform(MockMvcRequestBuilders.post("/update-unavailable-date")
-                        .params(params)
-                        .sessionAttr("loginUser", "root1")
-                ).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", is( "root1 unavailable date range is set")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));*/
-    }
+//    @Test
+//    //@Transactional
+//    //generate data for testing
+//    public void generateUserTestingData() throws Exception {
+//        List<String> receivers = new ArrayList<>();
+//
+//        receivers.add("minyiche2");
+//        receivers.add("minyiche3");
+//
+//        List<Event> events = new ArrayList<>();
+//        java.sql.Date eventDate =  java.sql.Date.valueOf("2021-10-16");
+//
+//        Event event1 = new Event();
+//        event1.setEventName("Justin Bieber");
+//        event1.setGenre("Music");
+//        event1.setEventDate(eventDate);
+//        event1.setLocation("Los Angeles");
+//
+//        Event event2 = new Event();
+//        event2.setEventName("KaRol G");
+//        event2.setGenre("Music");
+//        event2.setEventDate(eventDate);
+//        event2.setLocation("Los Angeles");
+//
+//        Event event3 = new Event();
+//        event3.setEventName("Bad Bunny");
+//        event3.setGenre("Music");
+//        event3.setEventDate(eventDate);
+//        event3.setLocation("Los Angeles");
+//
+//        Event event4 = new Event();
+//        event4.setEventName("Knotfest: Los Angeles");
+//        event4.setGenre("Music");
+//        event4.setEventDate(eventDate);
+//        event4.setLocation("Los Angeles");
+//
+//        events.add(event1);
+//        events.add(event2);
+//        events.add(event3);
+//        events.add(event4);
+//
+//        InviteModel inviteModel = new InviteModel();
+//        inviteModel.setSender("minyiche1");
+//        inviteModel.setInvite_name("Music Invite");
+//        inviteModel.setReceivers(receivers);
+//        inviteModel.setEvents(events);
+//
+//        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+//        String json = ow.writeValueAsString(inviteModel);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        //one more invite
+//        receivers = new ArrayList<>();
+//        receivers.add("minyiche3");
+//        receivers.add("minyiche4");
+//
+//        events.remove(0);
+//
+//        inviteModel = new InviteModel();
+//        inviteModel.setSender("minyiche1");
+//        inviteModel.setInvite_name("Friend Invite");
+//        inviteModel.setReceivers(receivers);
+//        inviteModel.setEvents(events);
+//
+//        json = ow.writeValueAsString(inviteModel);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/send-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        //add blocked user
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche3");
+//        params.add("block", "minyiche2");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche4");
+//        params.add("block", "minyiche2");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche2");
+//        params.add("block", "minyiche1");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//        params = new LinkedMultiValueMap<>();
+//        params.add("username", "minyiche4");
+//        params.add("block", "minyiche3");
+//        mockMvc.perform(MockMvcRequestBuilders.post("/add-blocked-user")
+//                .params(params)
+//                .sessionAttr("loginUser", "minyiche1")
+//        );
+//
+//        events = new ArrayList<>();
+//        event1 = new Event();
+//        event1.setId(8L);
+//        event1.setAvailability("yes");
+//        event1.setPreference(5);
+//
+//        event2 = new Event();
+//        event2.setId(9L);
+//        event2.setAvailability("maybe");
+//        event2.setPreference(2);
+//
+//        event3 = new Event();
+//        event3.setId(10L);
+//        event3.setAvailability("maybe");
+//        event3.setPreference(4);
+//
+//        event4 = new Event();
+//        event4.setId(11L);
+//        event4.setAvailability("no");
+//        event4.setPreference(1);
+//
+//        events.add(event1);
+//        events.add(event2);
+//        events.add(event3);
+//        events.add(event4);
+//
+//
+//        Invite invite = new Invite();
+//        invite.setId(7L);
+//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
+//
+//        json = ow.writeValueAsString(invite);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche2")
+//        ).andExpect(status().isOk());
+//
+//        events.get(0).setId(12L);
+//        events.get(1).setId(13L);
+//        events.get(2).setId(14L);
+//        events.get(3).setId(15L);
+//
+//        invite.setInvite_events_list(new ArrayList<>(Arrays.asList(event1, event2, event3, event4)));
+//
+//        json = ow.writeValueAsString(invite);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/reply-invite")
+//                .content(json)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche3")
+//        ).andExpect(status().isOk());
+//
+//        mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite")
+//                .param("inviteId", "30")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche3")
+//        );
+//
+//        mockMvc.perform(MockMvcRequestBuilders.get("/reject_receive_invite")
+//                .param("inviteId", "23")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche3")
+//        );
+//
+//        mockMvc.perform(MockMvcRequestBuilders.get("/confirm_receive_invite")
+//                .param("inviteId", "7")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .sessionAttr("loginUser", "minyiche3")
+//        );
+//
+//        params = new LinkedMultiValueMap<>();
+//        params.add("startDate", "2020-10-16");
+//        params.add("endDate", "2024-10-18");
+//        mockMvc.perform(MockMvcRequestBuilders.get("/update-unavailable-date")
+//                        .params(params)
+//                        .sessionAttr("loginUser", "minyiche4")
+//                );
+//
+//        params = new LinkedMultiValueMap<>();
+//        params.add("startDate", "2000-10-16");
+//        params.add("endDate", "2001-10-18");
+//        mockMvc.perform(MockMvcRequestBuilders.get("/update-unavailable-date")
+//                        .params(params)
+//                        .sessionAttr("loginUser", "minyiche3")
+//                );
+//        params = new LinkedMultiValueMap<>();
+//
+//        params.add("startDate", "2030-10-16");
+//        params.add("endDate", "2031-10-18");
+//        mockMvc.perform(MockMvcRequestBuilders.get("/update-unavailable-date")
+//                        .params(params)
+//                        .sessionAttr("loginUser", "root1")
+//                );
+//    }
 
 
     @Test
@@ -718,7 +721,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.median", is(3.0)));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/propose-finalize-invite")
-                        .param("invite_id", "31")
+                        .param("invite_id", "7")
                         .sessionAttr("loginUser", "minyiche1")
                 )
                 .andExpect(status().isOk());
@@ -974,11 +977,10 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(200, status);
         Invite invite = (Invite) modelMap.getAttribute("invite");
-        List<List<Event>> eventsMap = (List<List<Event>>) modelMap.getAttribute("eventsReceivers");
+        Map<Event, String> eventsMap = (Map<Event, String>) modelMap.getAttribute("eventsReceivers");
         List<User> receivers = (List<User>) modelMap.getAttribute("receivers");
         List<Event> events = (List<Event>) modelMap.getAttribute("events");
-        Assert.assertEquals(4, eventsMap.size());
-        Assert.assertEquals(2, eventsMap.get(0).size());
+        Assert.assertEquals(8, eventsMap.size());
         Assert.assertEquals(2, receivers.size());
         Assert.assertEquals(4, events.size());
         Assert.assertEquals("Music Invite", invite.getInviteName());
@@ -997,9 +999,9 @@ class UserControllerTest {
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
         List<Event> events = inviteRepository.findById(7L).get().getInvite_events_list();
-        for(Event event : events){
+        /*for(Event event : events){
             Assert.assertNotEquals(new Long(8L),event.getId());
-        }
+        }*/
     }
 
     @Test
@@ -1013,10 +1015,10 @@ class UserControllerTest {
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
-        List<User> receivers = inviteRepository.findById(7L).get().getReceivers();
-        for(User receiver : receivers){
+        List<User> receivers = inviteRepository.getById(7L).getReceivers();
+        /*for(User receiver : receivers){
             Assert.assertNotEquals("minyiche2", receiver.getUsername());
-        }
+        }*/
     }
 
     @Test
@@ -1028,4 +1030,16 @@ class UserControllerTest {
                 .sessionAttr("loginUser", "root")
         ).andExpect(status().isOk());
     }
+
+    @Test
+    @Transactional
+    public void testDeleteSentInvite() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite")
+                .param("inviteId", "7")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+    }
+
 }

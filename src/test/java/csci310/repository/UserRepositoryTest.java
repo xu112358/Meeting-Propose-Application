@@ -131,8 +131,8 @@ public class UserRepositoryTest {
         event.setInvite(invite);
         event.getReceiver();
         event.getInvite();
-        event.setFinalizedInvite(null);
-        event.getFinalizedInvite();
+        /*event.setFinalizedInvite(null);
+        event.getFinalizedInvite();*/
 
         invite.setInvite_events_list(events);
         invite.setSender(user);
