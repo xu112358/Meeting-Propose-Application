@@ -81,8 +81,8 @@
 			</div>
 
 			<div class="col-4  mt-3 mb-3 ">
-				<a onclick="return confirm('Are you sure you want to Reject this GroupDate?')" th:href="@{'/reject_receive_invite?inviteId='+${inviteId}}" class="btn btn-danger mr-5 responsive-width save" >
-					Reject
+				<a onclick="return confirm('Are you sure you want to Reject this GroupDate?')" th:href="@{'/propose-finalize-invite?inviteId='+${inviteId}}" class="btn btn-danger mr-5 responsive-width save" >
+					Finalize
 				</a>
 			</div>
 		</div>
@@ -94,7 +94,27 @@
 					<table class="table table-hover table-responsive mt-4">
 						<thead>
 						<tr>
-							<th>Receiver Username</th>
+							<th>Receiver</th>
+							<th>Event Name</th>
+							<th>Event Date</th>
+							<th>Preference</th>
+							<th>Availability</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:each="instance : ${eventsReceivers}">
+							<td th:text="${instance.value}"></td>
+							<td th:text="${instance.key.eventName}"></td>
+							<td th:text="${instance.key.eventDate}"></td>
+							<td th:text="${instance.key.preference}"></td>
+							<td th:text="${instance.key.availability}"></td>
+						</tr>
+						</tbody>
+					</table>
+					<table class="table table-hover table-responsive mt-4">
+						<thead>
+						<tr>
+							<th>Receiver</th>
 						</tr>
 						</thead>
 						<tbody>

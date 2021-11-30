@@ -409,11 +409,40 @@ public class UserController {
     }
 
     @GetMapping(value="/list-sent-invite")
-    public String findSentInvite(Model model, HttpSession httpSession) {
+    public String findSentInvite(@RequestParam(name = "type", required = false) String filter, Model model, HttpSession httpSession) {
         String username = (String)httpSession.getAttribute("loginUser");
         User user = userRepository.findByUsername(username);
         List<Invite> invites = user.getSend_invites_list();
         Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
+        if(filter != null){
+            if(filter.equals("finalized")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites) {
+                    if (invite.equals("finalized")) {
+                        tmp.add(invite);
+                    }
+                }
+                invites = tmp;
+            }else if(filter.equals("not finalized")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites) {
+                    if (invite.equals("not finalized")) {
+                        tmp.add(invite);
+                    }
+                }
+                invites = tmp;
+            }/*else if(filter.equals("responded")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites){
+                     List<User> receivers = inviteRepository.getById(invite.getId()).getReceivers();
+                     for(User receiver : receivers){
+                         for(Invite confirmed_invite)
+                     }
+                }
+            }else if(filter.equals("not responded")){
+
+            }*/
+        }
         model.addAttribute("invites", invites);
         return "sent_groupDate";
     }
@@ -478,6 +507,15 @@ public class UserController {
                 eventRepository.delete(eachEvent);
             }
         }
+        if(invite.getInvite_events_list().size() == 0){
+            invite.setReceivers(null);
+            invite.setSender(null);
+            invite.setConfirmed_receivers(null);
+            invite.setReject_receivers(null);
+            inviteRepository.save(invite);
+            inviteRepository.delete(invite);
+            return "redirect:/list-sent-invite";
+        }
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
@@ -507,6 +545,21 @@ public class UserController {
         receiver.setReceive_invites_list(receivedInviteList);
         receiver.setUser_events_list(receivedEventList);
         userRepository.save(receiver);
+        if(invite.getReceivers().size() == 0){
+            /*List<Event> events = invite.getInvite_events_list();
+            invite.setInvite_events_list(new ArrayList<>());
+            inviteRepository.save(invite);
+            for(Event event : events){
+                eventRepository.delete(event);
+            }*/
+            //invite.setReceivers(null);
+            invite.setSender(null);
+            invite.setConfirmed_receivers(null);
+            invite.setReject_receivers(null);
+            inviteRepository.save(invite);
+            inviteRepository.delete(invite);
+            return "redirect:/list-sent-invite";
+        }
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
