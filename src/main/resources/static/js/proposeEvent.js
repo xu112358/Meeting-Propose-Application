@@ -1,3 +1,59 @@
+function draft_init(){
+    let cur_user=localStorage.getItem("cur_user");
+    let cur_username=document.querySelector("#brand-name span").innerHTML;
+    if(cur_user==null||cur_username!=cur_user){
+        localStorage.clear();
+        localStorage.setItem("cur_user",cur_username);
+        let senders=[];
+        let events=[];
+        localStorage.setItem("senders",JSON.stringify(senders));
+        localStorage.setItem("events",JSON.stringify(events));
+    }
+    else{
+        let events=JSON.parse(localStorage.getItem("events"));
+
+        for(let i=0;i<events.length;i++){
+            let genre=events[i].genre;
+            let location=events[i].location;
+            let name=events[i].name;
+            let date=events[i].date
+
+            let temp=document.querySelector("#add-events-list").innerHTML;
+
+            let el=`<div class="events" role="alert" data-genre="${genre}" data-name="${name}" data-date="${date}" data-location="${location}">
+            <button class="remove" >
+               x
+            </button>
+            <div class="list-info"><strong>${name}</strong></div> 
+            <div class="list-info">${genre}</div> 
+            <div class="list-info">${date}</div> 
+            <div class="list-info">${location}</div> 
+            
+            </div>`;
+
+            document.querySelector("#add-events-list").innerHTML=temp+el;
+        }
+
+        let users=JSON.parse(localStorage.getItem("senders"));
+        for(let j=0;j<users.length;j++){
+            let username=users[j];
+            let temp=document.querySelector("#add-users-list").innerHTML;
+
+            let el=`<div class="users"  data-username="${username}">
+                <button class="remove" >
+                  x
+                </button>
+                <div class="list-info"><strong>${username}</strong></div> 
+                
+                </div>`;
+
+            document.querySelector("#add-users-list").innerHTML=temp+el;
+        }
+    }
+};
+
+draft_init();
+
 function processResponse(obj){
     
     
@@ -19,6 +75,9 @@ function processResponse(obj){
         
         console.log(cur_obj);
         let title=cur_obj.name;
+        if(title.length>20){
+            title=title.substring(0,20)+"...";
+        }
         
         let image=cur_obj.images[1].url;
 
@@ -40,7 +99,7 @@ function processResponse(obj){
             </div>
         </div>
         <div class="event-name" data-name="${title}">${title}</div>
-        <div data-date="${date}">${date}</div>
+        <div data-date="${date}" class="event-date">${date}</div>
         <div class="button-size">
         <button type="button" class="btn btn-primary add-event">Add</button>
         </div>
@@ -117,19 +176,27 @@ $('body').on('click', '.add-event', function() {
     
     let temp=document.querySelector("#add-events-list").innerHTML;
 
-    let el=`<div class="alert alert-warning alert-dismissible fade show list-button" role="alert" data-genre="${genre}" data-name="${name}" data-date="${date}">
+    let el=`<div class="events" role="alert" data-genre="${genre}" data-name="${name}" data-date="${date}" data-location="${location}">
+    <button class="remove" >
+       x
+    </button>
     <div class="list-info"><strong>${name}</strong></div> 
     <div class="list-info">${genre}</div> 
     <div class="list-info">${date}</div> 
     <div class="list-info">${location}</div> 
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+    
     </div>`;
 
     document.querySelector("#add-events-list").innerHTML=temp+el;
 
-
+    let temp_map={};
+    temp_map.name=name;
+    temp_map.genre=genre;
+    temp_map.location=location;
+    temp_map.date=date;
+    let events=JSON.parse(localStorage.getItem("events"));
+    events.push(temp_map);
+    localStorage.setItem("events",JSON.stringify(events));
 });
 
 
@@ -249,14 +316,19 @@ document.querySelector("#username_add").onclick=function(){
             else{
                 let temp=document.querySelector("#add-users-list").innerHTML;
 
-                let el=`<div class="alert alert-warning alert-dismissible fade show list-button" role="alert" data-username="${username}">
-                <div class="list-info"><strong>${username}</strong></div> 
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
+                let el=`<div class="users"  data-username="${username}">
+                <button class="remove" >
+                  x
                 </button>
+                <div class="list-info"><strong>${username}</strong></div> 
+                
                 </div>`;
 
                 document.querySelector("#add-users-list").innerHTML=temp+el;
+
+                let senders=JSON.parse(localStorage.getItem("senders"));
+                senders.push(username);
+                localStorage.setItem("senders",JSON.stringify(senders));
             }
 
 
@@ -341,3 +413,40 @@ document.querySelector("#propose-events").onclick=function(){
 
 
 };
+
+
+document.addEventListener('click',function(e){
+
+    if(e.target && e.target.classList.contains("remove")){
+        let confirmText = "Are you sure you want to delete this user or event?";
+        if(confirm(confirmText)) {
+            let username=e.target.parentElement.dataset.username;
+            let event_name=e.target.parentElement.dataset.name;
+            let genre=e.target.parentElement.dataset.genre;
+            let date=e.target.parentElement.dataset.date;
+            let location=e.target.parentElement.dataset.location;
+
+
+            if(username===undefined){ // events list remove
+                let events=JSON.parse(localStorage.getItem("events"));
+                for (let i =0; i < events.length; i++){
+                    if (events[i].name == event_name && events[i].genre == genre && events[i].date == date && events[i].location == location) {
+                        events.splice(i,1);
+                        break;
+                    }
+                }
+
+                localStorage.setItem("events",JSON.stringify(events));
+            }
+            else{ // senders list remove
+                let senders=JSON.parse(localStorage.getItem("senders"));
+                senders = senders.filter(e => e !== username);
+                localStorage.setItem("senders",JSON.stringify(senders));
+            }
+            e.target.parentElement.remove();
+
+
+        }
+
+    }
+});
