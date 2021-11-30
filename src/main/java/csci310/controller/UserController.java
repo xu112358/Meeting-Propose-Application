@@ -256,6 +256,7 @@ public class UserController {
         String cur_username=(String)httpSession.getAttribute("loginUser");
         Long inviteId_value=Long.parseLong(inviteId);
         String invite_name="";
+        Invite cur_invite=inviteRepository.getById(inviteId_value);
 
         User cur_user=userRepository.findByUsername(cur_username);
         List<Map<String,String>> list=new ArrayList<>();
@@ -274,11 +275,38 @@ public class UserController {
                 list.add(map);
             }
         }
+        List<Map<String,String>> other_user_list=new ArrayList<>();
+        for(User temp:cur_invite.getReceivers()){
+            if(temp.getUsername().equals(cur_username)){
+                continue;
+            }
+            else{
+                for(Event obj:temp.getUser_events_list()){
+                    if(obj.getInvite().getId().equals(inviteId_value)){
+                        Map<String,String> map=new HashMap<>();
+                        map.put("Username", temp.getUsername());
+                        map.put("eventName",obj.getEventName());
+                        map.put("genre",obj.getGenre());
+                        map.put("location",obj.getLocation());
+                        map.put("date",obj.getEventDate().toString());
+                        map.put("sender",obj.getInvite().getSender().getUsername());
+                        map.put("preference",obj.getPreference()+"");
+                        map.put("availability",obj.getAvailability());
+                        map.put("eventId",obj.getId()+"");
+
+                        other_user_list.add(map);
+                    }
+                }
+            }
+        }
+
+        System.out.println(other_user_list);
 
         model.addAttribute("inviteId",inviteId);
         model.addAttribute("status",status);
         model.addAttribute("events",list);
         model.addAttribute("inviteName",invite_name);
+        model.addAttribute("other_user_events",other_user_list);
 
 
         return "receive_invite_event";

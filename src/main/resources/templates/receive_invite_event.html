@@ -177,31 +177,55 @@
 						</th:block>
 
 
-						<!--										<tr>-->
-						<!--											<td>Happy Music</td>-->
-						<!--											<td>Music</td>-->
-						<!--											<td>Los Angeles</td>-->
-						<!--											<td>2021-11-22</td>-->
-						<!--											<td>root</td>-->
-						<!--											<td>-->
-						<!--												<select name="preference" id="preference" class="form-control">-->
-						<!--												<option value="5" selected>5</option>-->
-						<!--												<option value="4" >4</option>-->
-						<!--												<option value="3" >3</option>-->
-						<!--												<option value="2" >2</option>-->
-						<!--												<option value="1" >1</option>-->
-						<!--												</select>-->
-						<!--											</td>-->
-						<!--											<td>-->
-						<!--												<select name="availability" id="availability" class="form-control">-->
-						<!--												<option value="available" selected>available</option>-->
-						<!--												<option value="unavailable" >unavailable</option>-->
-						<!--												<option value="maybe">maybe</option>-->
-						<!--												</select>-->
-						<!--											</td>-->
 
 
-						<!--										</tr>-->
+
+						</tbody>
+					</table>
+				</div>
+			</div> <!-- .col -->
+
+
+
+
+		</div> <!-- .row -->
+
+		<div class="row">
+
+			<div class="col-12 d-flex justify-content-center">
+				<div class="center">
+
+					<table class="table table-hover table-responsive mt-4">
+						<thead>
+						<tr>
+							<th>Other Received Users</th>
+							<th>Event Name</th>
+
+							<th>Sender</th>
+							<th>Preference</th>
+							<th>Availability</th>
+
+						</tr>
+						</thead>
+						<tbody>
+
+
+
+						<th:block th:each="map : ${other_user_events}">
+							<tr  th:attr="data-eventId=${map.get('eventId')}">
+								<td th:text="${map.get('Username')}"></td>
+								<td th:text="${map.get('eventName')}"></td>
+
+								<td th:text="${map.get('sender')}">root</td>
+								<td th:text="${map.get('preference')}">
+								<td th:text="${map.get('availability')}">
+
+
+							</tr>
+						</th:block>
+
+
+
 
 
 						</tbody>
@@ -217,6 +241,33 @@
 
 	</div> <!-- .container-fluid -->
 </div>	<!-- end padding -->
+
+
+<!--										<tr>-->
+<!--											<td>Happy Music</td>-->
+<!--											<td>Music</td>-->
+<!--											<td>Los Angeles</td>-->
+<!--											<td>2021-11-22</td>-->
+<!--											<td>root</td>-->
+<!--											<td>-->
+<!--												<select name="preference" id="preference" class="form-control">-->
+<!--												<option value="5" selected>5</option>-->
+<!--												<option value="4" >4</option>-->
+<!--												<option value="3" >3</option>-->
+<!--												<option value="2" >2</option>-->
+<!--												<option value="1" >1</option>-->
+<!--												</select>-->
+<!--											</td>-->
+<!--											<td>-->
+<!--												<select name="availability" id="availability" class="form-control">-->
+<!--												<option value="available" selected>available</option>-->
+<!--												<option value="unavailable" >unavailable</option>-->
+<!--												<option value="maybe">maybe</option>-->
+<!--												</select>-->
+<!--											</td>-->
+
+
+<!--										</tr>-->
 
 
 
