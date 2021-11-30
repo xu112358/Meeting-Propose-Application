@@ -438,6 +438,110 @@ public class StepDefinitions {
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
         assertEquals("root1 Remove", text);
     }
+
+    @When("I enter nothing for the select start start date")
+    public void i_enter_nothing_for_the_select_start_date() {
+        // Write code here that turns the phrase above into concrete actions
+    }
+
+    @When("I select an end date from the end date calendar")
+    public void i_select_an_end_date_from_the_end_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
+    }
+
+    @When("When I select a start date from the start date calendar")
+    public void i_select_a_start_date_from_the_start_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
+    }
+
+    @When("I enter nothing for the select start end date")
+    public void i_enter_nothing_for_the_select_end_date() {
+        // Write code here that turns the phrase above into concrete actions
+    }
+
+    @When("I click on the Add Date Range button")
+    public void i_click_on_the_add_date_range_button() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("#daterange_add")).click();
+    }
+
+    @Then("I should see an error message of Start Date or End Date is Empty")
+    public void i_should_see_an_error_message_of_start_date_or_end_date_is_empty() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#daterange_errmsg")).getText();
+        assertEquals("Start Date or End Date is Empty!", text);
+    }
+
+    @When("I select a date from the select start date calendar")
+    public void i_select_a_date_from_the_select_start_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
+    }
+
+    @When("I select a date from the select end date calendar")
+    public void i_select_a_date_from_the_select_end_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
+    }
+
+    @When("I click on the add date range button below")
+    public void i_click_on_the_add_date_range_button_below() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("#daterange_add")).click();
+    }
+
+    @Then("my unavailable date range will appear on the unavailable date range list")
+    public void my_unavailable_date_range_will_appear_on_the_unavailable_date_range_list() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+    }
+
+    @When("I click on the remove button of the date range selected")
+    public void i_click_on_the_remove_button_of_the_date_range_selected() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > a")).click();
+    }
+
+    @When("I see a warning message saying {string}")
+    public void i_see_a_warning_message_saying(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.switchTo().alert().getText();
+        assertEquals(string, text);
+    }
+
+    @When("I click on the cancel button")
+    public void i_click_on_the_cancel_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().dismiss();
+    }
+
+    @Then("my unavailable date range will still appear on the unavailable date range list")
+    public void my_unavailable_date_range_will_still_appear_on_the_unavailable_date_range_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+        assertEquals(string, text);
+    }
+
+    @When("I click on the OK button")
+    public void i_click_on_the_OK_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().accept();
+    }
+
+    @Then("this unavailable date range will be deleted from the unavailable date range list")
+    public void my_unavailable_date_range_will_be_deleted_from_the_unavailable_date_range_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+        assertNotSame(string, text);
+    }
+
+
     @After()
     public void cleanup() {
         try {
