@@ -541,6 +541,118 @@ public class StepDefinitions {
         assertNotSame(string, text);
     }
 
+    @Given("I am on the Sent GroupDates main page")
+    public void i_am_on_the_Sent_GroupDates_main_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8888/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get("http://localhost:8888/list-sent-invite");
+    }
+    @Then("I should see a list of events with their date and status")
+    public void i_should_see_a_list_of_events_with_their_date_and_status() {
+        // Write code here that turns the phrase above into concrete actions
+        String groupdate_name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(1)")).getText();
+        String groupdate_date = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        String groupdate_status = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(3)")).getText();
+
+        assertEquals("GroupDate Name", groupdate_name);
+        assertEquals("Date", groupdate_date);
+        assertEquals("Status", groupdate_status);
+    }
+
+    @When("I click into one of the event")
+    public void i_click_into_one_of_the_event() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > tbody > tr > td >a")).click();
+    }
+    @Then("I should see the preference and availability of the receivers about the events.")
+    public void i_should_see_the_preference_and_availability_of_the_receivers_about_the_events() {
+        // Write code here that turns the phrase above into concrete actions
+        String Receiver = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(1)")).getText();
+        String Event_Name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        String Event_Date = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(3)")).getText();
+        String Preference = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(4)")).getText();
+        String Availability = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(5)")).getText();
+
+        assertEquals("Receiver", Receiver);
+        assertEquals("Event Name", Event_Name);
+        assertEquals("Event Date", Event_Date);
+        assertEquals("Preference", Preference);
+        assertEquals("Availability", Availability);
+    }
+
+    @When("I click finalize button")
+    public void i_click_finalize_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.id("finalize")).click();
+    }
+    @When("I see the stats of the event")
+    public void i_see_the_stats_of_the_event() {
+        // Write code here that turns the phrase above into concrete actions
+        String stats = driver.findElement(By.cssSelector("body > div#shadow > div > div#stats_result > h1")).getText();
+        assertEquals("Stats about Events",stats);
+    }
+    @When("I click yes")
+    public void i_click_yes() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement((By.id("finalize_yes"))).click();
+    }
+    @Then("I should see the finalized event.")
+    public void i_should_see_the_finalized_event() {
+        // Write code here that turns the phrase above into concrete actions
+        String Event_Name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        assertEquals("Event Name", Event_Name);
+    }
+
+    @When("I click No")
+    public void i_click_No() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement((By.id("finalize_no"))).click();
+    }
+
+    @Then("I will be direct back to the sent group date page")
+    public void i_will_be_direct_back_to_the_sent_group_date_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertTrue(strUrl.contains("http://localhost:8888/list-sent-invite-event"));
+    }
+    @When("I click confirm button")
+    public void i_click_confirm_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-4.mt-3.mb-3:nth-child(2)  > a.btn.btn-info.mr-5.responsive-width.save")).click();
+    }
+
+    @When("I see the warning saying Are you sure you want to Confirm this GroupDate?")
+    public void i_see_the_warning_saying_Are_you_sure_you_want_to_Confirm_this_GroupDate() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.switchTo().alert().getText();
+        assertEquals("Are you sure you want to Confirm this GroupDate?", text);
+    }
+    @When("I click OK")
+    public void i_click_OK() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().accept();
+    }
+    @Then("I can see the event pop on the set groupdate page")
+    public void i_can_see_the_event_pop_on_the_set_groupdate_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertTrue(strUrl.contains("http://localhost:8888/confirm_receive_invite"));
+    }
+    @When("I click Back button")
+    public void i_click_Back_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-4.mt-3.mb-3:nth-child(1)  > div.float-right > a.btn.btn-primary.mr-5.responsive-width")).click();
+    }
+    @Then("I can will be direct back to the receive-groupDates page")
+    public void i_can_will_be_direct_back_to_the_receive_groupDates_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertEquals("http://localhost:8888/receive-groupDates",strUrl);
+    }
+
 
     @After()
     public void cleanup() {
