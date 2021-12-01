@@ -439,6 +439,16 @@ public class StepDefinitions {
         assertEquals("root1 Remove", text);
     }
 
+    @Given("I am on the user settings page and signed in as root")
+    public void i_am_on_the_user_settings_page_and_signed_in_as_root() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8888/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get("http://localhost:8888/setting");
+    }
+
     @When("I enter nothing for the select start start date")
     public void i_enter_nothing_for_the_select_start_date() {
         // Write code here that turns the phrase above into concrete actions
@@ -506,32 +516,6 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > a")).click();
-    }
-
-    @When("I see a warning message saying {string}")
-    public void i_see_a_warning_message_saying(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        String text = driver.switchTo().alert().getText();
-        assertEquals(string, text);
-    }
-
-    @When("I click on the cancel button")
-    public void i_click_on_the_cancel_button() {
-        // Write code here that turns the phrase above into concrete actions
-        driver.switchTo().alert().dismiss();
-    }
-
-    @Then("my unavailable date range will still appear on the unavailable date range list")
-    public void my_unavailable_date_range_will_still_appear_on_the_unavailable_date_range_list(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
-        assertEquals(string, text);
-    }
-
-    @When("I click on the OK button")
-    public void i_click_on_the_OK_button() {
-        // Write code here that turns the phrase above into concrete actions
-        driver.switchTo().alert().accept();
     }
 
     @Then("this unavailable date range will be deleted from the unavailable date range list")

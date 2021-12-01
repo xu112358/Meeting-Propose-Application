@@ -39,20 +39,3 @@ Feature: Sign In
     And I click Log Out button
     Then I am on the sign in page
 
-  Scenario: Log in user's session (less than 60 seconds still logged in)
-    Given I am on the sign in page
-    When I enter "username" in Username field
-    When I enter "password" in Password field
-    When I click sign in button
-    And I should log in successfully
-    And I stay on the page passively for 40 seconds
-    Then I am still logged in
-
-  Scenario: Log in user's session (60 seconds auto logged out)
-    Given I am on the sign in page
-    When I enter "username" in Username field
-    When I enter "password" in Password field
-    When I click sign in button
-    And I should log in successfully
-    And I stay on the page passively for 60 seconds
-    Then I am logged out automatically
