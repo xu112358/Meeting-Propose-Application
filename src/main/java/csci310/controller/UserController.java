@@ -518,6 +518,8 @@ public class UserController {
         invite.setFinalEvent(event);
         invite.setStatus("finalized");
         inviteRepository.save(invite);
+
+
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
