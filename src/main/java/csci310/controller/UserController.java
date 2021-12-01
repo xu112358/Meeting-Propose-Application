@@ -511,8 +511,31 @@ public class UserController {
         return "sent_invite_event";
     }
 
+    @GetMapping(value="set-finalized-event")
+    public String setFinalizedEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("eventId") Long eventId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        Event event = eventRepository.findById(eventId).get();
+        invite.setFinalEvent(event);
+        invite.setStatus("finalized");
+        inviteRepository.save(invite);
+        return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+    }
+
     @GetMapping(value="/delete-sent-invite")
     public String deleteSentInvite(@RequestParam("inviteId") Long inviteId, Model model, HttpSession httpSession){
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = invite.getInvite_events_list();
+        invite.setInvite_events_list(new ArrayList<>());
+        inviteRepository.save(invite);
+        for(Event event : events){
+            eventRepository.delete(event);
+        }
+        invite.setReceivers(null);
+        invite.setSender(null);
+        invite.setConfirmed_receivers(null);
+        invite.setReject_receivers(null);
+        inviteRepository.save(invite);
+        inviteRepository.delete(invite);
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
@@ -536,14 +559,11 @@ public class UserController {
             }
         }
         if(invite.getInvite_events_list().size() == 0){
-            invite.setReceivers(null);
-            invite.setSender(null);
-            invite.setConfirmed_receivers(null);
-            invite.setReject_receivers(null);
-            inviteRepository.save(invite);
-            inviteRepository.delete(invite);
-            return "redirect:/list-sent-invite";
+            model.addAttribute("message", "can delete invite");
+            //return "redirect:/delete-sent-invite?inviteId=" + inviteId;
+            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
         }
+        model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
@@ -574,20 +594,11 @@ public class UserController {
         receiver.setUser_events_list(receivedEventList);
         userRepository.save(receiver);
         if(invite.getReceivers().size() == 0){
-            /*List<Event> events = invite.getInvite_events_list();
-            invite.setInvite_events_list(new ArrayList<>());
-            inviteRepository.save(invite);
-            for(Event event : events){
-                eventRepository.delete(event);
-            }*/
-            //invite.setReceivers(null);
-            invite.setSender(null);
-            invite.setConfirmed_receivers(null);
-            invite.setReject_receivers(null);
-            inviteRepository.save(invite);
-            inviteRepository.delete(invite);
-            return "redirect:/list-sent-invite";
+            model.addAttribute("message", "can delete invite");
+            //return "redirect:/list-sent-invite";
+            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
         }
+        model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
