@@ -1054,4 +1054,16 @@ class UserControllerTest {
         Assert.assertEquals(302, status);
     }
 
+    @Test
+    @Transactional
+    public void testReplyFinalEvent() throws Exception{
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reply-final-event")
+                .param("inviteId", "7")
+                .param("status", "comfirmed")
+                .sessionAttr("loginUser", "minyiche2")
+        ).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+    }
+
 }

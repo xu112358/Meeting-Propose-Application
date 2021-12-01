@@ -845,4 +845,9 @@ public class UserController {
         res.put("message","200");
         return res;
     }
+
+    @GetMapping(value="reply-final-event")
+    public String replyFinalEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("status") String status, Model model, HttpSession httpSession) {
+        return "redirect:/receive-groupDates";
+    }
 }
