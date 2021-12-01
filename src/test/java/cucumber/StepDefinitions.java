@@ -537,7 +537,7 @@ public class StepDefinitions {
     @When("I stay on the page passively for {int} seconds")
     public void i_stay_on_the_page_passively_for_seconds(Integer int1) {
         // Write code here that turns the phrase above into concrete actions
-        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         throw new io.cucumber.java.PendingException();
     }
 
@@ -550,7 +550,7 @@ public class StepDefinitions {
     @When("I stay on the page passively for {int} seconds")
     public void i_stay_on_the_page_passively_for_int_seconds(Integer int2) {
         // Write code here that turns the phrase above into concrete actions
-        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(61, TimeUnit.SECONDS);
         throw new io.cucumber.java.PendingException();
     }
 
