@@ -525,6 +525,41 @@ public class StepDefinitions {
         assertNotSame(string, text);
     }
 
+    @Given("I am on the sign in page and already signed in as root")
+    public void i_am_on_the_sign_in_page_and_already_signed_in_as_root() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get("http://localhost:8888/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+    }
+
+    @When("I stay on the page passively for {int} seconds")
+    public void i_stay_on_the_page_passively_for_seconds(Integer int1) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        throw new io.cucumber.java.PendingException();
+    }
+
+    @Then("I am still logged in")
+    public void i_am_still_logged_in() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new io.cucumber.java.PendingException();
+    }
+
+    @When("I stay on the page passively for {int} seconds")
+    public void i_stay_on_the_page_passively_for_int_seconds(Integer int2) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        throw new io.cucumber.java.PendingException();
+    }
+
+    @Then("I am automatically logged out")
+    public void i_am_automatically_logged_out() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new io.cucumber.java.PendingException();
+    }
+
     @Given("I am on the Sent GroupDates main page")
     public void i_am_on_the_Sent_GroupDates_main_page() {
         // Write code here that turns the phrase above into concrete actions
