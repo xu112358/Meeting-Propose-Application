@@ -25,13 +25,25 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         cipher = Cipher.getInstance(AES);
     }
 
+
+
     @Override
     public String convertToDatabaseColumn(String attribute) {
-        return "";
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(attribute.getBytes()));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
     public String convertToEntityAttribute(String dbData) {
-        return "";
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(dbData)));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
