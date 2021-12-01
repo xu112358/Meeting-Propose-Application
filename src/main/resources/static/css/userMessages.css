@@ -24,3 +24,48 @@ table {
 .responsive-width {
     font-size: 1vw;
 }
+
+#shadow {
+
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+
+    background-color: black;
+    opacity: 90%;
+}
+
+#stats_result{
+    text-align: center;
+    width: 80%;
+    margin-right: 10%;
+    margin-right: 10%;
+    font-size: 2vw;
+}
+
+#stats_result h1{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*#finalize_yes{*/
+/*    margin-left: 39%;*/
+/*    width: 10%;*/
+/*}*/
+
+/*#finalize_no{*/
+
+/*    margin-left: 1%;*/
+/*    width: 10%;*/
+/*}*/
+
+#shadow > div{
+    padding: 10px;
+    margin: 50px auto 0px auto;
+    width: 80%;
+    height: 500px;
+    background: white;
+    opacity: 1;
+}
