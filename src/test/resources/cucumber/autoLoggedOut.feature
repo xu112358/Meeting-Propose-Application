@@ -2,7 +2,7 @@ Feature: 60 seconds auto logged out
 
   Scenario: Log in user's session (less than 60 seconds still logged in)
     Given I am on the sign in page and already signed in as root
-    When I stay on the page passively for 40 seconds
+    When I stay on the page passively for 10 seconds
     Then I am still logged in
 
   Scenario: Log in user's session (more than 60 seconds auto logged out)
