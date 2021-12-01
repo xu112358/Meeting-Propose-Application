@@ -36,7 +36,7 @@ document.querySelector("#searchusername").onkeyup=function(){
         })
             .done(function(results) {
                 // this function runs when we get a response from itunes API
-                
+
 
                 let terms=results.names;
 

@@ -485,6 +485,11 @@ public class UserController {
 
     @GetMapping(value="set-finalized-event")
     public String setFinalizedEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("eventId") Long eventId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        Event event = eventRepository.findById(eventId).get();
+        invite.setFinalEvent(event);
+        invite.setStatus("finalized");
+        inviteRepository.save(invite);
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
