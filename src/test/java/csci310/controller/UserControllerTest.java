@@ -103,7 +103,7 @@ class UserControllerTest {
         //when(loginInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
-//
+
 //    @Test
 //    //@Transactional
 //    //generate data for testing
@@ -312,7 +312,7 @@ class UserControllerTest {
 //                        .params(params)
 //                        .sessionAttr("loginUser", "minyiche3")
 //                );
-//        params = new LinkedMultiValueMap<>();
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 //
 //        params.add("startDate", "2030-10-16");
 //        params.add("endDate", "2031-10-18");

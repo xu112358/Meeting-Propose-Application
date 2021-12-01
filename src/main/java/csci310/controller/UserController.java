@@ -720,8 +720,16 @@ public class UserController {
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
         String name=(String) map.get("name");
-
-        List<User> users=userRepository.findByUsernameStartingWith(name);
+        //List<User> users=userRepository.findByUsernameStartingWith(name);
+        List<User> users = userRepository.findAll();
+        List<User> tmp = new ArrayList<>();
+        int nameLen = name.length();
+        for(User user : users){
+            if(name.equals(user.getUsername().substring(0, nameLen))){
+                tmp.add(user);
+            }
+        }
+        users = tmp;
 
         List<String> usernames=new ArrayList<>();
 

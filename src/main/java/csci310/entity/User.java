@@ -2,6 +2,7 @@ package csci310.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import csci310.annotation.AttributeEncryptor;
 import lombok.*;
 
 
@@ -18,16 +19,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(name = "username", unique=true)
+    @Convert(converter = AttributeEncryptor.class)
     private String username;
     @Column(name = "hash_password")
     private String hashPassword;
     @Column(name = "available_start_date")
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Convert(converter = AttributeEncryptor.class)
     private Date startDate;
     @Column(name = "available_end_date")
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Convert(converter = AttributeEncryptor.class)
     private Date endDate;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "receiver")
