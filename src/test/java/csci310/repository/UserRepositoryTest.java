@@ -65,6 +65,12 @@ public class UserRepositoryTest {
 //        loginUser.setHashPassword("$2a$10$t5.Z7ln/4fw8H9S1AEsbPucZXcTe2h7qn1NWf1fnEc1QFEbqroIxi");
 //        userRepository.save(loginUser);
 //
+////        //login data
+////        User loginUser1 = new User();
+////        loginUser1.setUsername("root1");
+////        loginUser1.setHashPassword("$2a$10$t5.Z7ln/4fw8H9S1AEsbPucZXcTe2h7qn1NWf1fnEc1QFEbqroIxi");
+////        userRepository.save(loginUser1);
+//
 //        //login data
 //        User acceptanceTestUser = new User();
 //        acceptanceTestUser.setUsername("username");
@@ -82,9 +88,6 @@ public class UserRepositoryTest {
         user.setUsername("userTest");
         user.setHashPassword("password");
         users.add(user);
-        userRepository.save(user);
-        User userReturn = userRepository.findByUsername(user.getUsername());
-        user.setId(userReturn.getId());
 
         java.sql.Date date =  java.sql.Date.valueOf("2021-10-16");
         List<Event> events = new ArrayList<>();
@@ -94,11 +97,7 @@ public class UserRepositoryTest {
         event.setEventDate(date);
         event.setLocation("LA");
         events.add(event);
-        eventRepository.save(event);
-        Event eventReturn = eventRepository.findTopByOrderByIdDesc();
-        assertEquals("event", eventReturn.getEventName());
-        assertEquals("event", eventReturn.getGenre());
-        event.setId(eventReturn.getId());
+        event.getGenre();
 
         List<Invite> invites = new ArrayList<>();
         Invite invite = new Invite();

@@ -92,7 +92,7 @@ public class UserController {
 
 
     @PostMapping(value="/signup")
-    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) {
+    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) throws Exception {
 
         User user=new User();
         user.setUsername(username);
@@ -102,7 +102,11 @@ public class UserController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());
             user.setHashPassword(encodedPassword);
-            userRepository.save(user);
+            try {
+                userRepository.save(user);
+            }catch (Exception e){
+
+            }
             model.addAttribute("message", "Sign Up Successfully!");
             return "signup";
         }
