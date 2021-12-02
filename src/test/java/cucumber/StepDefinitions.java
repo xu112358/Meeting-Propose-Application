@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
  * Step definitions for Cucumber tests.
  */
 public class StepDefinitions {
-    private static final String ROOT_URL = "http://localhost:8080/";
+    private static final String ROOT_URL = "http://localhost:8888";
 
     private final WebDriver driver = new ChromeDriver();
 
     @Given("I am on the index page")
     public void i_am_on_the_index_page() {
-        driver.get("http://localhost:8080/");
+        driver.get(ROOT_URL);
     }
 
     @When("I click the sign up button")
@@ -36,12 +36,12 @@ public class StepDefinitions {
 
     @Then("I should be on the sign up page")
     public void I_should_be_on_the_sign_up_page() {
-        assertTrue(driver.getCurrentUrl().equalsIgnoreCase("http://localhost:8080/signup"));
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/signup"));
     }
 
     @Given("I am on the Sign Up page")
     public void i_am_on_the_Sign_Up_page() {
-        driver.get("http://localhost:8080/signup");
+        driver.get(ROOT_URL + "/signup");
     }
 
     @When("I enter {string} in Username field")
@@ -85,7 +85,7 @@ public class StepDefinitions {
     }
     @Given("I am on the sign in page")
     public void i_am_on_the_sign_in_page() {
-        driver.get("http://localhost:8080/signin");
+        driver.get(ROOT_URL + "/signin");
     }
     @When("I click sign in button")
     public void i_click_sign_in_button() {
@@ -125,7 +125,7 @@ public class StepDefinitions {
     @Given("I am on the Search Events page")
     public void i_am_on_the_Search_Events_page() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/SearchEvents");
+        driver.get(ROOT_URL + "/SearchEvents");
     }
 
     @When("I click the targeted keyword field")
@@ -155,7 +155,7 @@ public class StepDefinitions {
     @Given("I am on the homepage and signed in successfully")
     public void i_am_on_the_homepage_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
@@ -181,7 +181,7 @@ public class StepDefinitions {
     @Given("I am on the homepage and the event form has poped up and signed in successfully")
     public void i_am_on_the_homepage_and_the_event_form_has_poped_up_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
@@ -227,11 +227,11 @@ public class StepDefinitions {
     @Given("I am on the propose event page")
     public void i_am_on_the_propose_event_page() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/proposeEvent");
+        driver.get(ROOT_URL + "/proposeEvent");
     }
 
     @When("I enter {string} in Username search field")
@@ -262,6 +262,15 @@ public class StepDefinitions {
 
     @When("I click the Username Add button")
     public void i_click_the_username_add_button() {
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        driver.findElement(By.cssSelector("#username_add")).click();
+
+    }
+
+    @When("I click the Username Add button twice")
+    public void i_click_the_username_add_button_twice() {
+        driver.findElement(By.cssSelector("#username_add")).click();
+        driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
         driver.findElement(By.cssSelector("#username_add")).click();
     }
 
@@ -277,7 +286,8 @@ public class StepDefinitions {
 
     @When("I click add event")
     public void i_click_add_event() {
-        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".add-event")));
         driver.findElement(By.cssSelector(".add-event")).click();
     }
 
@@ -317,16 +327,16 @@ public class StepDefinitions {
     public void i_am_on_the_user_setting_page_and_signed_in_as_root() {
         // Write code here that turns the phrase above into concrete actions
 
-        driver.get("http://localhost:8080/signup");
+        driver.get(ROOT_URL + "/signup");
         driver.findElement(By.cssSelector("#username")).sendKeys("root1");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#re_password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signup")).click();
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/setting");
+        driver.get(ROOT_URL + "/setting");
     }
 
     @When("I enter {string} in the Username Search form")
@@ -395,11 +405,11 @@ public class StepDefinitions {
     @Given("I am on the user setting page and signed in as {string} and {string} is on my blocked user list")
     public void i_am_on_the_user_setting_page_and_signed_in_as_and_is_on_my_blocked_user_list(String string, String string2) {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys(string);
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/setting");
+        driver.get(ROOT_URL + "/setting");
         driver.findElement(By.cssSelector("#searchusername")).sendKeys(string2);
         driver.findElement(By.cssSelector("#username_add")).click();
     }
@@ -442,11 +452,11 @@ public class StepDefinitions {
     @Given("I am on the user settings page and signed in as root")
     public void i_am_on_the_user_settings_page_and_signed_in_as_root() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8888/signin");
+        driver.get(ROOT_URL + "/signin");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8888/setting");
+        driver.get(ROOT_URL + "/setting");
     }
 
     @When("I enter nothing for the select start start date")
@@ -529,7 +539,7 @@ public class StepDefinitions {
     @Given("I am on the sign in page and already signed in as root")
     public void i_am_on_the_sign_in_page_and_already_signed_in_as_root() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8888/signin");
+        driver.get(ROOT_URL + "/signin");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
@@ -548,12 +558,12 @@ public class StepDefinitions {
         throw new io.cucumber.java.PendingException();
     }
 
-    @When("I stay on the page passively for {int} seconds")
-    public void i_stay_on_the_page_passively_for_int_seconds(Integer int2) {
-        // Write code here that turns the phrase above into concrete actions
-        driver.manage().timeouts().implicitlyWait(61, TimeUnit.SECONDS);
-        throw new io.cucumber.java.PendingException();
-    }
+//    @When("I stay on the page passively for {int} seconds")
+//    public void i_stay_on_the_page_passively_for_int_seconds(Integer int2) {
+//        // Write code here that turns the phrase above into concrete actions
+//        driver.manage().timeouts().implicitlyWait(61, TimeUnit.SECONDS);
+//        throw new io.cucumber.java.PendingException();
+//    }
 
     @Then("I am automatically logged out")
     public void i_am_automatically_logged_out() {
@@ -564,11 +574,11 @@ public class StepDefinitions {
     @Given("I am on the Sent GroupDates main page")
     public void i_am_on_the_Sent_GroupDates_main_page() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8888/signin");
+        driver.get(ROOT_URL + "/signin");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8888/list-sent-invite");
+        driver.get(ROOT_URL + "/list-sent-invite");
     }
     @Then("I should see a list of events with their date and status")
     public void i_should_see_a_list_of_events_with_their_date_and_status() {
@@ -636,7 +646,7 @@ public class StepDefinitions {
     public void i_will_be_direct_back_to_the_sent_group_date_page() {
         // Write code here that turns the phrase above into concrete actions
         String strUrl = driver.getCurrentUrl();
-        assertTrue(strUrl.contains("http://localhost:8888/list-sent-invite-event"));
+        assertTrue(strUrl.contains(ROOT_URL + "/list-sent-invite-event"));
     }
     @When("I click confirm button")
     public void i_click_confirm_button() {
@@ -659,7 +669,7 @@ public class StepDefinitions {
     public void i_can_see_the_event_pop_on_the_set_groupdate_page() {
         // Write code here that turns the phrase above into concrete actions
         String strUrl = driver.getCurrentUrl();
-        assertTrue(strUrl.contains("http://localhost:8888/confirm_receive_invite"));
+        assertTrue(strUrl.contains(ROOT_URL + "/confirm_receive_invite"));
     }
     @When("I click Back button")
     public void i_click_Back_button() {
@@ -670,8 +680,59 @@ public class StepDefinitions {
     public void i_can_will_be_direct_back_to_the_receive_groupDates_page() {
         // Write code here that turns the phrase above into concrete actions
         String strUrl = driver.getCurrentUrl();
-        assertEquals("http://localhost:8888/receive-groupDates",strUrl);
+        assertEquals(ROOT_URL + "/receive-groupDates",strUrl);
     }
+
+    @When("I click the x next to the added user")
+    public void i_click_the_x_next_to_the_added_user() {
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".remove")));
+        driver.findElement(By.cssSelector(".remove")).click();
+    }
+
+    @When("I click the x next to the added event")
+    public void i_click_the_x_next_to_the_added_event() {
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".remove")));
+        driver.findElement(By.cssSelector(".remove")).click();
+    }
+
+    @Then("the user list should be empty")
+    public void then_the_user_list_should_be_empty() {
+        String temp = driver.findElement(By.cssSelector("#add-users-list")).getText();
+        assertEquals(temp, "");
+    }
+
+    @Then("the event list should be empty")
+    public void then_the_event_list_should_be_empty() {
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        String temp = driver.findElement(By.cssSelector("#events_list")).getText();
+        assertEquals(temp, "Propose Events:");
+    }
+
+    @When("I go to the received group date page")
+    public void i_go_to_the_received_group_date_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/receive-groupDates");
+    }
+
+    @Then("I should see the {string} event with the status new")
+    public void i_should_see_the_event_with_the_status_new(String string) {
+        String temp = driver.findElement(By.cssSelector("td")).getText();
+        assertEquals(temp, string);
+    }
+
+    @When("I logout")
+    public void i_logout() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/logout");
+    }
+
+
 
 
     @After()
