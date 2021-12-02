@@ -546,16 +546,17 @@ public class StepDefinitions {
     }
 
     @When("I stay on the page passively for {int} seconds")
-    public void i_stay_on_the_page_passively_for_seconds(Integer int1) {
+    public void i_stay_on_the_page_passively_for_seconds(Integer int1) throws InterruptedException {
         // Write code here that turns the phrase above into concrete actions
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        throw new io.cucumber.java.PendingException();
+        TimeUnit.SECONDS.sleep(int1);
+//        driver.manage().timeouts().implicitlyWait(int1, TimeUnit.SECONDS);
     }
 
     @Then("I am still logged in")
     public void i_am_still_logged_in() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.get(ROOT_URL + "/setting");
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/setting"));
     }
 
 //    @When("I stay on the page passively for {int} seconds")
@@ -566,9 +567,11 @@ public class StepDefinitions {
 //    }
 
     @Then("I am automatically logged out")
-    public void i_am_automatically_logged_out() {
+    public void i_am_automatically_logged_out() throws InterruptedException {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.get(ROOT_URL + "/setting");
+        TimeUnit.SECONDS.sleep(5);
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/signin"));
     }
 
     @Given("I am on the Sent GroupDates main page")
