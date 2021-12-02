@@ -780,7 +780,7 @@ class UserControllerTest {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
+                .sessionAttr("loginUser", "root")
         ).andReturn();
         String response_json = mvcResult.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
@@ -795,6 +795,15 @@ class UserControllerTest {
         }
 
         Assert.assertTrue(found);
+
+        json = "{\"name\":\"rrrrrrrrrrrrrrrrrrrrrrrrrr\"}";
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
 
     }
 
@@ -1076,6 +1085,15 @@ class UserControllerTest {
         Assert.assertEquals(302, status);
 //        map = mvcResult.getModelAndView().getModelMap();
 //        Assert.assertEquals("invite rejected", map.get("message"));
+    }
+    @Test
+    @Transactional
+    public void testget_finalized_inviyes_list() throws Exception{
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/get_finalized_invites_list")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
     }
 
 }
