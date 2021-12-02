@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
  * Step definitions for Cucumber tests.
  */
 public class StepDefinitions {
-    private static final String ROOT_URL = "http://localhost:8080/";
+    private static final String ROOT_URL = "http://localhost:8888";
 
     private final WebDriver driver = new ChromeDriver();
 
     @Given("I am on the index page")
     public void i_am_on_the_index_page() {
-        driver.get("http://localhost:8080/");
+        driver.get(ROOT_URL);
     }
 
     @When("I click the sign up button")
@@ -36,12 +36,12 @@ public class StepDefinitions {
 
     @Then("I should be on the sign up page")
     public void I_should_be_on_the_sign_up_page() {
-        assertTrue(driver.getCurrentUrl().equalsIgnoreCase("http://localhost:8080/signup"));
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/signup"));
     }
 
     @Given("I am on the Sign Up page")
     public void i_am_on_the_Sign_Up_page() {
-        driver.get("http://localhost:8080/signup");
+        driver.get(ROOT_URL + "/signup");
     }
 
     @When("I enter {string} in Username field")
@@ -85,7 +85,7 @@ public class StepDefinitions {
     }
     @Given("I am on the sign in page")
     public void i_am_on_the_sign_in_page() {
-        driver.get("http://localhost:8080/signin");
+        driver.get(ROOT_URL + "/signin");
     }
     @When("I click sign in button")
     public void i_click_sign_in_button() {
@@ -125,7 +125,7 @@ public class StepDefinitions {
     @Given("I am on the Search Events page")
     public void i_am_on_the_Search_Events_page() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/SearchEvents");
+        driver.get(ROOT_URL + "/SearchEvents");
     }
 
     @When("I click the targeted keyword field")
@@ -155,7 +155,7 @@ public class StepDefinitions {
     @Given("I am on the homepage and signed in successfully")
     public void i_am_on_the_homepage_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
@@ -181,7 +181,7 @@ public class StepDefinitions {
     @Given("I am on the homepage and the event form has poped up and signed in successfully")
     public void i_am_on_the_homepage_and_the_event_form_has_poped_up_and_signed_in_successfully() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
@@ -227,11 +227,11 @@ public class StepDefinitions {
     @Given("I am on the propose event page")
     public void i_am_on_the_propose_event_page() {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/proposeEvent");
+        driver.get(ROOT_URL + "/proposeEvent");
     }
 
     @When("I enter {string} in Username search field")
@@ -262,6 +262,15 @@ public class StepDefinitions {
 
     @When("I click the Username Add button")
     public void i_click_the_username_add_button() {
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        driver.findElement(By.cssSelector("#username_add")).click();
+
+    }
+
+    @When("I click the Username Add button twice")
+    public void i_click_the_username_add_button_twice() {
+        driver.findElement(By.cssSelector("#username_add")).click();
+        driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
         driver.findElement(By.cssSelector("#username_add")).click();
     }
 
@@ -277,7 +286,8 @@ public class StepDefinitions {
 
     @When("I click add event")
     public void i_click_add_event() {
-        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".add-event")));
         driver.findElement(By.cssSelector(".add-event")).click();
     }
 
@@ -317,16 +327,16 @@ public class StepDefinitions {
     public void i_am_on_the_user_setting_page_and_signed_in_as_root() {
         // Write code here that turns the phrase above into concrete actions
 
-        driver.get("http://localhost:8080/signup");
+        driver.get(ROOT_URL + "/signup");
         driver.findElement(By.cssSelector("#username")).sendKeys("root1");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#re_password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signup")).click();
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/setting");
+        driver.get(ROOT_URL + "/setting");
     }
 
     @When("I enter {string} in the Username Search form")
@@ -395,11 +405,11 @@ public class StepDefinitions {
     @Given("I am on the user setting page and signed in as {string} and {string} is on my blocked user list")
     public void i_am_on_the_user_setting_page_and_signed_in_as_and_is_on_my_blocked_user_list(String string, String string2) {
         // Write code here that turns the phrase above into concrete actions
-        driver.get("http://localhost:8080/home");
+        driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys(string);
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
         driver.findElement(By.cssSelector("#signin")).click();
-        driver.get("http://localhost:8080/setting");
+        driver.get(ROOT_URL + "/setting");
         driver.findElement(By.cssSelector("#searchusername")).sendKeys(string2);
         driver.findElement(By.cssSelector("#username_add")).click();
     }
@@ -438,6 +448,296 @@ public class StepDefinitions {
         String text = driver.findElement(By.cssSelector("#blockedUsers:first-of-type:first-of-type")).getText();
         assertEquals("root1 Remove", text);
     }
+
+    @Given("I am on the user settings page and signed in as root")
+    public void i_am_on_the_user_settings_page_and_signed_in_as_root() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/setting");
+    }
+
+    @When("I enter nothing for the select start start date")
+    public void i_enter_nothing_for_the_select_start_date() {
+        // Write code here that turns the phrase above into concrete actions
+    }
+
+    @When("I select an end date from the end date calendar")
+    public void i_select_an_end_date_from_the_end_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
+    }
+
+    @When("When I select a start date from the start date calendar")
+    public void i_select_a_start_date_from_the_start_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
+    }
+
+    @When("I enter nothing for the select start end date")
+    public void i_enter_nothing_for_the_select_end_date() {
+        // Write code here that turns the phrase above into concrete actions
+    }
+
+    @When("I click on the Add Date Range button")
+    public void i_click_on_the_add_date_range_button() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("#daterange_add")).click();
+    }
+
+    @Then("I should see an error message of Start Date or End Date is Empty")
+    public void i_should_see_an_error_message_of_start_date_or_end_date_is_empty() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#daterange_errmsg")).getText();
+        assertEquals("Start Date or End Date is Empty!", text);
+    }
+
+    @When("I select a date from the select start date calendar")
+    public void i_select_a_date_from_the_select_start_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
+    }
+
+    @When("I select a date from the select end date calendar")
+    public void i_select_a_date_from_the_select_end_date_calendar() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
+    }
+
+    @When("I click on the add date range button below")
+    public void i_click_on_the_add_date_range_button_below() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("#daterange_add")).click();
+    }
+
+    @Then("my unavailable date range will appear on the unavailable date range list")
+    public void my_unavailable_date_range_will_appear_on_the_unavailable_date_range_list() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+        assertNotNull(text);
+    }
+
+    @When("I click on the remove button of the date range selected")
+    public void i_click_on_the_remove_button_of_the_date_range_selected() {
+        // Write code here that turns the phrase above into concrete actions
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > a")).click();
+    }
+
+    @Then("this unavailable date range will be deleted from the unavailable date range list")
+    public void my_unavailable_date_range_will_be_deleted_from_the_unavailable_date_range_list(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+        assertNotSame(string, text);
+    }
+
+    @Given("I am on the sign in page and already signed in as root")
+    public void i_am_on_the_sign_in_page_and_already_signed_in_as_root() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+    }
+
+    @When("I stay on the page passively for {int} seconds")
+    public void i_stay_on_the_page_passively_for_seconds(Integer int1) throws InterruptedException {
+        // Write code here that turns the phrase above into concrete actions
+        TimeUnit.SECONDS.sleep(int1);
+//        driver.manage().timeouts().implicitlyWait(int1, TimeUnit.SECONDS);
+    }
+
+    @Then("I am still logged in")
+    public void i_am_still_logged_in() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/setting");
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/setting"));
+    }
+
+//    @When("I stay on the page passively for {int} seconds")
+//    public void i_stay_on_the_page_passively_for_int_seconds(Integer int2) {
+//        // Write code here that turns the phrase above into concrete actions
+//        driver.manage().timeouts().implicitlyWait(61, TimeUnit.SECONDS);
+//        throw new io.cucumber.java.PendingException();
+//    }
+
+    @Then("I am automatically logged out")
+    public void i_am_automatically_logged_out() throws InterruptedException {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/setting");
+        TimeUnit.SECONDS.sleep(5);
+        assertTrue(driver.getCurrentUrl().equalsIgnoreCase(ROOT_URL + "/signin"));
+    }
+
+    @Given("I am on the Sent GroupDates main page")
+    public void i_am_on_the_Sent_GroupDates_main_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/signin");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/list-sent-invite");
+    }
+    @Then("I should see a list of events with their date and status")
+    public void i_should_see_a_list_of_events_with_their_date_and_status() {
+        // Write code here that turns the phrase above into concrete actions
+        String groupdate_name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(1)")).getText();
+        String groupdate_date = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        String groupdate_status = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(3)")).getText();
+
+        assertEquals("GroupDate Name", groupdate_name);
+        assertEquals("Date", groupdate_date);
+        assertEquals("Status", groupdate_status);
+    }
+
+    @When("I click into one of the event")
+    public void i_click_into_one_of_the_event() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > tbody > tr > td >a")).click();
+    }
+    @Then("I should see the preference and availability of the receivers about the events.")
+    public void i_should_see_the_preference_and_availability_of_the_receivers_about_the_events() {
+        // Write code here that turns the phrase above into concrete actions
+        String Receiver = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(1)")).getText();
+        String Event_Name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        String Event_Date = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(3)")).getText();
+        String Preference = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(4)")).getText();
+        String Availability = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(5)")).getText();
+
+        assertEquals("Receiver", Receiver);
+        assertEquals("Event Name", Event_Name);
+        assertEquals("Event Date", Event_Date);
+        assertEquals("Preference", Preference);
+        assertEquals("Availability", Availability);
+    }
+
+    @When("I click finalize button")
+    public void i_click_finalize_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.id("finalize")).click();
+    }
+    @When("I see the stats of the event")
+    public void i_see_the_stats_of_the_event() {
+        // Write code here that turns the phrase above into concrete actions
+        String stats = driver.findElement(By.cssSelector("body > div#shadow > div > div#stats_result > h1")).getText();
+        assertEquals("Stats about Events",stats);
+    }
+    @When("I click yes")
+    public void i_click_yes() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement((By.id("finalize_yes"))).click();
+    }
+    @Then("I should see the finalized event.")
+    public void i_should_see_the_finalized_event() {
+        // Write code here that turns the phrase above into concrete actions
+        String Event_Name = driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-12.d-flex.justify-content-center > div.center > table.table.table-hover.table-responsive.mt-4 > thead > tr > th:nth-child(2)")).getText();
+        assertEquals("Event Name", Event_Name);
+    }
+
+    @When("I click No")
+    public void i_click_No() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement((By.id("finalize_no"))).click();
+    }
+
+    @Then("I will be direct back to the sent group date page")
+    public void i_will_be_direct_back_to_the_sent_group_date_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertTrue(strUrl.contains(ROOT_URL + "/list-sent-invite-event"));
+    }
+    @When("I click confirm button")
+    public void i_click_confirm_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-4.mt-3.mb-3:nth-child(2)  > a.btn.btn-info.mr-5.responsive-width.save")).click();
+    }
+
+    @When("I see the warning saying Are you sure you want to Confirm this GroupDate?")
+    public void i_see_the_warning_saying_Are_you_sure_you_want_to_Confirm_this_GroupDate() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.switchTo().alert().getText();
+        assertEquals("Are you sure you want to Confirm this GroupDate?", text);
+    }
+    @When("I click OK")
+    public void i_click_OK() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.switchTo().alert().accept();
+    }
+    @Then("I can see the event pop on the set groupdate page")
+    public void i_can_see_the_event_pop_on_the_set_groupdate_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertTrue(strUrl.contains(ROOT_URL + "/confirm_receive_invite"));
+    }
+    @When("I click Back button")
+    public void i_click_Back_button() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("body > div.padding > div.container-fluid > div.row > div.col-4.mt-3.mb-3:nth-child(1)  > div.float-right > a.btn.btn-primary.mr-5.responsive-width")).click();
+    }
+    @Then("I can will be direct back to the receive-groupDates page")
+    public void i_can_will_be_direct_back_to_the_receive_groupDates_page() {
+        // Write code here that turns the phrase above into concrete actions
+        String strUrl = driver.getCurrentUrl();
+        assertEquals(ROOT_URL + "/receive-groupDates",strUrl);
+    }
+
+    @When("I click the x next to the added user")
+    public void i_click_the_x_next_to_the_added_user() {
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".remove")));
+        driver.findElement(By.cssSelector(".remove")).click();
+    }
+
+    @When("I click the x next to the added event")
+    public void i_click_the_x_next_to_the_added_event() {
+        WebDriverWait wait = new WebDriverWait(driver,2);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".remove")));
+        driver.findElement(By.cssSelector(".remove")).click();
+    }
+
+    @Then("the user list should be empty")
+    public void then_the_user_list_should_be_empty() {
+        String temp = driver.findElement(By.cssSelector("#add-users-list")).getText();
+        assertEquals(temp, "");
+    }
+
+    @Then("the event list should be empty")
+    public void then_the_event_list_should_be_empty() {
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        String temp = driver.findElement(By.cssSelector("#events_list")).getText();
+        assertEquals(temp, "Propose Events:");
+    }
+
+    @When("I go to the received group date page")
+    public void i_go_to_the_received_group_date_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/receive-groupDates");
+    }
+
+    @Then("I should see the {string} event with the status new")
+    public void i_should_see_the_event_with_the_status_new(String string) {
+        String temp = driver.findElement(By.cssSelector("td")).getText();
+        assertEquals(temp, string);
+    }
+
+    @When("I logout")
+    public void i_logout() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/logout");
+    }
+
+
+
+
     @After()
     public void cleanup() {
         try {
