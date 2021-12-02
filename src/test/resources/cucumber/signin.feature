@@ -38,3 +38,4 @@ Feature: Sign In
     And I click sign in button
     And I click Log Out button
     Then I am on the sign in page
+

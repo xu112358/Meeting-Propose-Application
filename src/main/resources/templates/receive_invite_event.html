@@ -8,173 +8,239 @@
 	<link rel="stylesheet" href="../static/css/userMessages.css" th:href="@{/css/userMessages.css}">
 </head>
 <body>
-	<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-        <a class="navbar-brand" href="../home">
-            <div id="brand-name" >
-                Hi <span th:text="${session.loginUser}">Username</span>!
-            </div>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-                <li class="nav-item ">
-                  <a class="nav-link" href="../home">Home </a>
-                </li>
-                <li class="nav-item ">
-                  <a class="nav-link" href="../proposeEvent">Propose Event<span class="sr-only">(current)</span></a>
-                </li>
-				<li class="nav-item" >
-					<a class="nav-link" href="../setting">User Settings</a>
-				</li>
-			  <li class="nav-item active">
-				  <a class="nav-link" href="../receive-groupDates">Received GroupDates</a>
-			  </li>
-			    <li class="nav-item">
-				    <a class="nav-link" href="../proposals">Sent Proposals</a>
-			    </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="../logout">Log Out</a>
-                </li>
-            
-          </ul>
-        </div>
-    </nav>
-	
-	<div class="container-fluid mb-5">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+	<a class="navbar-brand" href="../home">
+		<div id="brand-name" >
+			Hi <span th:text="${session.loginUser}">Username</span>!
+		</div>
+	</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="navbarNav">
+		<ul class="navbar-nav">
+			<li class="nav-item ">
+				<a class="nav-link" href="../home">Home </a>
+			</li>
+			<li class="nav-item ">
+				<a class="nav-link" href="../proposeEvent">Propose Event<span class="sr-only">(current)</span></a>
+			</li>
+			<li class="nav-item" >
+				<a class="nav-link" href="../setting">User Settings</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="../receive-groupDates">Received GroupDates</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="../proposals">Sent Proposals</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="../logout">Log Out</a>
+			</li>
+
+		</ul>
+	</div>
+</nav>
+
+<div class="container-fluid mb-5">
+	<div class="row">
+		<div class="center">
+			<h1 class="col-12 mt-4" th:text="${inviteName}+' Events List'">GroupDate Name Events List</h1>
+		</div>
+	</div>
+
+
+</div>
+
+<div class="container-fluid mb-1">
+
+
+	<div class="row" >
+		<div class="center">
+			<div class="col-12 mt-4 alert alert-success text-center noshow" id="save_msg">GroupDate Saved!</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="padding">
+	<div class="container-fluid ">
 		<div class="row">
-			<div class="center">
-				<h1 class="col-12 mt-4" th:text="${inviteName}+' Events List'">GroupDate Name Events List</h1>
-			</div>
-		</div>
-
-
-	</div>
-
-	<div class="container-fluid mb-1">
-
-
-		<div class="row" >
-			<div class="center">
-				<div class="col-12 mt-4 alert alert-success text-center noshow" id="save_msg">GroupDate Saved!</div>
-			</div>
-		</div>
-	</div>
-	
-
-	<div class="padding">
-		<div class="container-fluid ">
-			<div class="row">
-				<div class="col-4 mt-3 mb-3 ">
-					<div class="float-right">
-						<a href="../receive-groupDates" class="btn btn-primary mr-5 responsive-width" >
-							Back
-                        </a>
-					</div>
-				</div>
-
-				<div class="col-4  mt-3 mb-3 ">
-					<a onclick="return confirm('Are you sure you want to Confirm this GroupDate?')" th:href="@{'/confirm_receive_invite?inviteId='+${inviteId}}" class="btn btn-info mr-5 responsive-width save" >
-						Confirm
-					</a>
-				</div>
-
-                <div class="col-4  mt-3 mb-3 ">
-					<a onclick="return confirm('Are you sure you want to Reject this GroupDate?')" th:href="@{'/reject_receive_invite?inviteId='+${inviteId}}" class="btn btn-danger mr-5 responsive-width save" >
-						Reject
+			<div class="col-4 mt-3 mb-3 ">
+				<div class="float-right">
+					<a href="../receive-groupDates" class="btn btn-primary mr-5 responsive-width" >
+						Back
 					</a>
 				</div>
 			</div>
 
-			<div class="row">
+			<div class="col-4  mt-3 mb-3 ">
+				<a onclick="return confirm('Are you sure you want to Confirm this GroupDate?')" th:href="@{'/confirm_receive_invite?inviteId='+${inviteId}}" class="btn btn-info mr-5 responsive-width save" >
+					Confirm
+				</a>
+			</div>
 
-					<div class="col-12 d-flex justify-content-center">
-						<div class="center">
+			<div class="col-4  mt-3 mb-3 ">
+				<a onclick="return confirm('Are you sure you want to Reject this GroupDate?')" th:href="@{'/reject_receive_invite?inviteId='+${inviteId}}" class="btn btn-danger mr-5 responsive-width save" >
+					Reject
+				</a>
+			</div>
+		</div>
 
-							<table class="table table-hover table-responsive mt-4">
-								<thead>
-									<tr>
-										<th>Event Name</th>
-										<th>Genre</th>
-										<th>Location</th>
-										<th>Date</th>
-										<th>Sender</th>
-										<th>Preference</th>
-										<th>Availability</th>
+		<div class="row">
 
-									</tr>
-								</thead>
-								<tbody>
+			<div class="col-12 d-flex justify-content-center">
+				<div class="center">
 
+					<table class="table table-hover table-responsive mt-4">
+						<thead>
+						<tr>
+							<th>Event Name</th>
+							<th>Genre</th>
+							<th>Location</th>
+							<th>Date</th>
+							<th>Sender</th>
+							<th>Preference</th>
+							<th>Availability</th>
 
-
-										<th:block th:each="map : ${events}">
-										<tr  th:attr="data-eventId=${map.get('eventId')}">
-											<td th:text="${map.get('eventName')}"></td>
-											<td th:text="${map.get('genre')}">genre</td>
-											<td th:text="${map.get('location')}">Los Angeles</td>
-											<td th:text="${map.get('date')}">2021-11-22</td>
-											<td th:text="${map.get('sender')}">root</td>
-											<td th:switch="${map.get('preference')}">
-												<select th:case="'1'" name="preference"  class="form-control preference">
-													<option value="5" >5</option>
-													<option value="4" >4</option>
-													<option value="3" >3</option>
-													<option value="2" >2</option>
-													<option value="1" selected>1</option>
-												</select>
-												<select th:case="'2'" name="preference"  class="form-control preference">
-													<option value="5" >5</option>
-													<option value="4" >4</option>
-													<option value="3" >3</option>
-													<option value="2" selected>2</option>
-													<option value="1" >1</option>
-												</select>
-												<select th:case="'3'" name="preference"  class="form-control preference">
-													<option value="5" >5</option>
-													<option value="4" >4</option>
-													<option value="3" selected>3</option>
-													<option value="2" >2</option>
-													<option value="1" >1</option>
-												</select>
-												<select th:case="'4'" name="preference"  class="form-control preference">
-													<option value="5" >5</option>
-													<option value="4" selected>4</option>
-													<option value="3" >3</option>
-													<option value="2" >2</option>
-													<option value="1" >1</option>
-												</select>
-												<select th:case="'5'" name="preference"  class="form-control preference">
-													<option value="5" selected>5</option>
-													<option value="4" >4</option>
-													<option value="3" >3</option>
-													<option value="2" >2</option>
-													<option value="1" >1</option>
-												</select>
-
-											</td>
-											<td th:switch="${map.get('availability')}">
-												<select th:case="'yes'" name="availability"  class="form-control availability">
-												<option value="yes" selected>available</option>
-												<option value="no" >unavailable</option>
-												<option value="maybe">maybe</option>
-												</select>
-												<select th:case="'no'" name="availability"  class="form-control availability">
-													<option value="yes" >available</option>
-													<option value="no" selected>unavailable</option>
-													<option value="maybe">maybe</option>
-												</select>
-												<select th:case="'maybe'" name="availability"  class="form-control availability">
-													<option value="yes" selected>available</option>
-													<option value="no" >unavailable</option>
-													<option value="maybe" selected>maybe</option>
-												</select>
-											</td>
+						</tr>
+						</thead>
+						<tbody>
 
 
-										</tr>
-										</th:block>
+
+						<th:block th:each="map : ${events}">
+							<tr  th:attr="data-eventId=${map.get('eventId')}">
+								<td th:text="${map.get('eventName')}"></td>
+								<td th:text="${map.get('genre')}">genre</td>
+								<td th:text="${map.get('location')}">Los Angeles</td>
+								<td th:text="${map.get('date')}">2021-11-22</td>
+								<td th:text="${map.get('sender')}">root</td>
+								<td th:switch="${map.get('preference')}">
+									<select th:case="'1'" name="preference"  class="form-control preference">
+										<option value="5" >5</option>
+										<option value="4" >4</option>
+										<option value="3" >3</option>
+										<option value="2" >2</option>
+										<option value="1" selected>1</option>
+									</select>
+									<select th:case="'2'" name="preference"  class="form-control preference">
+										<option value="5" >5</option>
+										<option value="4" >4</option>
+										<option value="3" >3</option>
+										<option value="2" selected>2</option>
+										<option value="1" >1</option>
+									</select>
+									<select th:case="'3'" name="preference"  class="form-control preference">
+										<option value="5" >5</option>
+										<option value="4" >4</option>
+										<option value="3" selected>3</option>
+										<option value="2" >2</option>
+										<option value="1" >1</option>
+									</select>
+									<select th:case="'4'" name="preference"  class="form-control preference">
+										<option value="5" >5</option>
+										<option value="4" selected>4</option>
+										<option value="3" >3</option>
+										<option value="2" >2</option>
+										<option value="1" >1</option>
+									</select>
+									<select th:case="'5'" name="preference"  class="form-control preference">
+										<option value="5" selected>5</option>
+										<option value="4" >4</option>
+										<option value="3" >3</option>
+										<option value="2" >2</option>
+										<option value="1" >1</option>
+									</select>
+
+								</td>
+								<td th:switch="${map.get('availability')}">
+									<select th:case="'yes'" name="availability"  class="form-control availability">
+										<option value="yes" selected>available</option>
+										<option value="no" >unavailable</option>
+										<option value="maybe">maybe</option>
+									</select>
+									<select th:case="'no'" name="availability"  class="form-control availability">
+										<option value="yes" >available</option>
+										<option value="no" selected>unavailable</option>
+										<option value="maybe">maybe</option>
+									</select>
+									<select th:case="'maybe'" name="availability"  class="form-control availability">
+										<option value="yes" selected>available</option>
+										<option value="no" >unavailable</option>
+										<option value="maybe" selected>maybe</option>
+									</select>
+								</td>
+
+
+							</tr>
+						</th:block>
+
+
+
+
+
+						</tbody>
+					</table>
+				</div>
+			</div> <!-- .col -->
+
+
+
+
+		</div> <!-- .row -->
+
+		<div class="row">
+
+			<div class="col-12 d-flex justify-content-center">
+				<div class="center">
+
+					<table class="table table-hover table-responsive mt-4">
+						<thead>
+						<tr>
+							<th>Other Received Users</th>
+							<th>Event Name</th>
+
+							<th>Sender</th>
+							<th>Preference</th>
+							<th>Availability</th>
+
+						</tr>
+						</thead>
+						<tbody>
+
+
+
+						<th:block th:each="map : ${other_user_events}">
+							<tr  th:attr="data-eventId=${map.get('eventId')}">
+								<td th:text="${map.get('Username')}"></td>
+								<td th:text="${map.get('eventName')}"></td>
+
+								<td th:text="${map.get('sender')}">root</td>
+								<td th:text="${map.get('preference')}">
+								<td th:text="${map.get('availability')}">
+
+
+							</tr>
+						</th:block>
+
+
+
+
+
+						</tbody>
+					</table>
+				</div>
+			</div> <!-- .col -->
+
+
+
+
+		</div> <!-- .row -->
+
+
+	</div> <!-- .container-fluid -->
+</div>	<!-- end padding -->
 
 
 <!--										<tr>-->
@@ -204,32 +270,23 @@
 <!--										</tr>-->
 
 
-								</tbody>
-							</table>
-						</div>
-					</div> <!-- .col -->
+<div class="row pl-5" id="footer">
+	<div class="col12 divider"></div>
+	<div class="col-12">
+		<hr>
+		© 2021 Fall CSCI 310, Groupie created by Team 36.
+	</div>
+</div>
 
 
 
 
-			</div> <!-- .row -->
 
 
-		</div> <!-- .container-fluid -->
-	</div>	<!-- end padding -->
-
-
-
-
-	
-
-	
-
-
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-	<script src="../static/js/receive_invite_event.js" th:src="@{/js/receive_invite_event.js}"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<script src="../static/js/receive_invite_event.js" th:src="@{/js/receive_invite_event.js}"></script>
 </body>
 </html>

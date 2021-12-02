@@ -38,16 +38,68 @@ img{
     background-color: lightblue;
     padding: 2%;
     margin-top: 170px;
+
     /* font-size: 0.3vw; */
+}
+
+#add-users-list .users{
+    background: lightyellow;
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+    padding: 3px;
+    display: flex;
+    justify-content:left;
+}
+
+#add-events-list .events{
+    background: lightyellow;
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+    padding: 3px;
+    /*display: flex;*/
+    /*justify-content:left;*/
+}
+
+.events .remove{
+    margin-right: 2%;
+    margin-left: 1%;
+    color:red;
+    border: none;
+    background: lightyellow;
+    font-weight: bold;
+}
+.events .list-info{
+    margin-left: 1%;
+}
+
+.users .remove{
+    margin-right: 2%;
+    margin-left: 1%;
+    color:red;
+    border: none;
+    background: lightyellow;
+    font-weight: bold;
 }
 #senders_list .list-title{
     /* margin-bottom: 10px; */
-    font-size: 0.5vw;
+    /*font-size: 0.5vw;*/
 }
 
 #events_list .list-title{
     /* margin-bottom: 10px; */
-    font-size: 0.5vw;
+    /*font-size: 0.5vw;*/
     width: 100%;
 }
 
@@ -57,7 +109,7 @@ img{
 }
 
 .list-info{
-    font-size: 0.3rem;
+    /*font-size: 0.3rem;*/
 }
 
 .list-button{
@@ -70,17 +122,18 @@ img{
 
 
 .event-name{
-    font-size: 0.5vw;
+    /*font-size: 0.5vw;*/
     height: 30px;
     text-align: center;
     box-sizing: border-box;
     padding: 1%;
+    margin-bottom: 20px;
 }
 
 .add-event{
     
     height: 40px;
-    font-size: 0.1rem;
+
     width: 60%;
 }
 

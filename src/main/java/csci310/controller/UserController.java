@@ -92,7 +92,7 @@ public class UserController {
 
 
     @PostMapping(value="/signup")
-    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) {
+    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) throws Exception {
 
         User user=new User();
         user.setUsername(username);
@@ -102,7 +102,11 @@ public class UserController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());
             user.setHashPassword(encodedPassword);
-            userRepository.save(user);
+            try {
+                userRepository.save(user);
+            }catch (Exception e){
+
+            }
             model.addAttribute("message", "Sign Up Successfully!");
             return "signup";
         }
@@ -121,56 +125,59 @@ public class UserController {
         User sender = userRepository.findByUsername(senderUsername);
         List<Event> events = inviteModel.getEvents();
         List<User> receivers = new ArrayList<>();
-        for(String receiverUsername : receiversUsername){
-            receivers.add(userRepository.findByUsername(receiverUsername));
-        }
+        try {
+            for (String receiverUsername : receiversUsername) {
+                receivers.add(userRepository.findByUsername(receiverUsername));
+            }
 
-        for(User receiver : receivers){
-            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
-            //Check if sender is on the block list of receiver
-            for(User userOnBlockList : receiverBlockList){
-                if(sender.getId() == userOnBlockList.getId()){
-                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
+            for (User receiver : receivers) {
+                List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+                //Check if sender is on the block list of receiver
+                for (User userOnBlockList : receiverBlockList) {
+                    if (sender.getId() == userOnBlockList.getId()) {
+                        responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
+                }
+                //Check if every receiver is able to attend every event
+                for (Event event : events) {
+                    if (receiver.getStartDate() == null) { //we update startDate and endDate at the same time, check startDate would be enough
+                        continue;
+                    }
+                    if (event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0) {
+                        responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
                 }
             }
-            //Check if every receiver is able to attend every event
-            for(Event event : events){
-                if(receiver.getStartDate() == null){ //we update startDate and endDate at the same time, check startDate would be enough
-                    continue;
-                }
-                if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
-                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
-                }
-            }
-        }
 
-        Invite invite = new Invite();
-        invite.setInviteName(inviteName);
-        Collections.sort(events, Comparator.comparing(Event::getEventDate));
-        invite.setCreateDate(events.get(0).getEventDate());
-        invite.setSender(sender);
-        inviteRepository.save(invite);
-        //can cause problem with multithreaded server
-        invite = inviteRepository.findTopByOrderByIdDesc();
-        for(int i = 0; i < receivers.size(); i ++){
-            for(int j = 0; j < events.size(); j ++){
-                Event event = new Event(events.get(j));
-                event.setInvite(invite);
-                event.setReceiver(receivers.get(i));
-                eventRepository.save(event);
+            Invite invite = new Invite();
+            invite.setInviteName(inviteName);
+            Collections.sort(events, Comparator.comparing(Event::getEventDate));
+            invite.setCreateDate(events.get(0).getEventDate());
+            invite.setSender(sender);
+            inviteRepository.save(invite);
+            //can cause problem with multithreaded server
+            invite = inviteRepository.findTopByOrderByIdDesc();
+            for (int i = 0; i < receivers.size(); i++) {
+                for (int j = 0; j < events.size(); j++) {
+                    Event event = new Event(events.get(j));
+                    event.setInvite(invite);
+                    event.setReceiver(receivers.get(i));
+                    eventRepository.save(event);
+                }
+                //add received invite
+                User receiver = receivers.get(i);
+                List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+                newReceivedInviteList.add(invite);
+                receiver.setReceive_invites_list(newReceivedInviteList);
+                userRepository.save(receiver);
             }
-            //add received invite
-            User receiver = receivers.get(i);
-            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
-            newReceivedInviteList.add(invite);
-            receiver.setReceive_invites_list(newReceivedInviteList);
-            userRepository.save(receiver);
-        }
+        }catch (Exception e){
 
+        }
         responseMap.put("message", "Invite Sent");
         responseMap.put("returnCode", "200");
         return responseMap;
@@ -256,6 +263,7 @@ public class UserController {
         String cur_username=(String)httpSession.getAttribute("loginUser");
         Long inviteId_value=Long.parseLong(inviteId);
         String invite_name="";
+        Invite cur_invite=inviteRepository.getById(inviteId_value);
 
         User cur_user=userRepository.findByUsername(cur_username);
         List<Map<String,String>> list=new ArrayList<>();
@@ -274,11 +282,38 @@ public class UserController {
                 list.add(map);
             }
         }
+        List<Map<String,String>> other_user_list=new ArrayList<>();
+        for(User temp:cur_invite.getReceivers()){
+            if(temp.getUsername().equals(cur_username)){
+                continue;
+            }
+            else{
+                for(Event obj:temp.getUser_events_list()){
+                    if(obj.getInvite().getId().equals(inviteId_value)){
+                        Map<String,String> map=new HashMap<>();
+                        map.put("Username", temp.getUsername());
+                        map.put("eventName",obj.getEventName());
+                        map.put("genre",obj.getGenre());
+                        map.put("location",obj.getLocation());
+                        map.put("date",obj.getEventDate().toString());
+                        map.put("sender",obj.getInvite().getSender().getUsername());
+                        map.put("preference",obj.getPreference()+"");
+                        map.put("availability",obj.getAvailability());
+                        map.put("eventId",obj.getId()+"");
+
+                        other_user_list.add(map);
+                    }
+                }
+            }
+        }
+
+        System.out.println(other_user_list);
 
         model.addAttribute("inviteId",inviteId);
         model.addAttribute("status",status);
         model.addAttribute("events",list);
         model.addAttribute("inviteName",invite_name);
+        model.addAttribute("other_user_events",other_user_list);
 
 
         return "receive_invite_event";
@@ -409,11 +444,40 @@ public class UserController {
     }
 
     @GetMapping(value="/list-sent-invite")
-    public String findSentInvite(Model model, HttpSession httpSession) {
+    public String findSentInvite(@RequestParam(name = "type", required = false) String filter, Model model, HttpSession httpSession) {
         String username = (String)httpSession.getAttribute("loginUser");
         User user = userRepository.findByUsername(username);
         List<Invite> invites = user.getSend_invites_list();
         Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
+        if(filter != null){
+            if(filter.equals("finalized")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites) {
+                    if (invite.equals("finalized")) {
+                        tmp.add(invite);
+                    }
+                }
+                invites = tmp;
+            }else if(filter.equals("not finalized")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites) {
+                    if (invite.equals("not finalized")) {
+                        tmp.add(invite);
+                    }
+                }
+                invites = tmp;
+            }/*else if(filter.equals("responded")){
+                List<Invite> tmp = new ArrayList<>();
+                for(Invite invite : invites){
+                     List<User> receivers = inviteRepository.getById(invite.getId()).getReceivers();
+                     for(User receiver : receivers){
+                         for(Invite confirmed_invite)
+                     }
+                }
+            }else if(filter.equals("not responded")){
+
+            }*/
+        }
         model.addAttribute("invites", invites);
         return "sent_groupDate";
     }
@@ -434,23 +498,68 @@ public class UserController {
             tmp.add(event);
             eventsMap.put(eventKey, tmp);
         }
-        List<List<Event>> eventsList = new ArrayList<>();
+        Map<Event, String> eventsList = new HashMap<>();
         for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
-
-            eventsList.add(eventsMapEntry.getValue());
+            for(Event EachEvent : eventsMapEntry.getValue()){
+                eventsList.put(EachEvent ,EachEvent.getReceiver().getUsername());
+            }
         }
         for(Map.Entry<String, List<Event>> eventsMapEntry : eventsMap.entrySet()){
             eventMap.add(eventsMapEntry.getValue().get(0));
         }
 
+        Map<User, String> receiversMap = new HashMap<>();
         List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
-        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
-        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "undecided");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getConfirmed_receivers();
+
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "confirmed");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getReject_receivers();
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "rejected");
+        }
+
         model.addAttribute("eventsReceivers", eventsList);
-        model.addAttribute("receivers", receivers);
+        model.addAttribute("receivers", receiversMap);
         model.addAttribute("events", eventMap);
         model.addAttribute("invite", invite);
         return "sent_invite_event";
+    }
+
+    @GetMapping(value="set-finalized-event")
+    public String setFinalizedEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("eventId") Long eventId, Model model, HttpSession httpSession) {
+        Invite invite = inviteRepository.findById(inviteId).get();
+        Event event = eventRepository.findById(eventId).get();
+        invite.setFinalEvent(event);
+        invite.setStatus("finalized");
+        inviteRepository.save(invite);
+
+
+        return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+    }
+
+    @GetMapping(value="/delete-sent-invite")
+    public String deleteSentInvite(@RequestParam("inviteId") Long inviteId, Model model, HttpSession httpSession){
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Event> events = invite.getInvite_events_list();
+        invite.setInvite_events_list(new ArrayList<>());
+        inviteRepository.save(invite);
+        for(Event event : events){
+            eventRepository.delete(event);
+        }
+        invite.setReceivers(null);
+        invite.setSender(null);
+        invite.setConfirmed_receivers(null);
+        invite.setReject_receivers(null);
+        inviteRepository.save(invite);
+        inviteRepository.delete(invite);
+        return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
     @GetMapping(value="/delete-sent-invite-event")
@@ -459,23 +568,64 @@ public class UserController {
         List<Event> events = inviteRepository.findById(inviteId).get().getInvite_events_list();
         Event event = eventRepository.getById(eventId);
         String eventAndDate = event.getEventName() + event.getEventDate().toString();
-        events.removeIf(Eachevent -> eventAndDate.equals(Eachevent.getEventName()+Eachevent.getEventDate().toString()));
-        invite.setInvite_events_list(events);
+        List<Event> tmp = new ArrayList<>();
+        for(Event eachEvent : events){
+            if(!eventAndDate.equals(eachEvent.getEventName() + eachEvent.getEventDate().toString())){
+                tmp.add(eachEvent);
+            }
+        }
+        invite.setInvite_events_list(tmp);
         inviteRepository.save(invite);
-        return "redirect:/sent_invite_event";
+        for(Event eachEvent : events){
+            if(eventAndDate.equals(eachEvent.getEventName() + eachEvent.getEventDate().toString())){
+                eventRepository.delete(eachEvent);
+            }
+        }
+        if(invite.getInvite_events_list().size() == 0){
+            model.addAttribute("message", "can delete invite");
+            //return "redirect:/delete-sent-invite?inviteId=" + inviteId;
+            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+        }
+        model.addAttribute("message", "invite changed");
+        return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
     @GetMapping(value="/delete-sent-invite-user")
     public String deleteSentInviteUser(@RequestParam("inviteId") Long inviteId, @RequestParam("username") String username, Model model, HttpSession httpSession) {
         Invite invite = inviteRepository.findById(inviteId).get();
-        List<User> receivers = inviteRepository.findById(inviteId).get().getReceivers();
-        receivers.removeIf(receiver -> receiver.getUsername().equals(username));
-        invite.setReceivers(receivers);
-        inviteRepository.save(invite);
-        return "redirect:/sent_invite_event";
+        long targetId = invite.getId();
+        User receiver = userRepository.findByUsername(username);
+        List<Invite> receivedInviteList = userRepository.findByUsername(username).getReceive_invites_list();
+        List<Event> receivedEventList = userRepository.findByUsername(username).getUser_events_list();
+        //receivedInviteList.removeIf(Eachinvite -> Eachinvite.getId() == targetId);
+        for(int i = 0; i < receivedInviteList.size();){
+            if(receivedInviteList.get(i).getId() == targetId){
+                receivedInviteList.remove(i);
+            }else{
+                i ++;
+            }
+        }
+        //receivedEventList.removeIf(EachEvent -> EachEvent.getInvite().getId() == targetId);
+        for(int i = 0; i < receivedEventList.size();){
+            if(receivedEventList.get(i).getInvite().getId() == targetId){
+                receivedEventList.remove(i);
+            }else{
+                i ++;
+            }
+        }
+        receiver.setReceive_invites_list(receivedInviteList);
+        receiver.setUser_events_list(receivedEventList);
+        userRepository.save(receiver);
+        if(invite.getReceivers().size() == 0){
+            model.addAttribute("message", "can delete invite");
+            //return "redirect:/list-sent-invite";
+            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+        }
+        model.addAttribute("message", "invite changed");
+        return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
-        @GetMapping(value="/search-event-by-invite-and-username")
+    @GetMapping(value="/search-event-by-invite-and-username")
     public @ResponseBody List<Event> eventSearch(@RequestParam("username") String username, @RequestParam("invite_id") Long inviteId) {
         List<Event> userEvents = userRepository.findByUsername(username).getUser_events_list();
         List<Event> inviteEvents = inviteRepository.findById(inviteId).get().getInvite_events_list();
@@ -497,8 +647,8 @@ public class UserController {
     //this api has not been completed
     @PostMapping(value="/propose-finalize-invite")
     /*          status, preference, availablilty should be ignored in the return json
-    * {"average":4.0,"median":3.0,"proposedEvent":{"id":8,"eventName":"Justin Bieber","genre":"Music","eventDate":"2021-10-15","location":"Los Angeles","status":"confirmed","preference":5,"availability":"yes"}}
-    * */
+     * {"average":4.0,"median":3.0,"proposedEvent":{"id":8,"eventName":"Justin Bieber","genre":"Music","eventDate":"2021-10-15","location":"Los Angeles","status":"confirmed","preference":5,"availability":"yes"}}
+     * */
     public @ResponseBody Map<String, Object> finalizeInvite(@RequestParam("invite_id") Long inviteId) {
         Optional<Invite> inviteOptional = inviteRepository.findById(inviteId);
         Map<String, Object> response = new HashMap<>();
@@ -615,15 +765,47 @@ public class UserController {
 
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
-    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
+    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map,HttpSession session) throws JsonProcessingException {
         String name=(String) map.get("name");
-
-        List<User> users=userRepository.findByUsernameStartingWith(name);
+        //List<User> users=userRepository.findByUsernameStartingWith(name);
+        List<User> users = userRepository.findAll();
+        List<User> tmp = new ArrayList<>();
+        int nameLen = name.length();
+        for(User user : users){
+            if(name.equals(user.getUsername().substring(0, nameLen))){
+                tmp.add(user);
+            }
+        }
+        users = tmp;
+        String cur_username=(String)session.getAttribute("loginUser");
 
         List<String> usernames=new ArrayList<>();
 
         for(User obj:users){
-            usernames.add(obj.getUsername());
+
+            if(cur_username.equals(obj.getUsername())){
+                continue;
+            }
+            String sb="";
+            boolean found=false;
+            for(User block_user:obj.getBlock_list()){
+                if(cur_username.equals(block_user.getUsername())){
+
+                    found=true;
+                    break;
+                }
+            }
+            sb+=obj.getUsername();
+            if(found){
+                sb+="/ blocked you";
+
+
+            }
+
+            if(obj.getStartDate()!=null){
+                sb+="/  No time from "+obj.getStartDate().toString()+" to "+obj.getEndDate().toString();
+            }
+            usernames.add(sb);
         }
 
         Map<String, List<String>> result = new HashMap<>();
@@ -695,9 +877,9 @@ public class UserController {
 
     @GetMapping(value="/search-ticketmaster-event")
     /*
-    * sample event return
-    * {"_embedded":{"events":[{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfja","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com%2Fevent%2FZ7r9jZ1AdAfja","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-08T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-07","localTime":"19:30:00","dateTime":"2022-03-08T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-07-2022/event/Zu0FM1R0e5t5lRJ","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-20510-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfja?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}},{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfjp","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=http%3A%2F%2Fwww.ticketsnow.com%2FInventoryBrowse%2FTicketList.aspx%3FPID%3D3154716","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-09T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-08","localTime":"19:30:00","dateTime":"2022-03-09T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-08-2022/event/Zu0FM1R0e5t5lRg","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-1-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfjp?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}}]},"_links":{"self":{"href":"/discovery/v2/events.json?startDateTime=2021-11-17T12%3A00%3A00Z&size=12&city=Los+Angeles&classificationName=Music&endDateTime=2023-11-17T12%3A00%3A00Z&keyword=Justin"}},"page":{"size":12,"totalElements":2,"totalPages":1,"number":0}}
-    * */
+     * sample event return
+     * {"_embedded":{"events":[{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfja","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com%2Fevent%2FZ7r9jZ1AdAfja","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-08T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-07","localTime":"19:30:00","dateTime":"2022-03-08T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-07-2022/event/Zu0FM1R0e5t5lRJ","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-20510-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfja?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}},{"name":"Justin Bieber","type":"event","id":"Z7r9jZ1AdAfjp","test":false,"url":"https://ticketmaster.evyy.net/c/123/264167/4272?u=http%3A%2F%2Fwww.ticketsnow.com%2FInventoryBrowse%2FTicketList.aspx%3FPID%3D3154716","locale":"en-us","images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"sales":{"public":{"startDateTime":"1900-01-01T06:00:00Z","startTBD":false,"startTBA":false,"endDateTime":"2022-03-09T03:30:00Z"}},"dates":{"start":{"localDate":"2022-03-08","localTime":"19:30:00","dateTime":"2022-03-09T03:30:00Z","dateTBD":false,"dateTBA":false,"timeTBA":false,"noSpecificTime":false},"status":{"code":"rescheduled"},"spanMultipleDays":false},"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAev","name":"Pop"},"subGenre":{"id":"KZazBEonSMnZfZ7vkEl","name":"Pop Rock"},"family":false}],"outlets":[{"url":"https://www.staplescenter.com","type":"venueBoxOffice"},{"url":"https://www.ticketmaster.com/justin-bieber-los-angeles-california-03-08-2022/event/Zu0FM1R0e5t5lRg","type":"tmMarketPlace"}],"seatmap":{"staticUrl":"http://resale.ticketmaster.com.au/akamai-content/maps/1604-1-2-main.gif"},"_links":{"self":{"href":"/discovery/v2/events/Z7r9jZ1AdAfjp?locale=en-us"},"attractions":[{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}],"venues":[{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}]},"_embedded":{"venues":[{"name":"STAPLES Center","type":"venue","id":"ZFr9jZe6vA","test":false,"locale":"en-us","postalCode":"90017","timezone":"America/Los_Angeles","city":{"name":"Los Angeles"},"state":{"name":"California","stateCode":"CA"},"country":{"name":"United States Of America","countryCode":"US"},"address":{"line1":"1111 S. Figueroa St."},"location":{"longitude":"-118.2649","latitude":"34.053101"},"dmas":[{"id":324}],"upcomingEvents":{"_total":139,"tmr":100,"ticketmaster":39},"_links":{"self":{"href":"/discovery/v2/venues/ZFr9jZe6vA?locale=en-us"}}}],"attractions":[{"name":"Justin Bieber","type":"attraction","id":"K8vZ917G9e7","test":false,"url":"https://www.ticketmaster.com/justin-bieber-tickets/artist/1369961","locale":"en-us","externalLinks":{"youtube":[{"url":"https://www.youtube.com/user/JustinBieberVEVO"},{"url":"https://www.youtube.com/user/kidrauhl"}],"twitter":[{"url":"https://twitter.com/justinbieber"}],"itunes":[{"url":"https://itunes.apple.com/artist/id320569549"}],"lastfm":[{"url":"http://www.last.fm/music/Justin+Bieber"}],"facebook":[{"url":"https://www.facebook.com/JustinBieber"}],"wiki":[{"url":"https://en.wikipedia.org/wiki/Justin_Bieber"}],"spotify":[{"url":"https://open.spotify.com/artist/1uNFoZAHBGtllmzznpCI3s"}],"instagram":[{"url":"http://instagram.com/justinbieber"}],"musicbrainz":[{"id":"e0140a67-e4d1-4f13-8a01-364355bee46e"}],"homepage":[{"url":"http://www.justinbiebermusic.com/"}]},"aliases":["justin birb","justin bueb","justin bue","justin biev","justin bib","justin biber"],"images":[{"ratio":"4_3","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_CUSTOM.jpg","width":305,"height":225,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_LANDSCAPE_16_9.jpg","width":1136,"height":639,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RECOMENDATION_16_9.jpg","width":100,"height":56,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_3_2.jpg","width":1024,"height":683,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_ARTIST_PAGE_3_2.jpg","width":305,"height":203,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_16_9.jpg","width":640,"height":360,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_16_9.jpg","width":1024,"height":576,"fallback":false},{"ratio":"3_2","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_RETINA_PORTRAIT_3_2.jpg","width":640,"height":427,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_EVENT_DETAIL_PAGE_16_9.jpg","width":205,"height":115,"fallback":false},{"ratio":"16_9","url":"https://s1.ticketm.net/dam/a/15e/d2959961-cc88-4697-8aca-3911aeb8e15e_1557231_TABLET_LANDSCAPE_LARGE_16_9.jpg","width":2048,"height":1152,"fallback":false}],"classifications":[{"primary":true,"segment":{"id":"KZFzniwnSyZfZ7v7nJ","name":"Music"},"genre":{"id":"KnvZfZ7vAeA","name":"Rock"},"subGenre":{"id":"KZazBEonSMnZfZ7v6F1","name":"Pop"},"type":{"id":"KZAyXgnZfZ7v7nI","name":"Undefined"},"subType":{"id":"KZFzBErXgnZfZ7v7lJ","name":"Undefined"},"family":false}],"upcomingEvents":{"_total":77,"tmr":10,"mfx-za":2,"mfx-be":1,"mfx-dk":2,"mfx-nl":1,"ticketmaster":58,"mfx-cz":1,"mfx-ch":1,"mfx-pl":1},"_links":{"self":{"href":"/discovery/v2/attractions/K8vZ917G9e7?locale=en-us"}}}]}}]},"_links":{"self":{"href":"/discovery/v2/events.json?startDateTime=2021-11-17T12%3A00%3A00Z&size=12&city=Los+Angeles&classificationName=Music&endDateTime=2023-11-17T12%3A00%3A00Z&keyword=Justin"}},"page":{"size":12,"totalElements":2,"totalPages":1,"number":0}}
+     * */
     public String searchEvent (@RequestParam("city") String city, @RequestParam("keyword") String keyword, @RequestParam("genre") String genre, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, Model model) throws Exception{
         String urlString = "https://app.ticketmaster.com/discovery/v2/events.json?size=12&city=" + city + "&keyword=" + keyword + "&classificationName="
                 + genre + "&startDateTime=" + startDate + "T12:00:00Z" + "&endDateTime=" + endDate + "T12:00:00Z" + "&apikey=f3kuGY9d20QsgYWlhdQ0PwnnkeU2Mqym";
@@ -733,5 +915,27 @@ public class UserController {
         Map<String,String> res=new HashMap<>();
         res.put("message","200");
         return res;
+    }
+
+    @GetMapping(value="reply-final-event")
+    public String replyFinalEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("status") String status, Model model, HttpSession httpSession) {
+        User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Invite> received_invites = userRepository.findByUsername(user.getUsername()).getReceive_invites_list();
+        List<Invite> rejected_invites = userRepository.findByUsername(user.getUsername()).getReject_invites_list();
+        List<Invite> confirmed_invites = userRepository.findByUsername(user.getUsername()).getConfirmed_invites_list();
+        received_invites.remove(invite);
+        user.setReceive_invites_list(received_invites);
+        if(status.equals("comfirm")){
+            confirmed_invites.add(invite);
+            user.setConfirmed_invites_list(confirmed_invites);
+//            model.addAttribute("message", "invite confirmed");
+        }else{
+            rejected_invites.add(invite);
+            user.setReject_invites_list(rejected_invites);
+//            model.addAttribute("message", "invite rejected");
+        }
+        userRepository.save(user);
+        return "redirect:/receive-groupDates";
     }
 }

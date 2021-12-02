@@ -2,9 +2,11 @@ package csci310.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import csci310.annotation.AttributeEncryptor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 
 import javax.persistence.*;
 
@@ -20,30 +22,36 @@ public class Event implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(name = "event_name")
+    @Convert(converter = AttributeEncryptor.class)
     private String eventName;
     @Column(name = "genre")
+    @Convert(converter = AttributeEncryptor.class)
     private String genre;
     @Column(name = "event_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Convert(converter = AttributeEncryptor.class)
     private Date eventDate;
     @Column(name = "location")
+    @Convert(converter = AttributeEncryptor.class)
     private String location;
     @Column(name = "status")
+    @Convert(converter = AttributeEncryptor.class)
     private String status = "not confirmed"; // "confirmed", "not confirmed" "accepted"
     @Column(name = "preference")
     private int preference = 1; //"1-5"
     @Column(name = "availability")
+    @Convert(converter = AttributeEncryptor.class)
     private String availability = "no";//"no","yes","maybe?"
 
-    @OneToOne(cascade=CascadeType.ALL, mappedBy = "finalEvent")
-    private Invite finalizedInvite; // finalized invite
+    /*@OneToOne(cascade=CascadeType.ALL, mappedBy = "finalEvent")
+    private Invite finalizedInvite; // finalized invite*/
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "receiver_id", referencedColumnName = "id")
     private User receiver;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "invite_id", referencedColumnName = "id")
     private Invite invite;
 
@@ -122,14 +130,14 @@ public class Event implements Serializable {
     public void setLocation(String location) {
         this.location = location;
     }
-    @JsonIgnore
+    /*@JsonIgnore
     public Invite getFinalizedInvite() {
         return finalizedInvite;
     }
     @JsonIgnore
     public void setFinalizedInvite(Invite finalizedInvite) {
         this.finalizedInvite = finalizedInvite;
-    }
+    }*/
     @JsonIgnore
     public User getReceiver() {
         return receiver;
