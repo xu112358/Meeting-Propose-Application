@@ -744,15 +744,38 @@ public class UserController {
 
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
-    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
+    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map,HttpSession session) throws JsonProcessingException {
         String name=(String) map.get("name");
-
+        String cur_username=(String)session.getAttribute("loginUser");
         List<User> users=userRepository.findByUsernameStartingWith(name);
 
         List<String> usernames=new ArrayList<>();
 
         for(User obj:users){
-            usernames.add(obj.getUsername());
+
+            if(cur_username.equals(obj.getUsername())){
+                continue;
+            }
+            String sb="";
+            boolean found=false;
+            for(User block_user:obj.getBlock_list()){
+                if(cur_username.equals(block_user.getUsername())){
+
+                    found=true;
+                    break;
+                }
+            }
+            sb+=obj.getUsername();
+            if(found){
+                sb+="/ blocked you";
+
+
+            }
+
+            if(obj.getStartDate()!=null){
+                sb+="/  No time from "+obj.getStartDate().toString()+" to "+obj.getEndDate().toString();
+            }
+            usernames.add(sb);
         }
 
         Map<String, List<String>> result = new HashMap<>();
