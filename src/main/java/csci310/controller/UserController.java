@@ -263,6 +263,7 @@ public class UserController {
         String cur_username=(String)httpSession.getAttribute("loginUser");
         Long inviteId_value=Long.parseLong(inviteId);
         String invite_name="";
+        Invite cur_invite=inviteRepository.getById(inviteId_value);
 
         User cur_user=userRepository.findByUsername(cur_username);
         List<Map<String,String>> list=new ArrayList<>();
@@ -281,11 +282,38 @@ public class UserController {
                 list.add(map);
             }
         }
+        List<Map<String,String>> other_user_list=new ArrayList<>();
+        for(User temp:cur_invite.getReceivers()){
+            if(temp.getUsername().equals(cur_username)){
+                continue;
+            }
+            else{
+                for(Event obj:temp.getUser_events_list()){
+                    if(obj.getInvite().getId().equals(inviteId_value)){
+                        Map<String,String> map=new HashMap<>();
+                        map.put("Username", temp.getUsername());
+                        map.put("eventName",obj.getEventName());
+                        map.put("genre",obj.getGenre());
+                        map.put("location",obj.getLocation());
+                        map.put("date",obj.getEventDate().toString());
+                        map.put("sender",obj.getInvite().getSender().getUsername());
+                        map.put("preference",obj.getPreference()+"");
+                        map.put("availability",obj.getAvailability());
+                        map.put("eventId",obj.getId()+"");
+
+                        other_user_list.add(map);
+                    }
+                }
+            }
+        }
+
+        System.out.println(other_user_list);
 
         model.addAttribute("inviteId",inviteId);
         model.addAttribute("status",status);
         model.addAttribute("events",list);
         model.addAttribute("inviteName",invite_name);
+        model.addAttribute("other_user_events",other_user_list);
 
 
         return "receive_invite_event";
@@ -511,6 +539,8 @@ public class UserController {
         invite.setFinalEvent(event);
         invite.setStatus("finalized");
         inviteRepository.save(invite);
+
+
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
     }
 
@@ -735,7 +765,7 @@ public class UserController {
 
     @PostMapping(value = "/usernameStartingWith", consumes = "application/json")
     @ResponseBody
-    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map) throws JsonProcessingException {
+    public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map,HttpSession session) throws JsonProcessingException {
         String name=(String) map.get("name");
         //List<User> users=userRepository.findByUsernameStartingWith(name);
         List<User> users = userRepository.findAll();
@@ -747,11 +777,36 @@ public class UserController {
             }
         }
         users = tmp;
+        String cur_username=(String)session.getAttribute("loginUser");
+        List<User> users=userRepository.findByUsernameStartingWith(name);
 
         List<String> usernames=new ArrayList<>();
 
         for(User obj:users){
-            usernames.add(obj.getUsername());
+
+            if(cur_username.equals(obj.getUsername())){
+                continue;
+            }
+            String sb="";
+            boolean found=false;
+            for(User block_user:obj.getBlock_list()){
+                if(cur_username.equals(block_user.getUsername())){
+
+                    found=true;
+                    break;
+                }
+            }
+            sb+=obj.getUsername();
+            if(found){
+                sb+="/ blocked you";
+
+
+            }
+
+            if(obj.getStartDate()!=null){
+                sb+="/  No time from "+obj.getStartDate().toString()+" to "+obj.getEndDate().toString();
+            }
+            usernames.add(sb);
         }
 
         Map<String, List<String>> result = new HashMap<>();
