@@ -13,6 +13,7 @@ document.querySelector("#finalized-filter").onchange=function(){
 
 
         }
+
     }else if(select=="finalized"){
         let select1 = "finalized responded";
         let select2 = "finalized not responded";
