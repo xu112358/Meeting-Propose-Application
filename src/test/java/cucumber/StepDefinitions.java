@@ -890,8 +890,71 @@ public void i_am_on_the_new_received_event_page() {
         assertEquals(driver.findElement(By.cssSelector(".preference")).getAttribute("value"), "2");
     }
 
+    @Given("I am on the user setting page and signed in as {string} and {string} has blocked me")
+    public void i_am_on_the_user_setting_page_and_signed_in_as_and_has_blocked_me(String string, String string2) {
+        // Write code here that turns the phrase above into concrete actions
+        //sign up string
+        driver.get(ROOT_URL + "/signup");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string);
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#re_password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signup")).click();
+        //sign up string2
+        driver.get(ROOT_URL + "/signup");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string2);
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#re_password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signup")).click();
+       //login string 2
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string2);
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        //block string1 by string2
+        driver.get(ROOT_URL + "/setting");
+        driver.findElement(By.cssSelector("#searchusername")).sendKeys(string);
+        driver.findElement(By.cssSelector("#username_add")).click();
+        //log out
+        driver.findElement(By.cssSelector("#navbarNav > ul.navbar-nav > li.nav-item:nth-child(6) > a.nav-link")).click();
+        //login in as string
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string);
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        //to user setting
+        driver.get(ROOT_URL + "/setting");
+    }
 
+    @When("I search {string} in the username search form")
+    public void i_search_in_the_username_search_form(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#searchusername")).sendKeys(string);
+    }
+    @Then("I can see the fiona has blocked me")
+    public void i_can_see_the_fiona_has_blocked_me() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#result > ul > li")).getText();
+        assertEquals("fiona/ blocked you",text);
+    }
 
+    @Given("I am on the user setting page and signed in as {string}")
+    public void i_am_on_the_user_setting_page_and_signed_in_as(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys(string);
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        //block string1 by string2
+        driver.get(ROOT_URL + "/setting");
+    }
+
+    @Then("I can see the unavailble date range of {string}")
+    public void i_can_see_the_unavailble_date_range_of(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#result > ul > li")).getText();
+        String true_text = string+"/ No time from ";
+        assertTrue(text.contains(true_text));
+    }
 
 
 
