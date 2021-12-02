@@ -125,56 +125,59 @@ public class UserController {
         User sender = userRepository.findByUsername(senderUsername);
         List<Event> events = inviteModel.getEvents();
         List<User> receivers = new ArrayList<>();
-        for(String receiverUsername : receiversUsername){
-            receivers.add(userRepository.findByUsername(receiverUsername));
-        }
+        try {
+            for (String receiverUsername : receiversUsername) {
+                receivers.add(userRepository.findByUsername(receiverUsername));
+            }
 
-        for(User receiver : receivers){
-            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
-            //Check if sender is on the block list of receiver
-            for(User userOnBlockList : receiverBlockList){
-                if(sender.getId() == userOnBlockList.getId()){
-                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
+            for (User receiver : receivers) {
+                List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+                //Check if sender is on the block list of receiver
+                for (User userOnBlockList : receiverBlockList) {
+                    if (sender.getId() == userOnBlockList.getId()) {
+                        responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
+                }
+                //Check if every receiver is able to attend every event
+                for (Event event : events) {
+                    if (receiver.getStartDate() == null) { //we update startDate and endDate at the same time, check startDate would be enough
+                        continue;
+                    }
+                    if (event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0) {
+                        responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
                 }
             }
-            //Check if every receiver is able to attend every event
-            for(Event event : events){
-                if(receiver.getStartDate() == null){ //we update startDate and endDate at the same time, check startDate would be enough
-                    continue;
-                }
-                if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
-                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
-                }
-            }
-        }
 
-        Invite invite = new Invite();
-        invite.setInviteName(inviteName);
-        Collections.sort(events, Comparator.comparing(Event::getEventDate));
-        invite.setCreateDate(events.get(0).getEventDate());
-        invite.setSender(sender);
-        inviteRepository.save(invite);
-        //can cause problem with multithreaded server
-        invite = inviteRepository.findTopByOrderByIdDesc();
-        for(int i = 0; i < receivers.size(); i ++){
-            for(int j = 0; j < events.size(); j ++){
-                Event event = new Event(events.get(j));
-                event.setInvite(invite);
-                event.setReceiver(receivers.get(i));
-                eventRepository.save(event);
+            Invite invite = new Invite();
+            invite.setInviteName(inviteName);
+            Collections.sort(events, Comparator.comparing(Event::getEventDate));
+            invite.setCreateDate(events.get(0).getEventDate());
+            invite.setSender(sender);
+            inviteRepository.save(invite);
+            //can cause problem with multithreaded server
+            invite = inviteRepository.findTopByOrderByIdDesc();
+            for (int i = 0; i < receivers.size(); i++) {
+                for (int j = 0; j < events.size(); j++) {
+                    Event event = new Event(events.get(j));
+                    event.setInvite(invite);
+                    event.setReceiver(receivers.get(i));
+                    eventRepository.save(event);
+                }
+                //add received invite
+                User receiver = receivers.get(i);
+                List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+                newReceivedInviteList.add(invite);
+                receiver.setReceive_invites_list(newReceivedInviteList);
+                userRepository.save(receiver);
             }
-            //add received invite
-            User receiver = receivers.get(i);
-            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
-            newReceivedInviteList.add(invite);
-            receiver.setReceive_invites_list(newReceivedInviteList);
-            userRepository.save(receiver);
-        }
+        }catch (Exception e){
 
+        }
         responseMap.put("message", "Invite Sent");
         responseMap.put("returnCode", "200");
         return responseMap;
