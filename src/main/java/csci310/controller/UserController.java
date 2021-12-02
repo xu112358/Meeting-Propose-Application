@@ -959,6 +959,7 @@ public class UserController {
                 map.put("genre",inv.getFinalEvent().getGenre());
                 map.put("location",inv.getFinalEvent().getLocation());
                 map.put("sender",inv.getSender().getUsername());
+                map.put("invite_name",inv.getInviteName());
                 list.add(map);
             }
             System.out.println(inv.getFinalEvent());
