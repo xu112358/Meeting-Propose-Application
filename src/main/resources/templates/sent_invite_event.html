@@ -118,13 +118,15 @@
 						<thead>
 						<tr>
 							<th>Receiver</th>
+							<th>Reply Status</th>
 						</tr>
 						</thead>
 						<tbody>
 						<tr th:each="receiver : ${receivers}">
-							<td th:text="${receiver.username}"></td>
+							<td th:text="${receiver.key.username}"></td>
+							<td th:text="${receiver.value}"></td>
 							<td>
-								<a th:href="@{'/delete-sent-invite-user?inviteId=' + ${invite.id} + '&username=' + ${receiver.username}}" th:text="delete"></a>
+								<a th:href="@{'/delete-sent-invite-user?inviteId=' + ${invite.id} + '&username=' + ${receiver.key.username}}" th:text="delete"></a>
 							</td>
 						</tr>
 						</tbody>

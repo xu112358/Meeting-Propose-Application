@@ -3,6 +3,7 @@ package csci310.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import csci310.annotation.AttributeEncryptor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,10 +23,13 @@ public class Invite {
     @Column(name = "create_date", columnDefinition = "DATE")
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone="America/Los_Angeles")
+    @Convert(converter = AttributeEncryptor.class)
     private Date createDate; // invite sort date
     @Column(name = "invite_name")
+    @Convert(converter = AttributeEncryptor.class)
     private String inviteName;
     @Column(name = "status")
+    @Convert(converter = AttributeEncryptor.class)
     private String status = "not finalized"; // finalized or not finalized
     //@JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL)

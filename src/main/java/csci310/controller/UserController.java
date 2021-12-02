@@ -92,7 +92,7 @@ public class UserController {
 
 
     @PostMapping(value="/signup")
-    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) {
+    public String createUser(@RequestParam("username") String username,@RequestParam(name="password") String password,@RequestParam(name="re_password",required = false) String re_password, Model model) throws Exception {
 
         User user=new User();
         user.setUsername(username);
@@ -102,7 +102,11 @@ public class UserController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());
             user.setHashPassword(encodedPassword);
-            userRepository.save(user);
+            try {
+                userRepository.save(user);
+            }catch (Exception e){
+
+            }
             model.addAttribute("message", "Sign Up Successfully!");
             return "signup";
         }
@@ -121,56 +125,59 @@ public class UserController {
         User sender = userRepository.findByUsername(senderUsername);
         List<Event> events = inviteModel.getEvents();
         List<User> receivers = new ArrayList<>();
-        for(String receiverUsername : receiversUsername){
-            receivers.add(userRepository.findByUsername(receiverUsername));
-        }
+        try {
+            for (String receiverUsername : receiversUsername) {
+                receivers.add(userRepository.findByUsername(receiverUsername));
+            }
 
-        for(User receiver : receivers){
-            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
-            //Check if sender is on the block list of receiver
-            for(User userOnBlockList : receiverBlockList){
-                if(sender.getId() == userOnBlockList.getId()){
-                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
+            for (User receiver : receivers) {
+                List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+                //Check if sender is on the block list of receiver
+                for (User userOnBlockList : receiverBlockList) {
+                    if (sender.getId() == userOnBlockList.getId()) {
+                        responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
+                }
+                //Check if every receiver is able to attend every event
+                for (Event event : events) {
+                    if (receiver.getStartDate() == null) { //we update startDate and endDate at the same time, check startDate would be enough
+                        continue;
+                    }
+                    if (event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0) {
+                        responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
+                        responseMap.put("returnCode", "400");
+                        return responseMap;
+                    }
                 }
             }
-            //Check if every receiver is able to attend every event
-            for(Event event : events){
-                if(receiver.getStartDate() == null){ //we update startDate and endDate at the same time, check startDate would be enough
-                    continue;
-                }
-                if(event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0){
-                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
-                    responseMap.put("returnCode", "400");
-                    return responseMap;
-                }
-            }
-        }
 
-        Invite invite = new Invite();
-        invite.setInviteName(inviteName);
-        Collections.sort(events, Comparator.comparing(Event::getEventDate));
-        invite.setCreateDate(events.get(0).getEventDate());
-        invite.setSender(sender);
-        inviteRepository.save(invite);
-        //can cause problem with multithreaded server
-        invite = inviteRepository.findTopByOrderByIdDesc();
-        for(int i = 0; i < receivers.size(); i ++){
-            for(int j = 0; j < events.size(); j ++){
-                Event event = new Event(events.get(j));
-                event.setInvite(invite);
-                event.setReceiver(receivers.get(i));
-                eventRepository.save(event);
+            Invite invite = new Invite();
+            invite.setInviteName(inviteName);
+            Collections.sort(events, Comparator.comparing(Event::getEventDate));
+            invite.setCreateDate(events.get(0).getEventDate());
+            invite.setSender(sender);
+            inviteRepository.save(invite);
+            //can cause problem with multithreaded server
+            invite = inviteRepository.findTopByOrderByIdDesc();
+            for (int i = 0; i < receivers.size(); i++) {
+                for (int j = 0; j < events.size(); j++) {
+                    Event event = new Event(events.get(j));
+                    event.setInvite(invite);
+                    event.setReceiver(receivers.get(i));
+                    eventRepository.save(event);
+                }
+                //add received invite
+                User receiver = receivers.get(i);
+                List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+                newReceivedInviteList.add(invite);
+                receiver.setReceive_invites_list(newReceivedInviteList);
+                userRepository.save(receiver);
             }
-            //add received invite
-            User receiver = receivers.get(i);
-            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
-            newReceivedInviteList.add(invite);
-            receiver.setReceive_invites_list(newReceivedInviteList);
-            userRepository.save(receiver);
-        }
+        }catch (Exception e){
 
+        }
         responseMap.put("message", "Invite Sent");
         responseMap.put("returnCode", "200");
         return responseMap;
@@ -501,11 +508,25 @@ public class UserController {
             eventMap.add(eventsMapEntry.getValue().get(0));
         }
 
+        Map<User, String> receiversMap = new HashMap<>();
         List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
-        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
-        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "undecided");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getConfirmed_receivers();
+
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "confirmed");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getReject_receivers();
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "rejected");
+        }
+
         model.addAttribute("eventsReceivers", eventsList);
-        model.addAttribute("receivers", receivers);
+        model.addAttribute("receivers", receiversMap);
         model.addAttribute("events", eventMap);
         model.addAttribute("invite", invite);
         return "sent_invite_event";
@@ -746,8 +767,17 @@ public class UserController {
     @ResponseBody
     public Map<String,List<String>> usernameStartingWith(@RequestBody Map<String,Object> map,HttpSession session) throws JsonProcessingException {
         String name=(String) map.get("name");
+        //List<User> users=userRepository.findByUsernameStartingWith(name);
+        List<User> users = userRepository.findAll();
+        List<User> tmp = new ArrayList<>();
+        int nameLen = name.length();
+        for(User user : users){
+            if(name.equals(user.getUsername().substring(0, nameLen))){
+                tmp.add(user);
+            }
+        }
+        users = tmp;
         String cur_username=(String)session.getAttribute("loginUser");
-        List<User> users=userRepository.findByUsernameStartingWith(name);
 
         List<String> usernames=new ArrayList<>();
 
@@ -885,5 +915,27 @@ public class UserController {
         Map<String,String> res=new HashMap<>();
         res.put("message","200");
         return res;
+    }
+
+    @GetMapping(value="reply-final-event")
+    public String replyFinalEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("status") String status, Model model, HttpSession httpSession) {
+        User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Invite> received_invites = userRepository.findByUsername(user.getUsername()).getReceive_invites_list();
+        List<Invite> rejected_invites = userRepository.findByUsername(user.getUsername()).getReject_invites_list();
+        List<Invite> confirmed_invites = userRepository.findByUsername(user.getUsername()).getConfirmed_invites_list();
+        received_invites.remove(invite);
+        user.setReceive_invites_list(received_invites);
+        if(status.equals("comfirm")){
+            confirmed_invites.add(invite);
+            user.setConfirmed_invites_list(confirmed_invites);
+//            model.addAttribute("message", "invite confirmed");
+        }else{
+            rejected_invites.add(invite);
+            user.setReject_invites_list(rejected_invites);
+//            model.addAttribute("message", "invite rejected");
+        }
+        userRepository.save(user);
+        return "redirect:/receive-groupDates";
     }
 }
