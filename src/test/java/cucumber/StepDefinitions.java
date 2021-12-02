@@ -4,11 +4,14 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -22,6 +25,7 @@ import static org.junit.Assert.*;
  */
 public class StepDefinitions {
     private static final String ROOT_URL = "https://localhost:8443";
+
     private static int num_events  = 0;
     private static int new_events  = 0;
     private static int rejected_events  = 0;
@@ -30,6 +34,7 @@ public class StepDefinitions {
 
     ChromeOptions handlingSSL = new ChromeOptions().setAcceptInsecureCerts(true);
     private final WebDriver driver = new ChromeDriver(handlingSSL);
+
 
     @Given("I am on the index page")
     public void i_am_on_the_index_page() {
