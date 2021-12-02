@@ -61,7 +61,7 @@ document.querySelector("#searchusername").onkeyup=function(){
 
 $('body').on('click', 'li', function() {
     let select=$(this).text();
-    document.querySelector("#searchusername").value=select;
+    document.querySelector("#searchusername").value=select.split("/")[0];
 
 
 });
@@ -103,7 +103,7 @@ document.querySelector("#username_add").onclick=function() {
             for (let i = 0; i < terms.length; i++) {
 
 
-                if (username == terms[i].innerText) {
+                if (username == terms[i].innerText.split("/")[0]) {
                     match = true;
                     break;
                 }
