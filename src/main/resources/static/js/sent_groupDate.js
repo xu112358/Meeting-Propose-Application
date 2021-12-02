@@ -13,8 +13,20 @@ document.querySelector("#finalized-filter").onchange=function(){
 
 
         }
-    }
-    else{
+
+    }else if(select=="finalized"){
+        let select1 = "finalized responded";
+        let select2 = "finalized not responded";
+        for(let i=0;i<terms.length;i++){
+            let cur_term=terms[i];
+            if(cur_term.children[2].innerText!=select1 && cur_term.children[2].innerText!=select2){
+                cur_term.classList.add("noshow");
+            }
+            else{
+                cur_term.classList.remove("noshow");
+            }
+        }
+    }else{
         for(let i=0;i<terms.length;i++){
             let cur_term=terms[i];
 

@@ -953,6 +953,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
 
+
     @Test
     @Transactional
     public void testFindSentInvite() throws Exception {

@@ -367,8 +367,12 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            cur_user.getConfirmed_invites_list().add(find_invite);
-            cur_user.getReceive_invites_list().remove(find_invite);
+            List <Invite> tmp = cur_user.getConfirmed_invites_list();
+            tmp.add(find_invite);
+            cur_user.setConfirmed_invites_list(tmp);
+            tmp = cur_user.getReceive_invites_list();
+            tmp.remove(find_invite);
+            cur_user.setReceive_invites_list(tmp);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -387,8 +391,12 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            cur_user.getReject_invites_list().remove(find_invite);
-            cur_user.getConfirmed_invites_list().add(find_invite);
+            List <Invite> tmp = cur_user.getConfirmed_invites_list();
+            tmp.add(find_invite);
+            cur_user.setConfirmed_invites_list(tmp);
+            tmp = cur_user.getReceive_invites_list();
+            tmp.remove(find_invite);
+            cur_user.setReceive_invites_list(tmp);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -399,7 +407,9 @@ public class UserController {
             userRepository.save(cur_user);
         }
 
-
+        Invite findInvite = inviteRepository.findById(inviteId).get();
+        findInvite.setStatus("finalized responded");
+        inviteRepository.save(findInvite);
         return "redirect:/receive-groupDates";
     }
 
@@ -414,12 +424,15 @@ public class UserController {
         for(Invite obj:cur_user.getReceive_invites_list()){
             if(obj.getId().equals(inviteId)){
                 find_invite=obj;
-
             }
         }
         if(find_invite!=null){
-            cur_user.getReject_invites_list().add(find_invite);
-            cur_user.getReceive_invites_list().remove(find_invite);
+            List <Invite> tmp = cur_user.getReject_invites_list();
+            tmp.add(find_invite);
+            cur_user.setReject_invites_list(tmp);
+            tmp = cur_user.getReceive_invites_list();
+            tmp.remove(find_invite);
+            cur_user.setReceive_invites_list(tmp);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -441,8 +454,12 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            cur_user.getReject_invites_list().add(find_invite);
-            cur_user.getConfirmed_invites_list().remove(find_invite);
+            List <Invite> tmp = cur_user.getReject_invites_list();
+            tmp.add(find_invite);
+            cur_user.setReject_invites_list(tmp);
+            tmp = cur_user.getReceive_invites_list();
+            tmp.remove(find_invite);
+            cur_user.setReceive_invites_list(tmp);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -453,6 +470,9 @@ public class UserController {
             }
             userRepository.save(cur_user);
         }
+        Invite findInvite = inviteRepository.findById(inviteId).get();
+        findInvite.setStatus("finalized responded");
+        inviteRepository.save(findInvite);
         return "redirect:/receive-groupDates";
     }
 
@@ -462,35 +482,42 @@ public class UserController {
         User user = userRepository.findByUsername(username);
         List<Invite> invites = user.getSend_invites_list();
         Collections.sort(invites, Comparator.comparing(Invite::getCreateDate));
-        if(filter != null){
-            if(filter.equals("finalized")){
-                List<Invite> tmp = new ArrayList<>();
-                for(Invite invite : invites) {
-                    if (invite.equals("finalized")) {
-                        tmp.add(invite);
-                    }
-                }
-                invites = tmp;
-            }else if(filter.equals("not finalized")){
-                List<Invite> tmp = new ArrayList<>();
-                for(Invite invite : invites) {
-                    if (invite.equals("not finalized")) {
-                        tmp.add(invite);
-                    }
-                }
-                invites = tmp;
-            }/*else if(filter.equals("responded")){
-                List<Invite> tmp = new ArrayList<>();
-                for(Invite invite : invites){
-                     List<User> receivers = inviteRepository.getById(invite.getId()).getReceivers();
-                     for(User receiver : receivers){
-                         for(Invite confirmed_invite)
-                     }
-                }
-            }else if(filter.equals("not responded")){
-
-            }*/
-        }
+//        if(filter != null){
+//            if(filter.equals("finalized")){
+//                List<Invite> tmp = new ArrayList<>();
+//                for(Invite invite : invites) {
+//                    if (invite.getStatus().equals("finalized responded") || invite.getStatus().equals("finalized not responded")) {
+//                        tmp.add(invite);
+//                    }
+//                }
+//                invites = tmp;
+//            }else if(filter.equals("not finalized")){
+//                List<Invite> tmp = new ArrayList<>();
+//                for(Invite invite : invites) {
+//                    System.out.println(invite.getStatus());
+//                    if (invite.getStatus().equals("not finalized")) {
+//                        tmp.add(invite);
+//                    }
+//                }
+//                invites = tmp;
+//            }else if(filter.equals("responded")){
+//                List<Invite> tmp = new ArrayList<>();
+//                for(Invite invite : invites) {
+//                    if (invite.getStatus().equals("finalized responded")) {
+//                        tmp.add(invite);
+//                    }
+//                }
+//                invites = tmp;
+//            }else if(filter.equals("not responded")){
+//                List<Invite> tmp = new ArrayList<>();
+//                for(Invite invite : invites) {
+//                    if (invite.getStatus().equals("finalized not responded")) {
+//                        tmp.add(invite);
+//                    }
+//                }
+//                invites = tmp;
+//            }
+//        }
         model.addAttribute("invites", invites);
         return "sent_groupDate";
     }
@@ -550,7 +577,7 @@ public class UserController {
         Invite invite = inviteRepository.findById(inviteId).get();
         Event event = eventRepository.findById(eventId).get();
         invite.setFinalEvent(event);
-        invite.setStatus("finalized");
+        invite.setStatus("finalized not responded");
         inviteRepository.save(invite);
 
 
@@ -955,6 +982,8 @@ public class UserController {
 //            model.addAttribute("message", "invite rejected");
         }
         userRepository.save(user);
+        invite.setStatus("finalized responded");
+        inviteRepository.save(invite);
         return "redirect:/receive-groupDates";
     }
 
@@ -963,24 +992,23 @@ public class UserController {
         User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
 
         List<Map<String,String>> list=new ArrayList<>();
-        for(Invite inv:user.getConfirmed_invites_list()){
-            if(inv.getFinalEvent()!=null){
+        for(Invite inv:user.getReceive_invites_list()){
+            Event event = inviteRepository.findById(inv.getId()).get().getFinalEvent();
+            if(event!=null){
+                System.out.println(event.getEventName());
                 Map<String,String> map=new HashMap<>();
                 map.put("invite_id",inv.getId().toString());
-                map.put("eventName",inv.getFinalEvent().getEventName());
-                map.put("date",inv.getFinalEvent().getEventDate().toString());
-                map.put("genre",inv.getFinalEvent().getGenre());
-                map.put("location",inv.getFinalEvent().getLocation());
+                map.put("eventName",event.getEventName());
+                map.put("date",event.getEventDate().toString());
+                map.put("genre",event.getGenre());
+                map.put("location",event.getLocation());
                 map.put("sender",inv.getSender().getUsername());
                 map.put("invite_name",inv.getInviteName());
                 list.add(map);
             }
-            System.out.println(inv.getFinalEvent());
 
         }
-
         Map<String,List<Map<String,String>>> res=new HashMap<>();
-        res.put("events",list);
         return res;
     }
 }
