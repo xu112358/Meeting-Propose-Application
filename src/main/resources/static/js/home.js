@@ -13,10 +13,46 @@ $(document).ready(function(){
     $("#add-button").click({date: date}, new_event);
     // Set current month as active
     $(".months-row").children().eq(date.getMonth()).addClass("active-month");
+
+    //new_event_json2("happy",1,2021,12,10);
+    getDate();
     init_calendar(date);
     var events = check_events(today, date.getMonth()+1, date.getFullYear());
     show_events(events, months[date.getMonth()], today);
+    //getDate();
+    //new_event_json("happy", 1, 2021,12, 1);
+
+    //init_calendar(new Date());
 });
+
+function getDate(){
+
+
+    let httpRequest = new XMLHttpRequest();
+    httpRequest.open("GET",'../get_finalized_invites_list');
+    httpRequest.send();
+
+    httpRequest.onreadystatechange=function(){
+        if(httpRequest.readyState==4){
+            if(httpRequest.status==200){
+                let response_json=JSON.parse(httpRequest.responseText);
+                //console.log(response_json._embedded.events);
+                console.log(response_json);
+                for(let i=0;i<response_json.events.length;i++){
+                    let temp_event=response_json.events[i];
+                    let date_str=temp_event.date.split('-');
+
+                    new_event_json2(temp_event,0,parseInt(date_str[0]),parseInt(date_str[1]),parseInt(date_str[2]));
+                }
+
+            }
+            else{
+                //console.log(httpRequest.readyState);
+
+            }
+        }
+    };
+};
 
 // Initialize the calendar by appending the HTML dates
 function init_calendar(date) {
@@ -116,7 +152,7 @@ function prev_year(event) {
     init_calendar(date);
 }
 
-// Event handler for clicking the new event button
+//Event handler for clicking the new event button
 function new_event(event) {
     // if a date isn't selected then do nothing
     if($(".active-date").length===0)
@@ -154,13 +190,18 @@ function new_event(event) {
             $("#dialog").hide(250);
             console.log("new event");
             new_event_json(name, count, date, day);
-            date.setDate(day);
-            init_calendar(date);
+            new_event_json2("happy",1,2021,12,3);
+            init_calendar(new Date());
+            console.log(day)
+            console.log(date);
+            console.log(new Date());
+            //date.setDate(day);
+
         }
     });
 }
 
-// Adds a json event to event_data
+//Adds a json event to event_data
 function new_event_json(name, count, date, day) {
     var event = {
         "occasion": name,
@@ -170,6 +211,17 @@ function new_event_json(name, count, date, day) {
         "day": day
     };
     event_data["events"].push(event);
+}
+
+function new_event_json2(name, count, year,month, day) {
+        var event = {
+            "occasion": name,
+            "invited_count": count,
+            "year": year,
+            "month": month,
+            "day": day
+        };
+        event_data["events"].push(event);
 }
 
 // Display all events of the selected date in card views
@@ -190,15 +242,26 @@ function show_events(events, month, day) {
         // Go through and add each event as a card to the events container
         for(var i=0; i<events.length; i++) {
             var event_card = $("<div class='event-card'></div>");
-            var event_name = $("<div class='event-name'>"+events[i]["occasion"]+":</div>");
-            var event_count = $("<div class='event-count'>"+events[i]["invited_count"]+" Invited</div>");
-            if(events[i]["cancelled"]===true) {
-                $(event_card).css({
-                    "border-left": "10px solid #FF1744"
-                });
-                event_count = $("<div class='event-cancelled'>Cancelled</div>");
-            }
-            $(event_card).append(event_name).append(event_count);
+            let cur_obj=events[i]["occasion"];
+            let inviteName=$("<div class='m-2'>"+"<strong>GroupDate Name: </strong>"+cur_obj.invite_name+"</div>");
+            let eventName=$("<div class='m-2'>"+cur_obj.eventName+"</div>");
+            // var event_name = $("<div class='event-name'>"+events[i]["occasion"]+":</div>");
+            let location=$("<div class='m-2'>"+cur_obj.location+"</div>");
+            let genre=$("<div class='m-2'>"+cur_obj.genre+"</div>");
+            let eventDate=$("<div class='m-2'>"+cur_obj.date+"</div>");
+            let sender=$("<div class='m-2'>"+"Sender: "+cur_obj.sender+"</div>");
+            let reject_url="../reject_receive_invite?inviteId="+cur_obj.invite_id;
+
+            // var event_count = $("<div class='event-count'>"+events[i]["invited_count"]+" Invited</div>");
+            var confirm_btn = $("<div class='btn btn-warning m-2' onclick=\"return confirm('Are you sure you want to confirm this event?')\"> Confirmed</div>");
+            var reject_btn = $("<a class='btn btn-danger m-2' onclick=\"return confirm('Are you sure you want to Reject this event?')\" href='"+reject_url+"'> Reject</a>");
+            // if(events[i]["cancelled"]===true) {
+            //     $(event_card).css({
+            //         "border-left": "10px solid #FF1744"
+            //     });
+            //     event_count = $("<div class='event-cancelled'>Cancelled</div>");
+            // }
+            $(event_card).append(inviteName).append(eventName).append(genre).append(location).append(eventDate).append(sender).append(confirm_btn).append(reject_btn);
             $(".events-container").append(event_card);
         }
     }
@@ -221,89 +284,7 @@ function check_events(day, month, year) {
 // Given data for events in JSON format
 var event_data = {
     "events": [
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-        {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10
-    },
-        {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10
-    },
-        {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10
-    },
-        {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10,
-        "cancelled": true
-    },
-    {
-        "occasion": " Repeated Test Event ",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 10
-    },
-    {
-        "occasion": " Test Event",
-        "invited_count": 120,
-        "year": 2020,
-        "month": 5,
-        "day": 11
-    }
+
     ]
 };
 
