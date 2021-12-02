@@ -71,7 +71,7 @@
 		<div class="row">
 			<div class="col-4 mt-3 mb-3 ">
 				<div class="float-right">
-					<a href="../receive-groupDates" class="btn btn-primary mr-5 responsive-width" >
+					<a href="../list-sent-invite" class="btn btn-primary mr-5 responsive-width" >
 						Back
 					</a>
 				</div>
@@ -93,8 +93,8 @@
 		<div class="row">
 
 			<div class="col-12 d-flex justify-content-center">
-				<div class="center">
-					<table class="table table-hover table-responsive mt-4">
+				<div class="center table-responsive">
+					<table class="table table-hover table-responsive mt-4 ">
 						<thead>
 						<tr>
 							<th>Receiver</th>
@@ -114,7 +114,7 @@
 						</tr>
 						</tbody>
 					</table>
-					<table class="table table-hover table-responsive mt-4">
+					<table class="table table-hover table-responsive mt-4 ">
 						<thead>
 						<tr>
 							<th>Receiver</th>
@@ -126,7 +126,7 @@
 							<td th:text="${receiver.key.username}"></td>
 							<td th:text="${receiver.value}"></td>
 							<td>
-								<a th:href="@{'/delete-sent-invite-user?inviteId=' + ${invite.id} + '&username=' + ${receiver.key.username}}" th:text="delete"></a>
+								<a class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to remove this User?')" th:href="@{'/delete-sent-invite-user?inviteId=' + ${invite.id} + '&username=' + ${receiver.key.username}}" th:text="delete"></a>
 							</td>
 						</tr>
 						</tbody>
@@ -147,7 +147,7 @@
 							<td th:text="${event.location}"></td>
 							<td th:text="${event.eventDate}"></td>
 							<td>
-								<a th:href="@{'/delete-sent-invite-event?inviteId=' + ${invite.id} + '&eventId=' + ${event.id}}" th:text="delete"></a>
+								<a class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to remove this event?')" th:href="@{'/delete-sent-invite-event?inviteId=' + ${invite.id} + '&eventId=' + ${event.id}}" th:text="delete"></a>
 							</td>
 
 						</tr>
