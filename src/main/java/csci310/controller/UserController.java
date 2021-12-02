@@ -118,6 +118,7 @@ public class UserController {
 
     @PostMapping(value="/send-invite")
     public @ResponseBody Map<String, String> sendInvite(@RequestBody InviteModel inviteModel) {
+
         Map<String, String> responseMap = new HashMap<>();
         String senderUsername = inviteModel.getSender();
         List<String> receiversUsername = inviteModel.getReceivers();
