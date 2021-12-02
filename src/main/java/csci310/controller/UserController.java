@@ -772,11 +772,16 @@ public class UserController {
         List<User> tmp = new ArrayList<>();
         int nameLen = name.length();
         for(User user : users){
+            if(user.getUsername().length()<nameLen){
+                continue;
+            }
+
             if(name.equals(user.getUsername().substring(0, nameLen))){
                 tmp.add(user);
             }
         }
         users = tmp;
+
         String cur_username=(String)session.getAttribute("loginUser");
 
         List<String> usernames=new ArrayList<>();
@@ -792,7 +797,7 @@ public class UserController {
                 if(cur_username.equals(block_user.getUsername())){
 
                     found=true;
-                    break;
+
                 }
             }
             sb+=obj.getUsername();
@@ -806,6 +811,7 @@ public class UserController {
                 sb+="/  No time from "+obj.getStartDate().toString()+" to "+obj.getEndDate().toString();
             }
             usernames.add(sb);
+
         }
 
         Map<String, List<String>> result = new HashMap<>();
@@ -937,5 +943,30 @@ public class UserController {
         }
         userRepository.save(user);
         return "redirect:/receive-groupDates";
+    }
+
+    @GetMapping(value="/get_finalized_invites_list")
+    public @ResponseBody Map<String,List<Map<String,String>>> get_finalized_inviyes_list(HttpSession httpSession){
+        User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
+
+        List<Map<String,String>> list=new ArrayList<>();
+        for(Invite inv:user.getConfirmed_invites_list()){
+            if(inv.getFinalEvent()!=null){
+                Map<String,String> map=new HashMap<>();
+                map.put("invite_id",inv.getId().toString());
+                map.put("eventName",inv.getFinalEvent().getEventName());
+                map.put("date",inv.getFinalEvent().getEventDate().toString());
+                map.put("genre",inv.getFinalEvent().getGenre());
+                map.put("location",inv.getFinalEvent().getLocation());
+                map.put("sender",inv.getSender().getUsername());
+                list.add(map);
+            }
+            System.out.println(inv.getFinalEvent());
+
+        }
+
+        Map<String,List<Map<String,String>>> res=new HashMap<>();
+        res.put("events",list);
+        return res;
     }
 }
