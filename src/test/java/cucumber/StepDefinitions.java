@@ -509,6 +509,7 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
+        assertNotNull(text);
     }
 
     @When("I click on the remove button of the date range selected")
