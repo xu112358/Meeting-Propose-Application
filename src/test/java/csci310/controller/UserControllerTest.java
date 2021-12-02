@@ -414,6 +414,39 @@ class UserControllerTest {
         Assert.assertEquals("1111", map.get("password"));
         Assert.assertEquals("root", map.get("username"));
         Assert.assertEquals(200, status);
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        map = mvcResult.getModelAndView().getModelMap();
+
+        Assert.assertEquals("Your account is locked!", map.get("error_message"));
+        Assert.assertEquals(200, status);
+
+        Thread.sleep(61 * 1000);
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        map = mvcResult.getModelAndView().getModelMap();
+
+        Assert.assertEquals("Username and password do not match!", map.get("error_message"));
+        Assert.assertEquals(200, status);
 
     }
 

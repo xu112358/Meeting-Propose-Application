@@ -41,6 +41,8 @@ public class UserController {
     @Autowired
     InviteRepository inviteRepository;
 
+    Map<String, List<Date>> userFailedAttempts = new HashMap<>();
+
 
     @GetMapping({"/","/signin"})
     public String index(){
@@ -50,8 +52,19 @@ public class UserController {
 
     public String signin(@RequestParam("username") String username, @RequestParam(name="password") String password, Model model, HttpSession session){
         User user=userRepository.findByUsername(username);
+        List<Date> failedAttempts = userFailedAttempts.get(username);
+        if(failedAttempts == null){
+            failedAttempts = new ArrayList<>();
+            userFailedAttempts.put(username,failedAttempts);
+        }else if(failedAttempts.size() >= 3){
+            Date failedTime = failedAttempts.get(failedAttempts.size() - 3);
+            Date now = new Date();
+            if(now.getTime() - failedTime.getTime() <= 60*1000){
+                model.addAttribute("error_message", "Your account is locked!");
+                return "signin";
+            }
+        }
         if ( user== null) {
-
             model.addAttribute("error_message", "Username does not exist!");
             model.addAttribute("username", username);
             model.addAttribute("password", password);
@@ -62,16 +75,16 @@ public class UserController {
 
             if(encoder.matches(password,user.getHashPassword())){
                 model.addAttribute("message","Login successfully");
-                System.out.println("Login successfully");
-
                 session.setAttribute("loginUser",username);
+                userFailedAttempts.replace(username, new ArrayList<>());
                 return "redirect:/home";
             }
             else{
                 model.addAttribute("error_message", "Username and password do not match!");
                 model.addAttribute("username", username);
                 model.addAttribute("password", password);
-
+                failedAttempts.add(new Date());
+                userFailedAttempts.replace(username, failedAttempts);
                 return "signin";
             }
         }
