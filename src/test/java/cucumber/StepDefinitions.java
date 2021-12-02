@@ -14,6 +14,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Instant;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,10 +27,12 @@ import static org.junit.Assert.*;
 public class StepDefinitions {
     private static final String ROOT_URL = "https://localhost:8443";
 
+    private static int num_userevents  = 0;
     private static int num_events  = 0;
     private static int new_events  = 0;
     private static int rejected_events  = 0;
     private static int confirmed_events  = 0;
+    private static long temp_time = 0;
 
 
     ChromeOptions handlingSSL = new ChromeOptions().setAcceptInsecureCerts(true);
@@ -239,6 +242,7 @@ public class StepDefinitions {
     @Given("I am on the propose event page")
     public void i_am_on_the_propose_event_page() {
         // Write code here that turns the phrase above into concrete actions
+        temp_time = Instant.now().getEpochSecond();
         driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
@@ -264,7 +268,7 @@ public class StepDefinitions {
 
     @When("I enter {string} in the GroupDate name field")
     public void i_enter_in_the_groupdate_name_field(String string) {
-        driver.findElement(By.cssSelector("#groupDate_name")).sendKeys(string);
+        driver.findElement(By.cssSelector("#groupDate_name")).sendKeys(string + String.valueOf(temp_time));
     }
 
     @When("I select a date")
@@ -292,14 +296,16 @@ public class StepDefinitions {
     }
 
     @When("I click the propose event button")
-    public void i_click_the_propose_event_button() {
+    public void i_click_the_propose_event_button() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(2);
         driver.findElement(By.cssSelector("#propose-events")).click();
     }
 
     @When("I click add event")
-    public void i_click_add_event() {
-        WebDriverWait wait = new WebDriverWait(driver,2);
+    public void i_click_add_event() throws InterruptedException {
+        WebDriverWait wait = new WebDriverWait(driver,10);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".add-event")));
+        TimeUnit.SECONDS.sleep(2);
         driver.findElement(By.cssSelector(".add-event")).click();
     }
 
@@ -558,16 +564,17 @@ public class StepDefinitions {
     }
 
     @When("I stay on the page passively for {int} seconds")
-    public void i_stay_on_the_page_passively_for_seconds(Integer int1) {
+    public void i_stay_on_the_page_passively_for_seconds(Integer int1) throws InterruptedException {
         // Write code here that turns the phrase above into concrete actions
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        TimeUnit.SECONDS.sleep(int1);
         throw new io.cucumber.java.PendingException();
     }
 
     @Then("I am still logged in")
     public void i_am_still_logged_in() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.get(ROOT_URL + "/setting");
+        assertEquals(driver.getCurrentUrl(), ROOT_URL +"/setting");
     }
 
 //    @When("I stay on the page passively for {int} seconds")
@@ -580,7 +587,8 @@ public class StepDefinitions {
     @Then("I am automatically logged out")
     public void i_am_automatically_logged_out() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.get(ROOT_URL + "/setting");
+        assertNotEquals(driver.getCurrentUrl(), ROOT_URL +"/setting");
     }
 
     @Given("I am on the Sent GroupDates main page")
@@ -692,7 +700,7 @@ public class StepDefinitions {
     public void i_can_will_be_direct_back_to_the_receive_groupDates_page() {
         // Write code here that turns the phrase above into concrete actions
         String strUrl = driver.getCurrentUrl();
-        assertEquals(ROOT_URL + "/receive-groupDates",strUrl);
+        assertEquals(ROOT_URL + "/list-sent-invite",strUrl);
     }
 
     @When("I click the x next to the added user")
@@ -744,28 +752,28 @@ public class StepDefinitions {
         driver.get(ROOT_URL + "/logout");
     }
 
-@Given("I am on the new received event page")
-public void i_am_on_the_new_received_event_page() {
-    driver.get(ROOT_URL + "/home");
-    driver.findElement(By.cssSelector("#username")).sendKeys("root");
-    driver.findElement(By.cssSelector("#password")).sendKeys("123");
-    driver.findElement(By.cssSelector("#signin")).click();
-    driver.get(ROOT_URL + "/receive-groupDates");
+    @Given("I am on the new received event page")
+    public void i_am_on_the_new_received_event_page() {
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/receive-groupDates");
 
-    num_events = driver.findElements(By.cssSelector("tr")).size();
-    new_events  = 0;
-    rejected_events  = 0;
-    confirmed_events  = 0;
-    for(int i = 0; i < driver.findElements(By.cssSelector("td")).size(); i++) {
-        if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("New")) {
-            new_events++;
-        } else if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("Rejected")) {
-            rejected_events++;
-        } else if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("Confirmed")) {
-            confirmed_events++;
+        num_events = driver.findElements(By.cssSelector("tr")).size();
+        new_events  = 0;
+        rejected_events  = 0;
+        confirmed_events  = 0;
+        for(int i = 0; i < driver.findElements(By.cssSelector("td")).size(); i++) {
+            if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("New")) {
+                new_events++;
+            } else if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("Rejected")) {
+                rejected_events++;
+            } else if(driver.findElements(By.cssSelector("td")).get(i).getText().equalsIgnoreCase("Confirmed")) {
+                confirmed_events++;
+            }
         }
     }
-}
 
 
     @When("I login and go to the send proposal page")
@@ -818,10 +826,10 @@ public void i_am_on_the_new_received_event_page() {
 
 
 
-        @Then("the group date gets accepted")
+    @Then("the group date gets accepted")
     public void the_group_date_gets_accepted() {
         // Write code here that turns the phrase above into concrete actions
-            driver.get(ROOT_URL + "/receive-groupDates");
+        driver.get(ROOT_URL + "/receive-groupDates");
         int temp_new_events  = 0;
         int temp_rejected_events  = 0;
         int temp_confirmed_events  = 0;
@@ -889,13 +897,66 @@ public void i_am_on_the_new_received_event_page() {
         assertEquals(driver.findElement(By.cssSelector(".availability")).getAttribute("value"), "maybe");
         assertEquals(driver.findElement(By.cssSelector(".preference")).getAttribute("value"), "2");
     }
+    @When("I clear the Username search field")
+    public void i_clear_the_Username_search_field() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#searchusername")).clear();
+    }
+
+
+    @When("I clear the Keyword field")
+    public void i_clear_the_Keyword_field() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#keyword")).clear();
+    }
+
+    @When("I go to the sent groudates page")
+    public void i_go_to_the_sent_groudates_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/list-sent-invite");
+    }
+
+
+    @When("I click the {string} proposal")
+    public void i_click_the_proposal(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.partialLinkText(string + String.valueOf(temp_time))).click();
+    }
+
+    @When("I delete a user")
+    public void i_delete_a_user() {
+        // Write code here that turns the phrase above into concrete actions
+        num_userevents = driver.findElements(By.partialLinkText("delete")).size();
+        driver.findElement(By.partialLinkText("delete")).click();
+    }
+    @Then("there should be one less user")
+    public void there_should_be_one_less_user() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.navigate().refresh();
+        assertEquals(driver.findElements(By.partialLinkText("delete")).size(), num_userevents - 1);
+    }
+
+
+    @When("I delete an event")
+    public void i_delete_an_event() {
+        // Write code here that turns the phrase above into concrete actions
+        num_userevents = driver.findElements(By.partialLinkText("delete")).size();
+        driver.findElements(By.partialLinkText("delete")).get(num_userevents-1).click();
+    }
+
+
+    @Then("there should be one less event")
+    public void there_should_be_one_less_event() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.navigate().refresh();
+        assertEquals(driver.findElements(By.partialLinkText("delete")).size(), num_userevents - 1);
+    }
 
 
 
 
 
-
-        @After()
+    @After()
     public void cleanup() {
         try {
             Thread.sleep(1000);
