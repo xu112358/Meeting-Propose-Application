@@ -1,5 +1,6 @@
 Feature: Propose Event
 
+
   Scenario: Successfully propose event
     Given I am on the propose event page
     When I enter "root1" in Username search field
@@ -23,7 +24,6 @@ Feature: Propose Event
 
   Scenario: Propose Event empty username
     Given I am on the propose event page
-    When I enter "" in Username search field
     When I enter "eventName" in the GroupDate name field
     And I click the propose event button
     Then sender users list or groupdate name is empty
@@ -68,4 +68,16 @@ Feature: Propose Event
     And I click the Username Add button
     Then username already exists in the sender list
 
-
+  Scenario: Create a draft
+    Given I am on the propose event page
+    When I enter "root1" in Username search field
+    When I enter "rock" in the Keyword field
+    When I enter "Los Angeles" in the Location field
+    When I select a date
+    When I enter "eventName" in the GroupDate name field
+    And I click the Username Add button
+    And I click event search button
+    And I click add event
+    And I go to the home page
+    And I go to the propose event page
+    Then the added user and event should still be there

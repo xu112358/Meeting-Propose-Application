@@ -947,7 +947,8 @@ public class StepDefinitions {
     public void i_can_see_the_fiona_has_blocked_me() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#result > ul > li")).getText();
-        assertEquals("fiona/ blocked you",text);
+        assertEquals("fiona/ blocked you", text);
+    }
 
     @When("I clear the Keyword field")
     public void i_clear_the_Keyword_field() {
@@ -1015,6 +1016,31 @@ public class StepDefinitions {
         String true_text = string+"/ No time from ";
         assertTrue(text.contains(true_text));
     }
+
+    @When("I go to the home page")
+    public void i_go_to_the_home_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL +"/home");
+    }
+
+    @When("I go to the propose event page")
+    public void i_go_to_the_propose_event_page() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/proposeEvent");
+    }
+
+    @Then("the added user and event should still be there")
+    public void the_added_user_and_event_should_still_be_there() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        String user_list = driver.findElement(By.cssSelector("#add-users-list")).getText();
+
+        assertNotEquals(user_list, "");
+
+        String event_list = driver.findElement(By.cssSelector("#events_list")).getText();
+        assertNotEquals(event_list, "Propose Events:");
+    }
+
 
 
 
