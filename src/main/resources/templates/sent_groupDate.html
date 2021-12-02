@@ -100,7 +100,6 @@
 											<td>
 												<a th:href="@{'/list-sent-invite-event?inviteId=' + ${invite.id}}" th:text="${invite.inviteName}"></a>
 											</td>
-											<td th:text="${invite.inviteName}"></td>
 											<td th:text="${invite.createDate}"></td>
 											<td th:text="${invite.status}"></td>
 
@@ -132,43 +131,6 @@
 			© 2021 Fall CSCI 310, Groupie created by Team 36.
 		</div>
 	</div>
-
-	<script>
-		$('body').on('click', '.add-event', function() {
-		let event=$(this).parent().parent().children();
-
-
-
-		let genre=event.eq(0).data("genre");
-		let location=event.eq(0).data("city");
-		let name=event.eq(1).data("name");
-		let date=event.eq(2).data("date");
-
-		let temp=document.querySelector("#add-events-list").innerHTML;
-
-		let el=`<div class="events" role="alert" data-genre="${genre}" data-name="${name}" data-date="${date}" data-location="${location}">
-		<button class="remove" >
-		   x
-		</button>
-		<div class="list-info"><strong>${name}</strong></div>
-		<div class="list-info">${genre}</div>
-		<div class="list-info">${date}</div>
-		<div class="list-info">${location}</div>
-
-		</div>`;
-
-		document.querySelector("#add-events-list").innerHTML=temp+el;
-
-		let temp_map={};
-		temp_map.name=name;
-		temp_map.genre=genre;
-		temp_map.location=location;
-		temp_map.date=date;
-		let events=JSON.parse(localStorage.getItem("events"));
-		events.push(temp_map);
-		localStorage.setItem("events",JSON.stringify(events));
-	});
-	</script>
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
