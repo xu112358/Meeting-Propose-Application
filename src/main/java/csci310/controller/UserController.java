@@ -477,11 +477,25 @@ public class UserController {
             eventMap.add(eventsMapEntry.getValue().get(0));
         }
 
+        Map<User, String> receiversMap = new HashMap<>();
         List<User> receivers = inviteRepository.getById(inviteId).getReceivers();
-        receivers.addAll(inviteRepository.getById(inviteId).getConfirmed_receivers());
-        receivers.addAll(inviteRepository.getById(inviteId).getReject_receivers());
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "undecided");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getConfirmed_receivers();
+
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "confirmed");
+        }
+
+        receivers = inviteRepository.getById(inviteId).getReject_receivers();
+        for(User receiver : receivers){
+            receiversMap.put(receiver, "rejected");
+        }
+
         model.addAttribute("eventsReceivers", eventsList);
-        model.addAttribute("receivers", receivers);
+        model.addAttribute("receivers", receiversMap);
         model.addAttribute("events", eventMap);
         model.addAttribute("invite", invite);
         return "sent_invite_event";
@@ -848,6 +862,23 @@ public class UserController {
 
     @GetMapping(value="reply-final-event")
     public String replyFinalEvent(@RequestParam("inviteId") Long inviteId, @RequestParam("status") String status, Model model, HttpSession httpSession) {
+        User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
+        Invite invite = inviteRepository.findById(inviteId).get();
+        List<Invite> received_invites = userRepository.findByUsername(user.getUsername()).getReceive_invites_list();
+        List<Invite> rejected_invites = userRepository.findByUsername(user.getUsername()).getReject_invites_list();
+        List<Invite> confirmed_invites = userRepository.findByUsername(user.getUsername()).getConfirmed_invites_list();
+        received_invites.remove(invite);
+        user.setReceive_invites_list(received_invites);
+        if(status.equals("comfirm")){
+            confirmed_invites.add(invite);
+            user.setConfirmed_invites_list(confirmed_invites);
+//            model.addAttribute("message", "invite confirmed");
+        }else{
+            rejected_invites.add(invite);
+            user.setReject_invites_list(rejected_invites);
+//            model.addAttribute("message", "invite rejected");
+        }
+        userRepository.save(user);
         return "redirect:/receive-groupDates";
     }
 }

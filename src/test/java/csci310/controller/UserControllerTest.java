@@ -978,7 +978,7 @@ class UserControllerTest {
         Assert.assertEquals(200, status);
         Invite invite = (Invite) modelMap.getAttribute("invite");
         Map<Event, String> eventsMap = (Map<Event, String>) modelMap.getAttribute("eventsReceivers");
-        List<User> receivers = (List<User>) modelMap.getAttribute("receivers");
+        Map<User, String> receivers = (Map<User, String>) modelMap.getAttribute("receivers");
         List<Event> events = (List<Event>) modelMap.getAttribute("events");
         Assert.assertEquals(8, eventsMap.size());
         Assert.assertEquals(2, receivers.size());
@@ -1059,11 +1059,23 @@ class UserControllerTest {
     public void testReplyFinalEvent() throws Exception{
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reply-final-event")
                 .param("inviteId", "7")
-                .param("status", "comfirmed")
+                .param("status", "comfirm")
                 .sessionAttr("loginUser", "minyiche2")
         ).andReturn();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
+//        ModelMap map = mvcResult.getModelAndView().getModelMap();
+//        Assert.assertEquals("invite confirmed", map.get("message"));
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/reply-final-event")
+                .param("inviteId", "7")
+                .param("status", "reject")
+                .sessionAttr("loginUser", "minyiche2")
+        ).andReturn();
+        status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
+//        map = mvcResult.getModelAndView().getModelMap();
+//        Assert.assertEquals("invite rejected", map.get("message"));
     }
 
 }
