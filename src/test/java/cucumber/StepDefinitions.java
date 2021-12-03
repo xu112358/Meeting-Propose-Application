@@ -984,7 +984,13 @@ public class StepDefinitions {
     public void there_should_be_one_less_user() {
         // Write code here that turns the phrase above into concrete actions
         driver.navigate().refresh();
-        assertEquals(driver.findElement(By.cssSelector("h1")).getText(), "Whitelabel Error Page");
+        //assertEquals(driver.findElement(By.cssSelector("h1")).getText(), "Whitelabel Error Page");
+        driver.get(ROOT_URL + "/list-sent-invite");
+        int temp_num_events = driver.findElements(By.cssSelector("tr")).size();
+        assertEquals(temp_num_events, num_events - 1);
+        num_events = num_events - 1;
+
+
     }
 
 

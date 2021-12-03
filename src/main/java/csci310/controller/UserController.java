@@ -609,9 +609,13 @@ public class UserController {
             }
         }
         if(invite.getInvite_events_list().size() == 0){
-            model.addAttribute("message", "can delete invite");
-            //return "redirect:/delete-sent-invite?inviteId=" + inviteId;
-            return "redirect:/delete-sent-invite?inviteId=" + inviteId;
+            invite.setReceivers(null);
+            invite.setSender(null);
+            invite.setConfirmed_receivers(null);
+            invite.setReject_receivers(null);
+            inviteRepository.save(invite);
+            inviteRepository.delete(invite);
+            return "redirect:/list-sent-invite";
         }
         model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
@@ -644,9 +648,13 @@ public class UserController {
         receiver.setUser_events_list(receivedEventList);
         userRepository.save(receiver);
         if(invite.getReceivers().size() == 0){
-            model.addAttribute("message", "can delete invite");
-            //return "redirect:/list-sent-invite";
-            return "redirect:/delete-sent-invite?inviteId=" + inviteId;
+            //invite.setReceivers(null);
+            invite.setSender(null);
+            invite.setConfirmed_receivers(null);
+            invite.setReject_receivers(null);
+            inviteRepository.save(invite);
+            inviteRepository.delete(invite);
+            return "redirect:/list-sent-invite";
         }
         model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
