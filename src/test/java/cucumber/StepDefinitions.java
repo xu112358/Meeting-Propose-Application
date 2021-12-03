@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -1041,6 +1042,91 @@ public class StepDefinitions {
         assertNotEquals(event_list, "Propose Events:");
     }
 
+
+    @When("I sort by name")
+    public void i_sort_by_name() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("GroupDate Name");
+    }
+
+    @Then("the groupdates should be sorted in alphabetical order")
+    public void the_groupdates_should_be_sorted_in_alphabetical_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td a"));
+        String prev = events.get(0).getText();
+        for(int i=1; i<events.size(); i++) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
+
+    @When("I sort by date")
+    public void i_sort_by_date() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("Date");
+    }
+
+    @Then("the groupdates should be sorted in date order")
+    public void the_groupdates_should_be_sorted_in_date_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td"));
+        String prev = events.get(1).getText();
+        for(int i=4; i<events.size(); i+=3) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
+
+    @Given("I am on the sent groupdate page as root1")
+    public void i_am_on_the_sent_groupdate_page_as_root1() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/list-sent-invite");
+    }
+
+    @When("I filter by {string}")
+    public void i_filter_by(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#finalized-filter")).sendKeys((string));
+    }
+
+
+    @Then("I should only see finalized dates")
+    public void i_should_only_see_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertTrue(temp.compareTo("finalized not responded") == 0 || temp.compareTo("finalized responded") == 0);
+        }
+    }
+
+    @Then("I should only see not finalized dates")
+    public void i_should_only_see_not_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"not finalized");
+        }
+    }
+
+    @Then("I should only see not responded dates")
+    public void i_should_only_see_not_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized not responded");
+        }
+    }
+
     @Given("I am on the sign in page trying to log in as root")
     public void i_am_on_the_sign_in_page_trying_to_log_in_as_root() {
         driver.get(ROOT_URL + "/signin");
@@ -1095,6 +1181,17 @@ public class StepDefinitions {
     }
 
 
+
+    @Then("I should only see responded dates")
+    public void i_should_only_see_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized responded");
+        }
+    }
 
 
     @After()

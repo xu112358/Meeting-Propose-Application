@@ -1,11 +1,6 @@
 Feature: Receive Group Date
 
-  Scenario: Accept proposed group date
-    Given I am on the new received event page
-    When I click an event
-    And I click the accept button
-    And I click OK button
-    Then the group date gets accepted
+
 
   Scenario: Event got proposed
     Given I am on the new received event page
@@ -40,5 +35,37 @@ Feature: Receive Group Date
     And I click back
     And I click an event
     Then my preference of the group date should get updated
+
+
+  Scenario: Filter by finalized
+    Given I am on the new received event page
+    When I click an event
+    And I update my preference
+    And I update my availability
+    And I click back
+    And I click an event
+    Then my preference of the group date should get updated
+
+
+  Scenario: Sort by name
+    Given I am on the new received event page
+    When I sort by name
+    Then the groupdates should be sorted in alphabetical order
+
+
+
+  Scenario: Accept proposed group date
+    Given I am on the new received event page
+    When I click an event
+    And I click the accept button
+    And I click OK button
+    Then the group date gets accepted
+
+  Scenario: Sort by date
+    Given I am on the new received event page
+    When I sort by date
+    Then the groupdates should be sorted in date order
+
+
 
 
