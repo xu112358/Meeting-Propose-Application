@@ -316,6 +316,8 @@ public class StepDefinitions {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#proposeEvent_success")));
         String temp = driver.findElement(By.cssSelector("#proposeEvent_success")).getText();
         assertEquals(temp, "Successfully Propose the GroupDate!");
+        driver.get(ROOT_URL + "/list-sent-invite");
+        assertEquals(driver.findElement(By.partialLinkText(String.valueOf(temp_time))).getText(), "eventName" + String.valueOf(temp_time));
     }
 
     @Then("input text is empty")
