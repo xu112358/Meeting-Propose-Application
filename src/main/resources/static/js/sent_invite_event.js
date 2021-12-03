@@ -24,6 +24,7 @@ document.querySelector("#finalize").onclick=function (){
     });
 };
 
+
 document.querySelector("#finalize_no").onclick=function(){
     let shadow=document.querySelector("#shadow");
     shadow.classList.add("noshow");

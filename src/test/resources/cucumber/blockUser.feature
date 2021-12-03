@@ -39,3 +39,12 @@ Feature: Block User Feature - User Settings
     And I click OK button
     Then root1 will be deleted from the blocked user list
 
+  Scenario: Know who block you
+    Given I am on the user setting page and signed in as "root" and "fiona" has blocked me
+    When I search "fiona" in the username search form
+    Then I can see the fiona has blocked me
+
+  Scenario: See Unavailable date range
+    Given I am on the user setting page and signed in as "root"
+    When I search "root1" in the username search form
+    Then I can see the unavailble date range of "root1"

@@ -414,6 +414,39 @@ class UserControllerTest {
         Assert.assertEquals("1111", map.get("password"));
         Assert.assertEquals("root", map.get("username"));
         Assert.assertEquals(200, status);
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        map = mvcResult.getModelAndView().getModelMap();
+
+        Assert.assertEquals("Your account is locked!", map.get("error_message"));
+        Assert.assertEquals(200, status);
+
+        Thread.sleep(61 * 1000);
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/signin")
+                .param("username", "root")
+                .param("password", "1111")
+        ).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        map = mvcResult.getModelAndView().getModelMap();
+
+        Assert.assertEquals("Username and password do not match!", map.get("error_message"));
+        Assert.assertEquals(200, status);
 
     }
 
@@ -780,7 +813,7 @@ class UserControllerTest {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
-                .sessionAttr("loginUser", "minyiche1")
+                .sessionAttr("loginUser", "root")
         ).andReturn();
         String response_json = mvcResult.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
@@ -795,6 +828,15 @@ class UserControllerTest {
         }
 
         Assert.assertTrue(found);
+
+        json = "{\"name\":\"rrrrrrrrrrrrrrrrrrrrrrrrrr\"}";
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/usernameStartingWith")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
 
     }
 
@@ -910,6 +952,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", is("User unblocked")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.returnCode", is("200")));
     }
+
 
     @Test
     @Transactional
@@ -1076,6 +1119,15 @@ class UserControllerTest {
         Assert.assertEquals(302, status);
 //        map = mvcResult.getModelAndView().getModelMap();
 //        Assert.assertEquals("invite rejected", map.get("message"));
+    }
+    @Test
+    @Transactional
+    public void testget_finalized_inviyes_list() throws Exception{
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/get_finalized_invites_list")
+                .sessionAttr("loginUser", "root")
+        ).andReturn();
+
+        Assert.assertEquals(200,mvcResult.getResponse().getStatus());
     }
 
 }
