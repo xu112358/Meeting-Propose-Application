@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -315,6 +316,8 @@ public class StepDefinitions {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#proposeEvent_success")));
         String temp = driver.findElement(By.cssSelector("#proposeEvent_success")).getText();
         assertEquals(temp, "Successfully Propose the GroupDate!");
+        driver.get(ROOT_URL + "/list-sent-invite");
+        assertEquals(driver.findElement(By.partialLinkText(String.valueOf(temp_time))).getText(), "eventName" + String.valueOf(temp_time));
     }
 
     @Then("input text is empty")
@@ -477,56 +480,56 @@ public class StepDefinitions {
         driver.get(ROOT_URL + "/setting");
     }
 
-    @When("I enter nothing for the select start start date")
-    public void i_enter_nothing_for_the_select_start_date() {
+    @When("When I enter nothing for the select start date")
+    public void i_enter_nothing_for_the_selected_start_date() {
         // Write code here that turns the phrase above into concrete actions
     }
 
-    @When("I select an end date from the end date calendar")
-    public void i_select_an_end_date_from_the_end_date_calendar() {
+    @When("I select an end date from the calendar")
+    public void i_select_an_end_date_from_the_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
     }
 
-    @When("When I select a start date from the start date calendar")
-    public void i_select_a_start_date_from_the_start_date_calendar() {
+    @When("I select a start date from the calendar")
+    public void i_select_a_start_date_from_the_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
     }
 
-    @When("I enter nothing for the select start end date")
+    @When("I enter nothing for the select end date")
     public void i_enter_nothing_for_the_select_end_date() {
         // Write code here that turns the phrase above into concrete actions
     }
 
     @When("I click on the Add Date Range button")
-    public void i_click_on_the_add_date_range_button() {
+    public void i_click_on_the_Add_Date_Range_button() {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         driver.findElement(By.cssSelector("#daterange_add")).click();
     }
 
-    @Then("I should see an error message of Start Date or End Date is Empty")
-    public void i_should_see_an_error_message_of_start_date_or_end_date_is_empty() {
+    @Then("I should see an error message of Start Date or End Date is Empty!")
+    public void i_should_see_an_error_message_of_Start_Date_or_End_Date_is_Empty() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#daterange_errmsg")).getText();
         assertEquals("Start Date or End Date is Empty!", text);
     }
 
-    @When("I select a date from the select start date calendar")
-    public void i_select_a_date_from_the_select_start_date_calendar() {
+    @When("I select a start date from the select start date calendar")
+    public void i_select_a_start_date_from_the_select_start_date_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
     }
 
-    @When("I select a date from the select end date calendar")
-    public void i_select_a_date_from_the_select_end_date_calendar() {
+    @When("I select an end date from the select end date calendar")
+    public void i_select_an_end_date_from_the_select_end_date_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
     }
 
-    @When("I click on the add date range button below")
-    public void i_click_on_the_add_date_range_button_below() {
+    @When("I click on the Add Date Range button below")
+    public void i_click_on_the_Add_Date_Range_button_below() {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         driver.findElement(By.cssSelector("#daterange_add")).click();
@@ -547,7 +550,7 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > a")).click();
     }
 
-    @Then("this unavailable date range will be deleted from the unavailable date range list")
+    @Then("my unavailable date range will be deleted from the unavailable date range list")
     public void my_unavailable_date_range_will_be_deleted_from_the_unavailable_date_range_list(String string) {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
@@ -566,8 +569,7 @@ public class StepDefinitions {
     @When("I stay on the page passively for {int} seconds")
     public void i_stay_on_the_page_passively_for_seconds(Integer int1) throws InterruptedException {
         // Write code here that turns the phrase above into concrete actions
-        TimeUnit.SECONDS.sleep(int1);
-        throw new io.cucumber.java.PendingException();
+        Thread.sleep(int1 * 1000);
     }
 
     @Then("I am still logged in")
@@ -588,7 +590,9 @@ public class StepDefinitions {
     public void i_am_automatically_logged_out() {
         // Write code here that turns the phrase above into concrete actions
         driver.get(ROOT_URL + "/setting");
-        assertNotEquals(driver.getCurrentUrl(), ROOT_URL +"/setting");
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warning")));
+        assertEquals(driver.findElement(By.cssSelector("#warning")).getText(), "You need to log in first!");
     }
 
     @Given("I am on the Sent GroupDates main page")
@@ -779,6 +783,7 @@ public class StepDefinitions {
     @When("I login and go to the send proposal page")
     public void i_login_and_go_to_the_send_proposal_page() {
         // Write code here that turns the phrase above into concrete actions
+        temp_time = Instant.now().getEpochSecond();
         driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root1");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
@@ -800,7 +805,7 @@ public class StepDefinitions {
     public void i_click_an_event() {
         // Write code here that turns the phrase above into concrete actions
         int temp = driver.findElements(By.cssSelector("a")).size();
-        driver.findElement(By.partialLinkText("new_event_test")).click();
+        driver.findElement(By.partialLinkText(String.valueOf(temp_time))).click();
     }
 
     @When("I click a event")
@@ -966,7 +971,7 @@ public class StepDefinitions {
     @When("I click the {string} proposal")
     public void i_click_the_proposal(String string) {
         // Write code here that turns the phrase above into concrete actions
-        driver.findElement(By.partialLinkText(string + String.valueOf(temp_time))).click();
+        driver.findElement(By.partialLinkText(String.valueOf(temp_time))).click();
     }
 
     @When("I delete a user")
@@ -979,7 +984,13 @@ public class StepDefinitions {
     public void there_should_be_one_less_user() {
         // Write code here that turns the phrase above into concrete actions
         driver.navigate().refresh();
-        assertEquals(driver.findElements(By.partialLinkText("delete")).size(), num_userevents - 1);
+        //assertEquals(driver.findElement(By.cssSelector("h1")).getText(), "Whitelabel Error Page");
+        driver.get(ROOT_URL + "/list-sent-invite");
+        int temp_num_events = driver.findElements(By.cssSelector("tr")).size();
+        assertEquals(temp_num_events, num_events - 1);
+        num_events = num_events - 1;
+
+
     }
 
 
@@ -1041,6 +1052,91 @@ public class StepDefinitions {
         assertNotEquals(event_list, "Propose Events:");
     }
 
+
+    @When("I sort by name")
+    public void i_sort_by_name() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("GroupDate Name");
+    }
+
+    @Then("the groupdates should be sorted in alphabetical order")
+    public void the_groupdates_should_be_sorted_in_alphabetical_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td a"));
+        String prev = events.get(0).getText();
+        for(int i=1; i<events.size(); i++) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
+
+    @When("I sort by date")
+    public void i_sort_by_date() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("Date");
+    }
+
+    @Then("the groupdates should be sorted in date order")
+    public void the_groupdates_should_be_sorted_in_date_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td"));
+        String prev = events.get(1).getText();
+        for(int i=4; i<events.size(); i+=3) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
+
+    @Given("I am on the sent groupdate page as root1")
+    public void i_am_on_the_sent_groupdate_page_as_root1() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/list-sent-invite");
+    }
+
+    @When("I filter by {string}")
+    public void i_filter_by(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#finalized-filter")).sendKeys((string));
+    }
+
+
+    @Then("I should only see finalized dates")
+    public void i_should_only_see_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertTrue(temp.compareTo("finalized not responded") == 0 || temp.compareTo("finalized responded") == 0);
+        }
+    }
+
+    @Then("I should only see not finalized dates")
+    public void i_should_only_see_not_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"not finalized");
+        }
+    }
+
+    @Then("I should only see not responded dates")
+    public void i_should_only_see_not_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized not responded");
+        }
+    }
+
     @Given("I am on the sign in page trying to log in as root")
     public void i_am_on_the_sign_in_page_trying_to_log_in_as_root() {
         driver.get(ROOT_URL + "/signin");
@@ -1067,14 +1163,14 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("#password")).sendKeys("456");
     }
 
-    @When("I clicked on the sign in button below")
-    public void i_clicked_on_the_sign_in_button_below() {
+    @When("I click on the sign in button below")
+    public void i_click_on_the_sign_in_button_below() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#signin")).click();
     }
 
-    @Then("I should see an error message of Username and password do not match!")
-    public void i_should_see_an_error_message_of_username_and_password_do_not_match() {
+    @Then("I should see an error message that Username and password do not match!")
+    public void i_should_see_an_error_message_that_Username_and_password_do_not_match() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#warning")).getText();
         assertEquals("Username and password do not match!", text);
@@ -1087,14 +1183,25 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("#password")).sendKeys("456");
     }
 
-    @Then("I should see an error message of Your account is locked!")
-    public void i_should_see_an_error_message_of_your_account_is_blocked() {
+    @Then("I should see an error message that Your account is locked!")
+    public void i_should_see_an_error_message_that_Your_account_is_locked() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#warning")).getText();
         assertEquals("Your account is locked!", text);
     }
 
 
+
+    @Then("I should only see responded dates")
+    public void i_should_only_see_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized responded");
+        }
+    }
 
 
     @After()

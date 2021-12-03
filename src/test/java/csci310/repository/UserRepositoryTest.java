@@ -4,6 +4,7 @@ import csci310.entity.Event;
 import csci310.entity.Invite;
 import csci310.entity.User;
 import csci310.model.InviteModel;
+import io.cucumber.java.an.E;
 import io.cucumber.java.bs.A;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -98,9 +99,11 @@ public class UserRepositoryTest {
         event.setLocation("LA");
         events.add(event);
         event.getGenre();
+        Event event_copy = new Event(event);
 
         List<Invite> invites = new ArrayList<>();
         Invite invite = new Invite();
+        invite.setId(null);
         invite.setInviteName("inviteName");
         invite.setCreateDate(date);
         invite.getReceivers();

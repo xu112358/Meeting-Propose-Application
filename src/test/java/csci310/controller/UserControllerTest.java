@@ -1013,6 +1013,11 @@ class UserControllerTest {
     @Transactional
     public void testFindSentInviteEvent() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
+                .param("inviteId", "130")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/list-sent-invite-event")
                 .param("inviteId", "7")
                 .sessionAttr("loginUser", "minyiche1")
         ).andReturn();
@@ -1045,6 +1050,22 @@ class UserControllerTest {
         /*for(Event event : events){
             Assert.assertNotEquals(new Long(8L),event.getId());
         }*/
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-event")
+                .param("inviteId", "7")
+                .param("eventId", "9")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-event")
+                .param("inviteId", "7")
+                .param("eventId", "10")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-event")
+                .param("inviteId", "7")
+                .param("eventId", "11")
+                .sessionAttr("loginUser", "minyiche1")
+        ).andReturn();
     }
 
     @Test
@@ -1058,10 +1079,24 @@ class UserControllerTest {
         ModelMap modelMap = mvcResult.getModelAndView().getModelMap();
         int status = mvcResult.getResponse().getStatus();
         Assert.assertEquals(302, status);
-        List<User> receivers = inviteRepository.getById(7L).getReceivers();
         /*for(User receiver : receivers){
             Assert.assertNotEquals("minyiche2", receiver.getUsername());
         }*/
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-user")
+                .param("inviteId", "89")
+                .param("username", "minyiche5")
+                .sessionAttr("loginUser", "root1")
+        ).andReturn();
+
+        mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-user")
+                .param("inviteId", "89")
+                .param("username", "minyiche6")
+                .sessionAttr("loginUser", "root1")
+        ).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        Assert.assertEquals(302, status);
     }
 
     @Test

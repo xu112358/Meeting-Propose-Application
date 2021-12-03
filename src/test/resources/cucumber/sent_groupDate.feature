@@ -10,8 +10,6 @@ Feature: Sent Group Date （/list-sent-invite）
     When I enter "test event" in the GroupDate name field
     And I click the Username Add button
     When I clear the Username search field
-    And I enter "root3" in Username search field
-    And I click the Username Add button
     And I click event search button
     And I click add event
     When I clear the Keyword field
@@ -71,6 +69,28 @@ Feature: Sent Group Date （/list-sent-invite）
     When I click into one of the event
     And I click Back button
     Then I can will be direct back to the receive-groupDates page
+
+  Scenario: Add a user to sent proposal
+    Given root1 is on the Sent GroupDates main page
+    When root1 type "minyiche1" in the username search box
+    And root1 click add username button
+    Then root1 should see there is one more user in the receiver table
+
+  Scenario: Add an event to sent proposal
+    Given root1 is on the Sent GroupDates main page
+    When root1 enter "rock" in Keyword field
+    When root1 enter "Los Angeles" in Location field
+    When root1 select a event date
+    And root1 click event search button
+    And root1 add the first event in the result into the proposal
+    Then root1 should see there is one more event in the receiver table
+
+
+  Scenario: Delete the last event from sent proposal
+    Given root1 is on the event lists page of proposal "testDelete"
+    And root1 delete the only event
+    And root1 click OK button
+    Then root1 will delete the invite because it is the last event and root1 will be sent to the Sent GroupDates main page
 
 
 
