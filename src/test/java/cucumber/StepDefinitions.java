@@ -567,8 +567,7 @@ public class StepDefinitions {
     @When("I stay on the page passively for {int} seconds")
     public void i_stay_on_the_page_passively_for_seconds(Integer int1) throws InterruptedException {
         // Write code here that turns the phrase above into concrete actions
-        TimeUnit.SECONDS.sleep(int1);
-        throw new io.cucumber.java.PendingException();
+        Thread.sleep(int1 * 1000);
     }
 
     @Then("I am still logged in")
@@ -589,7 +588,9 @@ public class StepDefinitions {
     public void i_am_automatically_logged_out() {
         // Write code here that turns the phrase above into concrete actions
         driver.get(ROOT_URL + "/setting");
-        assertNotEquals(driver.getCurrentUrl(), ROOT_URL +"/setting");
+        WebDriverWait wait = new WebDriverWait(driver,30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warning")));
+        assertEquals(driver.findElement(By.cssSelector("#warning")).getText(), "You need to log in first!");
     }
 
     @Given("I am on the Sent GroupDates main page")
@@ -780,6 +781,7 @@ public class StepDefinitions {
     @When("I login and go to the send proposal page")
     public void i_login_and_go_to_the_send_proposal_page() {
         // Write code here that turns the phrase above into concrete actions
+        temp_time = Instant.now().getEpochSecond();
         driver.get(ROOT_URL + "/home");
         driver.findElement(By.cssSelector("#username")).sendKeys("root1");
         driver.findElement(By.cssSelector("#password")).sendKeys("123");
@@ -801,7 +803,7 @@ public class StepDefinitions {
     public void i_click_an_event() {
         // Write code here that turns the phrase above into concrete actions
         int temp = driver.findElements(By.cssSelector("a")).size();
-        driver.findElement(By.partialLinkText("new_event_test")).click();
+        driver.findElement(By.partialLinkText(String.valueOf(temp_time))).click();
     }
 
     @When("I click a event")
@@ -967,7 +969,7 @@ public class StepDefinitions {
     @When("I click the {string} proposal")
     public void i_click_the_proposal(String string) {
         // Write code here that turns the phrase above into concrete actions
-        driver.findElement(By.partialLinkText(string + String.valueOf(temp_time))).click();
+        driver.findElement(By.partialLinkText(String.valueOf(temp_time))).click();
     }
 
     @When("I delete a user")
@@ -980,7 +982,7 @@ public class StepDefinitions {
     public void there_should_be_one_less_user() {
         // Write code here that turns the phrase above into concrete actions
         driver.navigate().refresh();
-        assertEquals(driver.findElements(By.partialLinkText("delete")).size(), num_userevents - 1);
+        assertEquals(driver.findElement(By.cssSelector("h1")).getText(), "Whitelabel Error Page");
     }
 
 

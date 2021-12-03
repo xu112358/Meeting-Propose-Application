@@ -10,8 +10,6 @@ Feature: Sent Group Date （/list-sent-invite）
     When I enter "test event" in the GroupDate name field
     And I click the Username Add button
     When I clear the Username search field
-    And I enter "minyiche1" in Username search field
-    And I click the Username Add button
     And I click event search button
     And I click add event
     When I clear the Keyword field
