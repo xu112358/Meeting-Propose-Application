@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -1041,6 +1042,39 @@ public class StepDefinitions {
         assertNotEquals(event_list, "Propose Events:");
     }
 
+    @When("I sort by name")
+    public void i_sort_by_name() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("GroupDate Name");
+    }
+
+    @Then("the groupdates should be sorted in alphabetical order")
+    public void the_groupdates_should_be_sorted_in_alphabetical_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td a"));
+        String prev = events.get(0).getText();
+        for(int i=1; i<events.size(); i++) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
+
+    @When("I sort by date")
+    public void i_sort_by_date() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#invite_sort")).sendKeys("Date");
+    }
+
+    @Then("the groupdates should be sorted in date order")
+    public void the_groupdates_should_be_sorted_in_date_order() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("td"));
+        String prev = events.get(1).getText();
+        for(int i=4; i<events.size(); i+=3) {
+            assertTrue(events.get(i).getText().compareTo(prev) >= 0);
+            prev = events.get(i).getText();
+        }
+    }
 
 
 
