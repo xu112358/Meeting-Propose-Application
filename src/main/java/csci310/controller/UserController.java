@@ -115,9 +115,9 @@ public class UserController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPassword = encoder.encode(user.getHashPassword());
             user.setHashPassword(encodedPassword);
-            try {
+            try{
                 userRepository.save(user);
-            }catch (Exception e){
+            }catch(Exception e){
 
             }
             model.addAttribute("message", "Sign Up Successfully!");
@@ -138,58 +138,62 @@ public class UserController {
         User sender = userRepository.findByUsername(senderUsername);
         List<Event> events = inviteModel.getEvents();
         List<User> receivers = new ArrayList<>();
-        try {
-            for (String receiverUsername : receiversUsername) {
-                receivers.add(userRepository.findByUsername(receiverUsername));
-            }
+        for (String receiverUsername : receiversUsername) {
+            receivers.add(userRepository.findByUsername(receiverUsername));
+        }
 
-            for (User receiver : receivers) {
-                List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
-                //Check if sender is on the block list of receiver
-                for (User userOnBlockList : receiverBlockList) {
-                    if (sender.getId() == userOnBlockList.getId()) {
-                        responseMap.put("message", "you are blocked by " + receiver.getUsername());
-                        responseMap.put("returnCode", "400");
-                        return responseMap;
-                    }
-                }
-                //Check if every receiver is able to attend every event
-                for (Event event : events) {
-                    if (receiver.getStartDate() == null) { //we update startDate and endDate at the same time, check startDate would be enough
-                        continue;
-                    }
-                    if (event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0) {
-                        responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
-                        responseMap.put("returnCode", "400");
-                        return responseMap;
-                    }
+        for (User receiver : receivers) {
+            List<User> receiverBlockList = userRepository.findByUsername(receiver.getUsername()).getBlock_list();
+            //Check if sender is on the block list of receiver
+            for (User userOnBlockList : receiverBlockList) {
+                if (sender.getId() == userOnBlockList.getId()) {
+                    responseMap.put("message", "you are blocked by " + receiver.getUsername());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
                 }
             }
+            //Check if every receiver is able to attend every event
+            for (Event event : events) {
+                if (receiver.getStartDate() == null) { //we update startDate and endDate at the same time, check startDate would be enough
+                    continue;
+                }
+                if (event.getEventDate().compareTo(receiver.getStartDate()) > 0 && event.getEventDate().compareTo(receiver.getEndDate()) < 0) {
+                    responseMap.put("message", receiver.getUsername() + " can not attend " + event.getEventName());
+                    responseMap.put("returnCode", "400");
+                    return responseMap;
+                }
+            }
+        }
 
-            Invite invite = new Invite();
-            invite.setInviteName(inviteName);
-            Collections.sort(events, Comparator.comparing(Event::getEventDate));
-            invite.setCreateDate(events.get(0).getEventDate());
-            invite.setSender(sender);
+        Invite invite = new Invite();
+        invite.setInviteName(inviteName);
+        Collections.sort(events, Comparator.comparing(Event::getEventDate));
+        invite.setCreateDate(events.get(0).getEventDate());
+        invite.setSender(sender);
+        try{
             inviteRepository.save(invite);
-            //can cause problem with multithreaded server
-            invite = inviteRepository.findTopByOrderByIdDesc();
-            for (int i = 0; i < receivers.size(); i++) {
-                for (int j = 0; j < events.size(); j++) {
-                    Event event = new Event(events.get(j));
-                    event.setInvite(invite);
-                    event.setReceiver(receivers.get(i));
-                    eventRepository.save(event);
-                }
-                //add received invite
-                User receiver = receivers.get(i);
-                List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
-                newReceivedInviteList.add(invite);
-                receiver.setReceive_invites_list(newReceivedInviteList);
-                userRepository.save(receiver);
-            }
         }catch (Exception e){
 
+        }
+        //can cause problem with multithreaded server
+        invite = inviteRepository.findTopByOrderByIdDesc();
+        for (int i = 0; i < receivers.size(); i++) {
+            for (int j = 0; j < events.size(); j++) {
+                Event event = new Event(events.get(j));
+                event.setInvite(invite);
+                event.setReceiver(receivers.get(i));
+                try{
+                    eventRepository.save(event);
+                }catch (Exception e){
+
+                }
+            }
+            //add received invite
+            User receiver = receivers.get(i);
+            List<Invite> newReceivedInviteList = receiver.getReceive_invites_list();
+            newReceivedInviteList.add(invite);
+            receiver.setReceive_invites_list(newReceivedInviteList);
+            userRepository.save(receiver);
         }
         responseMap.put("message", "Invite Sent");
         responseMap.put("returnCode", "200");
@@ -313,7 +317,6 @@ public class UserController {
                         map.put("preference",obj.getPreference()+"");
                         map.put("availability",obj.getAvailability());
                         map.put("eventId",obj.getId()+"");
-
                         other_user_list.add(map);
                     }
                 }
@@ -367,12 +370,8 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            List <Invite> tmp = cur_user.getConfirmed_invites_list();
-            tmp.add(find_invite);
-            cur_user.setConfirmed_invites_list(tmp);
-            tmp = cur_user.getReceive_invites_list();
-            tmp.remove(find_invite);
-            cur_user.setReceive_invites_list(tmp);
+            cur_user.getConfirmed_invites_list().add(find_invite);
+            cur_user.getReceive_invites_list().remove(find_invite);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -391,12 +390,8 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            List <Invite> tmp = cur_user.getConfirmed_invites_list();
-            tmp.add(find_invite);
-            cur_user.setConfirmed_invites_list(tmp);
-            tmp = cur_user.getReceive_invites_list();
-            tmp.remove(find_invite);
-            cur_user.setReceive_invites_list(tmp);
+            cur_user.getReject_invites_list().remove(find_invite);
+            cur_user.getConfirmed_invites_list().add(find_invite);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -427,12 +422,8 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            List <Invite> tmp = cur_user.getReject_invites_list();
-            tmp.add(find_invite);
-            cur_user.setReject_invites_list(tmp);
-            tmp = cur_user.getReceive_invites_list();
-            tmp.remove(find_invite);
-            cur_user.setReceive_invites_list(tmp);
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getConfirmed_invites_list().remove(find_invite);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -454,12 +445,8 @@ public class UserController {
             }
         }
         if(find_invite!=null){
-            List <Invite> tmp = cur_user.getReject_invites_list();
-            tmp.add(find_invite);
-            cur_user.setReject_invites_list(tmp);
-            tmp = cur_user.getReceive_invites_list();
-            tmp.remove(find_invite);
-            cur_user.setReceive_invites_list(tmp);
+            cur_user.getReject_invites_list().add(find_invite);
+            cur_user.getConfirmed_invites_list().remove(find_invite);
 
             for(Event obj:cur_user.getUser_events_list()){
                 if(obj.getInvite().getId().equals(inviteId)){
@@ -624,7 +611,7 @@ public class UserController {
         if(invite.getInvite_events_list().size() == 0){
             model.addAttribute("message", "can delete invite");
             //return "redirect:/delete-sent-invite?inviteId=" + inviteId;
-            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+            return "redirect:/delete-sent-invite?inviteId=" + inviteId;
         }
         model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
@@ -659,7 +646,7 @@ public class UserController {
         if(invite.getReceivers().size() == 0){
             model.addAttribute("message", "can delete invite");
             //return "redirect:/list-sent-invite";
-            return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
+            return "redirect:/delete-sent-invite?inviteId=" + inviteId;
         }
         model.addAttribute("message", "invite changed");
         return "redirect:/list-sent-invite-event?inviteId=" + inviteId;
@@ -992,16 +979,16 @@ public class UserController {
         User user=userRepository.findByUsername((String) httpSession.getAttribute("loginUser"));
 
         List<Map<String,String>> list=new ArrayList<>();
-        for(Invite inv:user.getReceive_invites_list()){
-            Event event = inviteRepository.findById(inv.getId()).get().getFinalEvent();
-            if(event!=null){
-                System.out.println(event.getEventName());
+        List<Invite> invites = user.getReceive_invites_list();
+        invites.addAll(user.getConfirmed_invites_list());
+        for(Invite inv:invites){
+            if(inv.getFinalEvent()!=null){
                 Map<String,String> map=new HashMap<>();
                 map.put("invite_id",inv.getId().toString());
-                map.put("eventName",event.getEventName());
-                map.put("date",event.getEventDate().toString());
-                map.put("genre",event.getGenre());
-                map.put("location",event.getLocation());
+                map.put("eventName",inv.getFinalEvent().getEventName());
+                map.put("date",inv.getFinalEvent().getEventDate().toString());
+                map.put("genre",inv.getFinalEvent().getGenre());
+                map.put("location",inv.getFinalEvent().getLocation());
                 map.put("sender",inv.getSender().getUsername());
                 map.put("invite_name",inv.getInviteName());
                 list.add(map);
@@ -1009,6 +996,7 @@ public class UserController {
 
         }
         Map<String,List<Map<String,String>>> res=new HashMap<>();
+        res.put("events",list);
         return res;
     }
 }

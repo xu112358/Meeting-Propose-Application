@@ -1042,6 +1042,7 @@ public class StepDefinitions {
         assertNotEquals(event_list, "Propose Events:");
     }
 
+
     @When("I sort by name")
     public void i_sort_by_name() {
         // Write code here that turns the phrase above into concrete actions
@@ -1125,6 +1126,61 @@ public class StepDefinitions {
             assertEquals(temp,"finalized not responded");
         }
     }
+
+    @Given("I am on the sign in page trying to log in as root")
+    public void i_am_on_the_sign_in_page_trying_to_log_in_as_root() {
+        driver.get(ROOT_URL + "/signin");
+    }
+
+    @When("I entered correct username and wrong password for the root user name for the first time")
+    public void i_entered_correct_username_and_wrong_password_for_the_root_user_name_for_the_first_time() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("234");
+    }
+
+    @When("I entered correct username and wrong password for the root user name for the second time")
+    public void i_entered_correct_username_and_wrong_password_for_the_root_user_name_for_the_second_time() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("345");
+    }
+
+    @When("I entered correct username and wrong password for the root user name for the third time")
+    public void i_entered_correct_username_and_wrong_password_for_the_root_user_name_for_the_third_time() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("456");
+    }
+
+    @When("I clicked on the sign in button below")
+    public void i_clicked_on_the_sign_in_button_below() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#signin")).click();
+    }
+
+    @Then("I should see an error message of Username and password do not match!")
+    public void i_should_see_an_error_message_of_username_and_password_do_not_match() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#warning")).getText();
+        assertEquals("Username and password do not match!", text);
+    }
+
+    @When("I entered correct username and wrong password for the root user name after the third time")
+    public void i_entered_correct_username_and_wrong_password_for_the_root_user_name_after_the_third_time() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#username")).sendKeys("root");
+        driver.findElement(By.cssSelector("#password")).sendKeys("456");
+    }
+
+    @Then("I should see an error message of Your account is locked!")
+    public void i_should_see_an_error_message_of_your_account_is_blocked() {
+        // Write code here that turns the phrase above into concrete actions
+        String text = driver.findElement(By.cssSelector("#warning")).getText();
+        assertEquals("Your account is locked!", text);
+    }
+
+
 
     @Then("I should only see responded dates")
     public void i_should_only_see_responded_dates() {
