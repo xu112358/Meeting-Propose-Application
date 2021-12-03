@@ -483,14 +483,14 @@ public class StepDefinitions {
         // Write code here that turns the phrase above into concrete actions
     }
 
-    @When("I select an end date from the end date calendar")
-    public void i_select_an_end_date_from_the_end_date_calendar() {
+    @When("I select an end date from the calendar")
+    public void i_select_an_end_date_from_the_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
     }
 
-    @When("I select a start date from the start date calendar")
-    public void i_select_a_start_date_from_the_start_date_calendar() {
+    @When("I select a start date from the calendar")
+    public void i_select_a_start_date_from_the_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
     }
