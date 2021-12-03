@@ -1084,13 +1084,13 @@ class UserControllerTest {
         }*/
 
         mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-user")
-                .param("inviteId", "147")
+                .param("inviteId", "89")
                 .param("username", "minyiche5")
                 .sessionAttr("loginUser", "root1")
         ).andReturn();
 
         mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/delete-sent-invite-user")
-                .param("inviteId", "147")
+                .param("inviteId", "89")
                 .param("username", "minyiche6")
                 .sessionAttr("loginUser", "root1")
         ).andReturn();
