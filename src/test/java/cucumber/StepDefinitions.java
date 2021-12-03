@@ -478,8 +478,8 @@ public class StepDefinitions {
         driver.get(ROOT_URL + "/setting");
     }
 
-    @When("I enter nothing for the select start start date")
-    public void i_enter_nothing_for_the_select_start_date() {
+    @When("When I enter nothing for the select start date")
+    public void i_enter_nothing_for_the_selected_start_date() {
         // Write code here that turns the phrase above into concrete actions
     }
 
@@ -489,45 +489,45 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
     }
 
-    @When("When I select a start date from the start date calendar")
+    @When("I select a start date from the start date calendar")
     public void i_select_a_start_date_from_the_start_date_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
     }
 
-    @When("I enter nothing for the select start end date")
+    @When("I enter nothing for the select end date")
     public void i_enter_nothing_for_the_select_end_date() {
         // Write code here that turns the phrase above into concrete actions
     }
 
     @When("I click on the Add Date Range button")
-    public void i_click_on_the_add_date_range_button() {
+    public void i_click_on_the_Add_Date_Range_button() {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         driver.findElement(By.cssSelector("#daterange_add")).click();
     }
 
-    @Then("I should see an error message of Start Date or End Date is Empty")
-    public void i_should_see_an_error_message_of_start_date_or_end_date_is_empty() {
+    @Then("I should see an error message of Start Date or End Date is Empty!")
+    public void i_should_see_an_error_message_of_Start_Date_or_End_Date_is_Empty() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#daterange_errmsg")).getText();
         assertEquals("Start Date or End Date is Empty!", text);
     }
 
-    @When("I select a date from the select start date calendar")
-    public void i_select_a_date_from_the_select_start_date_calendar() {
+    @When("I select a start date from the select start date calendar")
+    public void i_select_a_start_date_from_the_select_start_date_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#start-date")).sendKeys("01232019");
     }
 
-    @When("I select a date from the select end date calendar")
-    public void i_select_a_date_from_the_select_end_date_calendar() {
+    @When("I select an end date from the select end date calendar")
+    public void i_select_an_end_date_from_the_select_end_date_calendar() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#end-date")).sendKeys("01232019");
     }
 
-    @When("I click on the add date range button below")
-    public void i_click_on_the_add_date_range_button_below() {
+    @When("I click on the Add Date Range button below")
+    public void i_click_on_the_Add_Date_Range_button_below() {
         // Write code here that turns the phrase above into concrete actions
         WebDriverWait wait = new WebDriverWait(driver,30);
         driver.findElement(By.cssSelector("#daterange_add")).click();
@@ -548,7 +548,7 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > a")).click();
     }
 
-    @Then("this unavailable date range will be deleted from the unavailable date range list")
+    @Then("my unavailable date range will be deleted from the unavailable date range list")
     public void my_unavailable_date_range_will_be_deleted_from_the_unavailable_date_range_list(String string) {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("body > div:nth-child(4) > div > div:nth-child(2) > div:nth-child(1) > div > table")).getText();
@@ -1153,14 +1153,14 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("#password")).sendKeys("456");
     }
 
-    @When("I clicked on the sign in button below")
-    public void i_clicked_on_the_sign_in_button_below() {
+    @When("I click on the sign in button below")
+    public void i_click_on_the_sign_in_button_below() {
         // Write code here that turns the phrase above into concrete actions
         driver.findElement(By.cssSelector("#signin")).click();
     }
 
-    @Then("I should see an error message of Username and password do not match!")
-    public void i_should_see_an_error_message_of_username_and_password_do_not_match() {
+    @Then("I should see an error message that Username and password do not match!")
+    public void i_should_see_an_error_message_that_Username_and_password_do_not_match() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#warning")).getText();
         assertEquals("Username and password do not match!", text);
@@ -1173,8 +1173,8 @@ public class StepDefinitions {
         driver.findElement(By.cssSelector("#password")).sendKeys("456");
     }
 
-    @Then("I should see an error message of Your account is locked!")
-    public void i_should_see_an_error_message_of_your_account_is_blocked() {
+    @Then("I should see an error message that Your account is locked!")
+    public void i_should_see_an_error_message_that_Your_account_is_locked() {
         // Write code here that turns the phrase above into concrete actions
         String text = driver.findElement(By.cssSelector("#warning")).getText();
         assertEquals("Your account is locked!", text);
