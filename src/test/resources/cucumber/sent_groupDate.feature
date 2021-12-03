@@ -71,33 +71,4 @@ Feature: Sent Group Date （/list-sent-invite）
     Then I can will be direct back to the receive-groupDates page
 
 
-  Scenario: Sort by name
-    Given I am on the sent groupdate page as root1
-    When I sort by name
-    Then the groupdates should be sorted in alphabetical order
-
-  Scenario: Sort by date
-    Given I am on the sent groupdate page as root1
-    When I sort by date
-    Then the groupdates should be sorted in date order
-
-  Scenario: Filter by finalized
-    Given I am on the sent groupdate page as root1
-    When I filter by "finalized"
-    Then I should only see finalized dates
-
-  Scenario: Filter by not finalized
-    Given I am on the sent groupdate page as root1
-    When I filter by "not finalized"
-    Then I should only see not finalized dates
-
-  Scenario: Filter by not responded
-    Given I am on the sent groupdate page as root1
-    When I filter by "not responded"
-    Then I should only see not responded dates
-
-  Scenario: Filter by responded
-    Given I am on the sent groupdate page as root1
-    When I filter by "responded"
-    Then I should only see responded dates
 

@@ -24,7 +24,7 @@ Feature: indicate unavailable date range - user settings
   Scenario: successfully add unavailable date range
     Given I am on the user settings page and signed in as root
     When I select a start date from the select start date calendar
-    And I select an end from the select end date calendar
+    And I select an end date from the select end date calendar
     And I click on the Add Date Range button below
     Then my unavailable date range will appear on the unavailable date range list
 
