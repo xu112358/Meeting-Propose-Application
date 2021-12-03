@@ -1076,6 +1076,66 @@ public class StepDefinitions {
         }
     }
 
+    @Given("I am on the sent groupdate page as root1")
+    public void i_am_on_the_sent_groupdate_page_as_root1() {
+        // Write code here that turns the phrase above into concrete actions
+        driver.get(ROOT_URL + "/home");
+        driver.findElement(By.cssSelector("#username")).sendKeys("root1");
+        driver.findElement(By.cssSelector("#password")).sendKeys("123");
+        driver.findElement(By.cssSelector("#signin")).click();
+        driver.get(ROOT_URL + "/list-sent-invite");
+    }
+
+    @When("I filter by {string}")
+    public void i_filter_by(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        driver.findElement(By.cssSelector("#finalized-filter")).sendKeys((string));
+    }
+
+
+    @Then("I should only see finalized dates")
+    public void i_should_only_see_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertTrue(temp.compareTo("finalized not responded") == 0 || temp.compareTo("finalized responded") == 0);
+        }
+    }
+
+    @Then("I should only see not finalized dates")
+    public void i_should_only_see_not_finalized_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"not finalized");
+        }
+    }
+
+    @Then("I should only see not responded dates")
+    public void i_should_only_see_not_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized not responded");
+        }
+    }
+
+    @Then("I should only see responded dates")
+    public void i_should_only_see_responded_dates() {
+        // Write code here that turns the phrase above into concrete actions
+        List<WebElement> events= driver.findElements(By.cssSelector("tr:not(.noshow) td"));
+        String prev = events.get(2).getText();
+        for(int i=2; i<events.size(); i+=3) {
+            String temp = events.get(i).getText();
+            assertEquals(temp,"finalized responded");
+        }
+    }
 
 
     @After()
